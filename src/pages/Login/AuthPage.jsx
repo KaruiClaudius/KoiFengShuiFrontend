@@ -12,6 +12,8 @@ import IconButton from "@mui/joy/IconButton";
 import Link from "@mui/joy/Link";
 import Input from "@mui/joy/Input";
 import Typography from "@mui/joy/Typography";
+import Select from "@mui/joy/Select";
+import Option from "@mui/joy/Option";
 import Stack from "@mui/joy/Stack";
 import { useNavigate } from "react-router-dom";
 // import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
@@ -75,20 +77,21 @@ export default function AuthPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const formElements = event.currentTarget.elements;
-    let data;
+    const formData = new FormData(event.currentTarget);
+    // let data;
     switch (authMode) {
       case "signin":
-        data = {
-          email: formElements.email.value,
-          password: formElements.password.value,
-          persistent: formElements.persistent?.checked,
-        };
+        // data = {
+        //   email: formData.get("email"),
+        //   password: formData.get("password"),
+        //   persistent: formData.get("persistent") === "on",
+        // };
+
         // handle Login here
         try {
-          const response = await api.post("login", {
-            email: data.email,
-            password: data.password,
+          const response = await api.post("authenticate", {
+            email: formData.get("email"),
+            password: formData.get("password"),
           });
           const { token } = response.data;
           localStorage.setItem("token", token);
@@ -98,23 +101,47 @@ export default function AuthPage() {
           console.log(err);
           alert(err.response?.data || "An error occurred during login");
         }
+
         break;
       case "signup":
-        data = {
-          name: formElements.name.value,
-          email: formElements.email.value,
-          password: formElements.password.value,
-          confirmPassword: formElements.confirmPassword.value,
-          terms: formElements.terms.checked,
-        };
+        // data = {
+        //   fullName: formData.get("fullName"),
+        //   email: formData.get("email"),
+        //   password: formData.get("password"),
+        //   doB: formData.get("doB"),
+        //   phone: formData.get("phone"),
+        //   gender: formData.get("gender"),
+        //   terms: formData.get("terms") === "on",
+        // };
+
+        // handle SignUp
+        try {
+          await api.post("register", {
+            fullName: formData.get("fullName"),
+            email: formData.get("email"),
+            password: formData.get("password"),
+            doB: formData.get("doB"),
+            phone: formData.get("phone"),
+            gender: formData.get("gender"),
+            terms: formData.get("terms") === "on",
+          });
+          navigate("/login");
+        } catch (err) {
+          console.error(err);
+          alert(err.response?.data || "An error occurred during Sign Up");
+        }
+
         break;
+
       case "forgotpassword":
-        data = {
-          email: formElements.email.value,
-        };
+        // data = {
+        //   email: formData.get("email"),
+        // };
+        // handle forgot password
+        alert("Funtion is in development");
         break;
     }
-    alert(JSON.stringify(data, null, 2));
+    // alert(JSON.stringify(data, null, 2));
   };
 
   return (
@@ -252,8 +279,8 @@ export default function AuthPage() {
               <form onSubmit={handleSubmit}>
                 {authMode === "signup" && (
                   <FormControl required>
-                    <FormLabel>Name</FormLabel>
-                    <Input type="text" name="name" />
+                    <FormLabel>Full Name</FormLabel>
+                    <Input type="text" name="fullName" />
                   </FormControl>
                 )}
                 <FormControl required>
@@ -268,8 +295,24 @@ export default function AuthPage() {
                 )}
                 {authMode === "signup" && (
                   <FormControl required>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <Input type="password" name="confirmPassword" />
+                    <FormLabel>Date of Birth</FormLabel>
+                    <Input type="date" name="doB" />
+                  </FormControl>
+                )}
+                {authMode === "signup" && (
+                  <FormControl required>
+                    <FormLabel>Phone</FormLabel>
+                    <Input type="text" name="phone" />
+                  </FormControl>
+                )}
+                {authMode === "signup" && (
+                  <FormControl required>
+                    <FormLabel>Gender</FormLabel>
+                    <Select defaultValue="gender" name="gender">
+                      <Option value="male">Nam</Option>
+                      <Option value="female">Nữ</Option>
+                      <Option value="other">Khác</Option>
+                    </Select>
                   </FormControl>
                 )}
                 <Stack sx={{ gap: 4, mt: 2 }}>
