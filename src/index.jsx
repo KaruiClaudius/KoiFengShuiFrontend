@@ -11,7 +11,7 @@ const App = () => {
       <Router>
         <Routes>
           {/* <Route path="/homepage" element={<LandingPage />} /> */}
-          <Route path="/login" element={<AuthPage />} />
+          <Route path="/auth" element={<AuthPage />} />
         </Routes>
       </Router>
     </StyledEngineProvider>
