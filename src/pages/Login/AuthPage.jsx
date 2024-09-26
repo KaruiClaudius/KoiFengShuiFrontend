@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 // import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import api from "../../config/axios";
-import KoiBackGround from "../../assets/KoiBackGround.svg";
+import KoiLogo from "../../assets/Logo_SWP.svg";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -59,7 +59,7 @@ export default function AuthPage() {
   const CompanyLogoButton = () => (
     <IconButton sx={{ padding: 2, width: 64, height: 64 }}>
       <img
-        src={KoiBackGround}
+        src={KoiLogo}
         alt="Company Logo"
         style={{
           width: 64,
