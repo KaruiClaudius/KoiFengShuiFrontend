@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = "https://localhost:7285/api";
+const baseUrl = "https://localhost:7285";
 
 const config = {
   baseUrl: baseUrl,
@@ -11,13 +11,16 @@ api.defaults.baseURL = baseUrl;
 
 // handle before call api
 const handleBefore = (config) => {
-  // handle hành động trước khi call API
+  // Handle actions before the API call
 
-  // lấy ra cái token và đính kèm theo cái request
+  // Retrieve the token and attach it to the request headers
   const token = localStorage.getItem("token")?.replaceAll("", "");
-  config.headers["Authorization"] = "Bearer ${token}";
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`; // Use backticks for token interpolation
+  }
   return config;
 };
+
 api.interceptors.request.use(handleBefore, null);
 
 export default api;

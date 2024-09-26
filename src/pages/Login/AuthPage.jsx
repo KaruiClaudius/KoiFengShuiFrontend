@@ -19,9 +19,10 @@ import { useNavigate } from "react-router-dom";
 // import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 // import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import GoogleIcon from "../../GoogleIcon";
 import api from "../../config/axios";
 import KoiBackGround from "../../assets/KoiBackGround.svg";
+import GoogleLoginButton from "./GoogleLoginButton";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 // function ColorSchemeToggle(props) {
 // const { onClick, ...other } = props;
@@ -90,7 +91,7 @@ export default function AuthPage() {
 
         // handle Login here
         try {
-          const response = await api.post("Account/authenticate", {
+          const response = await api.post("api/Auth/SignIn", {
             email: formData.get("email"),
             password: formData.get("password"),
           });
@@ -117,7 +118,7 @@ export default function AuthPage() {
 
         // handle SignUp
         try {
-          await api.post("Account/register", {
+          await api.post("api/Auth/SignUp", {
             fullName: formData.get("fullName"),
             email: formData.get("email"),
             password: formData.get("password"),
@@ -141,7 +142,7 @@ export default function AuthPage() {
         // handle forgot password
 
         try {
-          await api.post("Account/ForgotPassword", {
+          await api.post("api/Auth/ForgotPassword", {
             email: formData.get("email"),
           });
           toggleAuthMode("signin");
@@ -158,242 +159,235 @@ export default function AuthPage() {
   };
 
   return (
-    <CssVarsProvider theme={customTheme} disableTransitionOnChange>
-      <CssBaseline />
-      <GlobalStyles
-        styles={{
-          ":root": {
-            "--Form-maxWidth": "800px",
-            "--Transition-duration": "0.4s",
-          },
-        }}
-      />
-      <Box
-        sx={(theme) => ({
-          width: { xs: "100%", md: "50vw" },
-          transition: "width var(--Transition-duration)",
-          transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
-          position: "relative",
-          zIndex: 1,
-          display: "flex",
-          justifyContent: "flex-end",
-          backdropFilter: "blur(12px)",
-          backgroundColor: "rgba(255 255 255 / 0.2)",
-          [theme.getColorSchemeSelector("dark")]: {
-            backgroundColor: "rgba(19 19 24 / 0.4)",
-          },
-        })}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "100dvh",
-            width: "100%",
-            px: 2,
+    <GoogleOAuthProvider clientId="910517568057-gbk894g908blesmb6v6oa64ida68co4b.apps.googleusercontent.com">
+      <CssVarsProvider theme={customTheme} disableTransitionOnChange>
+        <CssBaseline />
+        <GlobalStyles
+          styles={{
+            ":root": {
+              "--Form-maxWidth": "800px",
+              "--Transition-duration": "0.4s",
+            },
           }}
+        />
+        <Box
+          sx={(theme) => ({
+            width: { xs: "100%", md: "50vw" },
+            transition: "width var(--Transition-duration)",
+            transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            justifyContent: "flex-end",
+            backdropFilter: "blur(12px)",
+            backgroundColor: "rgba(255 255 255 / 0.2)",
+            [theme.getColorSchemeSelector("dark")]: {
+              backgroundColor: "rgba(19 19 24 / 0.4)",
+            },
+          })}
         >
           <Box
-            component="header"
-            sx={{ py: 3, display: "flex", justifyContent: "space-between" }}
-          >
-            <Box sx={{ gap: 2, display: "flex", alignItems: "center" }}>
-              {/* <CompanyLogoButton /> */}
-              <Button
-                variant="plain"
-                startDecorator={<CompanyLogoButton />}
-                size="lg"
-                color="neutral"
-                onClick={handleHomeClick}
-              >
-                Koi Feng Shui
-              </Button>
-            </Box>
-            {/* <ColorSchemeToggle /> */}
-          </Box>
-          <Box
-            component="main"
             sx={{
-              my: "auto",
-              py: 2,
-              pb: 5,
               display: "flex",
               flexDirection: "column",
-              gap: 2,
-              width: 400,
-              maxWidth: "100%",
-              mx: "auto",
-              borderRadius: "sm",
-              "& form": {
+              minHeight: "100dvh",
+              width: "100%",
+              px: 2,
+            }}
+          >
+            <Box
+              component="header"
+              sx={{ py: 3, display: "flex", justifyContent: "space-between" }}
+            >
+              <Box sx={{ gap: 2, display: "flex", alignItems: "center" }}>
+                {/* <CompanyLogoButton /> */}
+                <Button
+                  variant="plain"
+                  startDecorator={<CompanyLogoButton />}
+                  size="lg"
+                  color="neutral"
+                  onClick={handleHomeClick}
+                >
+                  Koi Feng Shui
+                </Button>
+              </Box>
+              {/* <ColorSchemeToggle /> */}
+            </Box>
+            <Box
+              component="main"
+              sx={{
+                my: "auto",
+                py: 2,
+                pb: 5,
                 display: "flex",
                 flexDirection: "column",
                 gap: 2,
-              },
-              [`& .MuiFormLabel-asterisk`]: {
-                visibility: "hidden",
-              },
-            }}
-          >
-            <Stack sx={{ gap: 4, mb: 2 }}>
-              <Stack sx={{ gap: 1 }}>
-                {authMode === "forgotpassword" && (
-                  <IconButton
-                    onClick={() => toggleAuthMode("signin")}
-                    sx={{ alignSelf: "flex-start", mb: 1 }}
-                  >
-                    <ArrowBackIcon />
-                  </IconButton>
-                )}
-                <Typography component="h1" level="h3">
-                  {authMode === "signin"
-                    ? "Đăng nhập"
-                    : authMode === "signup"
-                    ? "Đăng kí"
-                    : authMode === "forgotpassword"
-                    ? "Quên mật khẩu"
-                    : ""}
-                </Typography>
-                {authMode !== "forgotpassword" && (
-                  <Typography level="body-sm">
-                    {authMode === "signin"
-                      ? "Chưa có tài khoản ? "
-                      : "Đã có tài khoản ? "}
-                    <Link
-                      component="button"
-                      level="title-sm"
-                      onClick={() =>
-                        toggleAuthMode(
-                          authMode === "signin" ? "signup" : "signin"
-                        )
-                      }
+                width: 400,
+                maxWidth: "100%",
+                mx: "auto",
+                borderRadius: "sm",
+                "& form": {
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                },
+                [`& .MuiFormLabel-asterisk`]: {
+                  visibility: "hidden",
+                },
+              }}
+            >
+              <Stack sx={{ gap: 4, mb: 2 }}>
+                <Stack sx={{ gap: 1 }}>
+                  {authMode === "forgotpassword" && (
+                    <IconButton
+                      onClick={() => toggleAuthMode("signin")}
+                      sx={{ alignSelf: "flex-start", mb: 1 }}
                     >
-                      {authMode === "signin"
-                        ? "Đăng kí tài khoản mới !"
-                        : "Đăng nhập ngay !"}
-                    </Link>
-                  </Typography>
-                )}
-                {authMode === "forgotpassword" && (
-                  <Typography level="body-sm">
-                    Điền Email để chúng tôi gửi mật khẩu mới cho bạn
-                  </Typography>
-                )}
-              </Stack>
-              {authMode === "signin" && (
-                <Button
-                  variant="soft"
-                  color="neutral"
-                  fullWidth
-                  startDecorator={<GoogleIcon />}
-                >
-                  Google
-                </Button>
-              )}
-            </Stack>
-            {authMode === "signin" && <Divider>Hoặc đăng nhập bằng</Divider>}
-            <Stack sx={{ gap: 4, mt: 2 }}>
-              <form onSubmit={handleSubmit}>
-                {authMode === "signup" && (
-                  <FormControl required>
-                    <FormLabel>Họ và tên</FormLabel>
-                    <Input type="text" name="fullName" />
-                  </FormControl>
-                )}
-                <FormControl required>
-                  <FormLabel>Email</FormLabel>
-                  <Input type="email" name="email" />
-                </FormControl>
-                {authMode !== "forgotpassword" && (
-                  <FormControl required>
-                    <FormLabel>Mật khẩu</FormLabel>
-                    <Input type="password" name="password" />
-                  </FormControl>
-                )}
-                {authMode === "signup" && (
-                  <FormControl required>
-                    <FormLabel>Năm sinh</FormLabel>
-                    <Input type="date" name="doB" />
-                  </FormControl>
-                )}
-                {authMode === "signup" && (
-                  <FormControl required>
-                    <FormLabel>Số điện thoại</FormLabel>
-                    <Input type="text" name="phone" />
-                  </FormControl>
-                )}
-                {authMode === "signup" && (
-                  <FormControl required>
-                    <FormLabel>Giới tính</FormLabel>
-                    <Select defaultValue="gender" name="gender">
-                      <Option value="male">Nam</Option>
-                      <Option value="female">Nữ</Option>
-                      <Option value="other">Khác</Option>
-                    </Select>
-                  </FormControl>
-                )}
-                <Stack sx={{ gap: 4, mt: 2 }}>
-                  {authMode === "signin" && (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Link
-                        level="title-sm"
-                        component="button"
-                        alignItems="flex-end"
-                        onClick={() => toggleAuthMode("forgotpassword")}
-                      >
-                        Quên mật khẩu
-                      </Link>
-                    </Box>
+                      <ArrowBackIcon />
+                    </IconButton>
                   )}
-                  {/* {authMode === "signup" && (
+                  <Typography component="h1" level="h3">
+                    {authMode === "signin"
+                      ? "Đăng nhập"
+                      : authMode === "signup"
+                      ? "Đăng kí"
+                      : authMode === "forgotpassword"
+                      ? "Quên mật khẩu"
+                      : ""}
+                  </Typography>
+                  {authMode !== "forgotpassword" && (
+                    <Typography level="body-sm">
+                      {authMode === "signin"
+                        ? "Chưa có tài khoản ? "
+                        : "Đã có tài khoản ? "}
+                      <Link
+                        component="button"
+                        level="title-sm"
+                        onClick={() =>
+                          toggleAuthMode(
+                            authMode === "signin" ? "signup" : "signin"
+                          )
+                        }
+                      >
+                        {authMode === "signin"
+                          ? "Đăng kí tài khoản mới !"
+                          : "Đăng nhập ngay !"}
+                      </Link>
+                    </Typography>
+                  )}
+                  {authMode === "forgotpassword" && (
+                    <Typography level="body-sm">
+                      Điền Email để chúng tôi gửi mật khẩu mới cho bạn
+                    </Typography>
+                  )}
+                </Stack>
+                {authMode === "signin" && <GoogleLoginButton />}
+              </Stack>
+              {authMode === "signin" && <Divider>Hoặc đăng nhập bằng</Divider>}
+              <Stack sx={{ gap: 4, mt: 2 }}>
+                <form onSubmit={handleSubmit}>
+                  {authMode === "signup" && (
+                    <FormControl required>
+                      <FormLabel>Họ và tên</FormLabel>
+                      <Input type="text" name="fullName" />
+                    </FormControl>
+                  )}
+                  <FormControl required>
+                    <FormLabel>Email</FormLabel>
+                    <Input type="email" name="email" />
+                  </FormControl>
+                  {authMode !== "forgotpassword" && (
+                    <FormControl required>
+                      <FormLabel>Mật khẩu</FormLabel>
+                      <Input type="password" name="password" />
+                    </FormControl>
+                  )}
+                  {authMode === "signup" && (
+                    <FormControl required>
+                      <FormLabel>Năm sinh</FormLabel>
+                      <Input type="date" name="doB" />
+                    </FormControl>
+                  )}
+                  {authMode === "signup" && (
+                    <FormControl required>
+                      <FormLabel>Số điện thoại</FormLabel>
+                      <Input type="text" name="phone" />
+                    </FormControl>
+                  )}
+                  {authMode === "signup" && (
+                    <FormControl required>
+                      <FormLabel>Giới tính</FormLabel>
+                      <Select defaultValue="gender" name="gender">
+                        <Option value="male">Nam</Option>
+                        <Option value="female">Nữ</Option>
+                        <Option value="other">Khác</Option>
+                      </Select>
+                    </FormControl>
+                  )}
+                  <Stack sx={{ gap: 4, mt: 2 }}>
+                    {authMode === "signin" && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Link
+                          level="title-sm"
+                          component="button"
+                          alignItems="flex-end"
+                          onClick={() => toggleAuthMode("forgotpassword")}
+                        >
+                          Quên mật khẩu
+                        </Link>
+                      </Box>
+                    )}
+                    {/* {authMode === "signup" && (
                     <Checkbox
                       size="sm"
                       label="I agree to the terms and conditions"
                       name="terms"
                     />
                   )} */}
-                  <Button type="submit" fullWidth>
-                    {authMode === "signin"
-                      ? "Đăng nhập"
-                      : authMode === "signup"
-                      ? "Đăng kí"
-                      : "Tiếp tục"}
-                  </Button>
-                </Stack>
-              </form>
-            </Stack>
-          </Box>
-          <Box component="footer" sx={{ py: 3 }}>
-            <Typography level="body-xs" sx={{ textAlign: "center" }}>
-              © Koi Feng Shui {new Date().getFullYear()}
-            </Typography>
+                    <Button type="submit" fullWidth>
+                      {authMode === "signin"
+                        ? "Đăng nhập"
+                        : authMode === "signup"
+                        ? "Đăng kí"
+                        : "Tiếp tục"}
+                    </Button>
+                  </Stack>
+                </form>
+              </Stack>
+            </Box>
+            <Box component="footer" sx={{ py: 3 }}>
+              <Typography level="body-xs" sx={{ textAlign: "center" }}>
+                © Koi Feng Shui {new Date().getFullYear()}
+              </Typography>
+            </Box>
           </Box>
         </Box>
-      </Box>
-      <Box
-        sx={() => ({
-          height: "100%",
-          position: "fixed",
-          right: 0,
-          top: 0,
-          bottom: 0,
-          left: { xs: 0, md: "50vw" },
-          transition:
-            "background-image var(--Transition-duration), left var(--Transition-duration) !important",
-          transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
-          backgroundColor: "background.level1",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundImage:
-            "url(https://img.freepik.com/free-vector/carp-fish-waves-vector-blue-background-featuring-public-domain-artworks_53876-146335.jpg?t=st=1727224826~exp=1727228426~hmac=18dcb7e1a02c72975ffc6a4a1c1bfb6d7e9f50a340bcf1e81b907b4631ff63b8&w=996)",
-        })}
-      />
-    </CssVarsProvider>
+        <Box
+          sx={() => ({
+            height: "100%",
+            position: "fixed",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            left: { xs: 0, md: "50vw" },
+            transition:
+              "background-image var(--Transition-duration), left var(--Transition-duration) !important",
+            transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+            backgroundColor: "background.level1",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundImage:
+              "url(https://img.freepik.com/free-vector/carp-fish-waves-vector-blue-background-featuring-public-domain-artworks_53876-146335.jpg?t=st=1727224826~exp=1727228426~hmac=18dcb7e1a02c72975ffc6a4a1c1bfb6d7e9f50a340bcf1e81b907b4631ff63b8&w=996)",
+          })}
+        />
+      </CssVarsProvider>
+    </GoogleOAuthProvider>
   );
 }
