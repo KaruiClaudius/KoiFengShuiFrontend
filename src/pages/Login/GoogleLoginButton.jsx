@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/joy/Button";
-import GoogleIcon from "../../GoogleIcon";
+import GoogleIcon from "../../components/GoogleIcon";
 import api from "../../config/axios";
 import { Alert } from "@mui/joy";
 
