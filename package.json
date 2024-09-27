@@ -17,6 +17,7 @@
     "@mui/icons-material": "^6.1.0",
     "@mui/joy": "^5.0.0-beta.48",
     "@mui/material": "^6.1.0",
+    "@react-oauth/google": "^0.12.1",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "antd": "^5.20.6",
