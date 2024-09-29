@@ -24,28 +24,6 @@ import KoiLogo from "../../assets/Logo_SWP.svg";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-// function ColorSchemeToggle(props) {
-// const { onClick, ...other } = props;
-// const { mode, setMode } = useColorScheme();
-// const [mounted, setMounted] = React.useState(false);
-// React.useEffect(() => setMounted(true), []);
-// return (
-//   <IconButton
-//     aria-label="toggle light/dark mode"
-//     size="sm"
-//     variant="outlined"
-//     disabled={!mounted}
-//     onClick={(event) => {
-//       setMode(mode === "light" ? "dark" : "light");
-//       onClick?.(event);
-//     }}
-//     {...other}
-//   >
-//     {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
-//   </IconButton>
-// );
-// }
-
 const customTheme = extendTheme({ defaultColorScheme: "dark" });
 
 export default function AuthPage() {
@@ -83,12 +61,6 @@ export default function AuthPage() {
     // let data;
     switch (authMode) {
       case "signin":
-        // data = {
-        //   email: formData.get("email"),
-        //   password: formData.get("password"),
-        //   persistent: formData.get("persistent") === "on",
-        // };
-
         // handle Login here
         try {
           const response = await api.post("api/Auth/SignIn", {
@@ -106,16 +78,6 @@ export default function AuthPage() {
 
         break;
       case "signup":
-        // data = {
-        //   fullName: formData.get("fullName"),
-        //   email: formData.get("email"),
-        //   password: formData.get("password"),
-        //   doB: formData.get("doB"),
-        //   phone: formData.get("phone"),
-        //   gender: formData.get("gender"),
-        //   terms: formData.get("terms") === "on",
-        // };
-
         // handle SignUp
         try {
           await api.post("api/Auth/SignUp", {
@@ -136,11 +98,6 @@ export default function AuthPage() {
         break;
 
       case "forgotpassword":
-        // data = {
-        //   email: formData.get("email"),
-        // };
-        // handle forgot password
-
         try {
           await api.post("api/Auth/ForgotPassword", {
             email: formData.get("email"),

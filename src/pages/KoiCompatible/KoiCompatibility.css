@@ -1,0 +1,71 @@
+/* Container for full-page layout */
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  /* Ensure the header and footer take up their space */
+  header {
+    flex-shrink: 0;
+    width: 100%;
+  }
+  
+  footer {
+    flex-shrink: 0;
+    width: 100%;
+  }
+  
+  /* Main content should take up the remaining space between header and footer */
+  main {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f2f5; /* Optional background */
+  }
+  
+  /* Style for the form container */
+  .compatibility-form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  /* Card styling */
+  .compatibility-card {
+    width: 100%;
+    max-width: 500px;
+    background-color: #f89c74; /* Light orange background */
+    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Form styling */
+  .koi-form {
+    margin-top: 20px;
+  }
+  
+  .submit-button {
+    width: 100%;
+    background-color: #007bff; /* Match button color */
+    border-radius: 10px;
+  }
+
+  .site-footer > div {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .btnElement{
+    background-color: #231815;
+    color: #fdc15d;
+    font-size: 20px;  
+  }
+
+  .btnCompa{
+    background-color: #ffff;
+    font-size: 20px;
+  }
+  
