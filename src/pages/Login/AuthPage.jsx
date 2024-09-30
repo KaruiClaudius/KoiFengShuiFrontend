@@ -52,7 +52,7 @@ export default function AuthPage() {
   // const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const handleHomeClick = () => {
-    navigate("/homepage");
+    navigate("/");
   };
 
   const handleSubmit = async (event) => {

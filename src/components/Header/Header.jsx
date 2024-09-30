@@ -1,94 +1,278 @@
-import React from "react";
-import { Layout, Menu, Avatar, Dropdown, Button, Input, Space } from "antd";
+import React, { useEffect, useState } from "react";
 import {
-  BellOutlined,
-  MessageOutlined,
-  FileOutlined,
-  DownOutlined,
-  SearchOutlined,
-  MenuOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  InputBase,
+  Avatar,
+  Menu,
+  MenuItem,
+  IconButton,
+  Box,
+} from "@mui/material";
+import { styled, alpha } from "@mui/material/styles";
+import {
+  Notifications as NotificationsIcon,
+  Message as MessageIcon,
+  Description as DescriptionIcon,
+  Search as SearchIcon,
+  Menu as MenuIcon,
+  CloudUpload as CloudUploadIcon,
+  Person as PersonIcon,
+} from "@mui/icons-material";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios"; // Make sure to install axios if not already installed
 import Logo from "../../assets/Logo_SWP.svg";
 
-const { Header } = Layout;
-const { SubMenu } = Menu;
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: "100%",
+  [theme.breakpoints.up("sm")]: {
+    marginLeft: theme.spacing(3),
+    width: "auto",
+  },
+}));
 
-const userMenu = (
-  <Menu>
-    <Menu.Item key="1">Profile</Menu.Item>
-    <Menu.Item key="2">Logout</Menu.Item>
-  </Menu>
-);
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: "inherit",
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create("width"),
+    width: "100%",
+    [theme.breakpoints.up("md")]: {
+      width: "60ch",
+    },
+  },
+}));
 
 const categories = [
-  { key: "renting", label: "Thuê nhà" },
-  { key: "thirdparty", label: "Dịch vụ bên thứ ba" },
+  {
+    label: "Category",
+    key: "SubMenu",
+    icon: <MenuIcon />,
+    children: [
+      {
+        label: "Thuê nhà",
+        key: "setting:1",
+        navigate: "/renting",
+      },
+      {
+        label: "Dịch vụ bên thứ ba",
+        key: "setting:2",
+        navigate: "/services",
+      },
+    ],
+  },
 ];
 
 const AppHeader = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [categoryAnchorEl, setCategoryAnchorEl] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const email = localStorage.getItem("email");
+    setIsLoggedIn(!!token);
+
+    if (token && email) {
+      fetchUserData(email, token);
+    }
+  }, [navigate, location.pathname]);
+
+  const fetchUserData = async (email, token) => {
+    try {
+      const response = await axios.get(`/api/users/email/${email}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const userData = response.data;
+      setFullName(userData.fullName);
+      setAvatarUrl(
+        `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+          userData.fullName
+        )}`
+      );
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsLoggedIn(false);
+    setFullName("");
+
+    navigate("/");
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+  };
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleCategoryMenu = (event) => {
+    setCategoryAnchorEl(event.currentTarget);
+  };
+
+  const handleCategoryClose = () => {
+    setCategoryAnchorEl(null);
+  };
+
+  const handleLogoClick = () => {
+    navigate("/");
+  };
+
   return (
-    <Header
-      className="header"
-      style={{
-        backgroundColor: "#F9A825",
-        padding: "0 50px",
-        width: "95%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <div className="logo">
-        <img src={Logo} alt="UNINEST" style={{ height: "64px" }} />
-      </div>
+    <AppBar position="static" sx={{ backgroundColor: "#F9A825" }}>
+      <Toolbar>
+        <Box
+          component="img"
+          src={Logo}
+          alt="UNINEST"
+          sx={{
+            height: "64px",
+            mixBlendMode: "multiply", // This can help with white backgrounds
+            backgroundColor: "transparent",
+          }}
+          onClick={handleLogoClick}
+        />
 
-      <Menu
-        mode="horizontal"
-        style={{ backgroundColor: "transparent", border: "none" }}
-      >
-        <SubMenu
-          key="categories"
-          title={
-            <span>
-              <MenuOutlined />
-              <span style={{ marginLeft: "8px" }}>Categories</span>
-              <DownOutlined style={{ marginLeft: "8px" }} />
-            </span>
-          }
+        <IconButton
+          size="large"
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          onClick={handleCategoryMenu}
+          sx={{ ml: 2 }}
         >
-          {categories.map((category) => (
-            <Menu.Item key={category.key}>{category.label}</Menu.Item>
+          <MenuIcon />
+        </IconButton>
+        <Typography variant="h6" sx={{ ml: 1 }}>
+          Categories
+        </Typography>
+        <Menu
+          anchorEl={categoryAnchorEl}
+          open={Boolean(categoryAnchorEl)}
+          onClose={handleCategoryClose}
+        >
+          {categories[0].children.map((item) => (
+            <MenuItem
+              key={item.key}
+              onClick={() => {
+                handleCategoryClose();
+                navigate(item.navigate);
+              }}
+            >
+              {item.label}
+            </MenuItem>
           ))}
-        </SubMenu>
-      </Menu>
+        </Menu>
 
-      <Input size="large" prefix={<SearchOutlined />} style={{ width: 750 }} />
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search…"
+            inputProps={{ "aria-label": "search" }}
+          />
+        </Search>
 
-      <Space size="middle">
-        <Button type="text" icon={<BellOutlined />} size="large" />
-        <Button type="text" icon={<MessageOutlined />} size="large" />
-        <Button type="text" icon={<FileOutlined />} size="large" />
-      </Space>
+        <Box sx={{ flexGrow: 1 }} />
 
-      <Dropdown overlay={userMenu} placement="bottomRight" size="large">
-        <Space style={{ cursor: "pointer" }}>
-          <Avatar src="/path-to-avatar.jpg" />
-          <span>Minh Quang</span>
-          <DownOutlined />
-        </Space>
-      </Dropdown>
+        <IconButton color="inherit">
+          <NotificationsIcon />
+        </IconButton>
+        <IconButton color="inherit">
+          <MessageIcon />
+        </IconButton>
+        <IconButton color="inherit">
+          <DescriptionIcon />
+        </IconButton>
 
-      <Button
-        icon={<UploadOutlined />}
-        type="primary"
-        style={{ marginLeft: "16px" }}
-        danger
-        size="large"
-      >
-        Đăng tin
-      </Button>
-    </Header>
+        {isLoggedIn ? (
+          <>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenu}
+              color="inherit"
+            >
+              <Avatar src={avatarUrl} alt={fullName} />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            </Menu>
+          </>
+        ) : (
+          <Button
+            color="inherit"
+            startIcon={<PersonIcon />}
+            onClick={() => navigate("/auth")}
+          >
+            Đăng nhập / Đăng kí
+          </Button>
+        )}
+
+        <Button
+          variant="contained"
+          startIcon={<CloudUploadIcon />}
+          sx={{
+            ml: 2,
+            backgroundColor: "#ff4d4f",
+            "&:hover": { backgroundColor: "#ff7875" },
+          }}
+        >
+          Đăng tin
+        </Button>
+      </Toolbar>
+    </AppBar>
   );
 };
 

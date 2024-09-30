@@ -8,193 +8,245 @@ import {
   Row,
   Col,
   Typography,
-  Alert,
+  Descriptions,
+  message,
 } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
+import {
+  assessCompatibility,
+  getFengShuiConsultation,
+} from "../../config/axios";
 
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const KoiCompatibilityForm = () => {
   const [formType, setFormType] = useState("compatibility");
   const [results, setResults] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = (values) => {
-    console.log("Form Values: ", values);
-    if (formType === "compatibility") {
-      // Mock compatibility calculation
-      setResults({
-        score: Math.floor(Math.random() * 100),
-      });
-    } else {
-      // Mock element calculation
-      const elements = ["Metal", "Wood", "Water", "Fire", "Earth"];
-      const colors = ["Red", "Blue", "Green", "Yellow", "White"];
-      const fishBreeds = ["Kohaku", "Showa", "Sanke", "Asagi", "Shusui"];
-      const pondShapes = ["Square", "Round", "Rectangle", "Oval"];
-      const pondDirections = [
-        "North",
-        "South",
-        "East",
-        "West",
-        "Northeast",
-        "Northwest",
-        "Southeast",
-        "Southwest",
-      ];
-
-      setResults({
-        element: elements[Math.floor(Math.random() * elements.length)],
-        luckyNumber: Math.floor(Math.random() * 9) + 1,
-        fitColor: colors[Math.floor(Math.random() * colors.length)],
-        fishBreed: fishBreeds[Math.floor(Math.random() * fishBreeds.length)],
-        fishColor: colors[Math.floor(Math.random() * colors.length)],
-        pondShape: pondShapes[Math.floor(Math.random() * pondShapes.length)],
-        pondDirection:
-          pondDirections[Math.floor(Math.random() * pondDirections.length)],
-      });
+  const onFinish = async (values) => {
+    setLoading(true);
+    try {
+      let response;
+      if (formType === "compatibility") {
+        response = await assessCompatibility({
+          dateOfBirth: parseInt(values.birthYear),
+          direction: values.pondDirection,
+          pondShape: values.pondShape,
+          fishColor: values.koiColor,
+          fishQuantity: parseInt(values.koiNumber),
+        });
+      } else {
+        response = await getFengShuiConsultation({
+          yearOfBirth: parseInt(values.birthYear),
+        });
+      }
+      setResults(response.data);
+    } catch (error) {
+      console.error("Error:", error);
+      message.error("An error occurred while processing your request.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderForm = () => {
-    if (formType === "compatibility") {
-      return (
-        <Form
-          name="koi_compatibility"
-          onFinish={onFinish}
-          layout="vertical"
-          className="koi-form"
+  const renderCompatibilityForm = () => (
+    <Form
+      name="koi_compatibility"
+      onFinish={onFinish}
+      layout="vertical"
+      className="koi-form"
+    >
+      <Form.Item
+        label="Năm sinh"
+        name="birthYear"
+        rules={[{ required: true, message: "Vui lòng nhập năm sinh" }]}
+      >
+        <Input placeholder="2003" />
+      </Form.Item>
+
+      <Form.Item
+        label="Màu sắc cá koi"
+        name="koiColor"
+        rules={[{ required: true, message: "Vui lòng chọn màu cá koi" }]}
+      >
+        <Select placeholder="Chọn màu cá koi">
+          <Option value="Trắng">Trắng</Option>
+          <Option value="Đỏ">Đỏ</Option>
+          <Option value="Vàng">Vàng</Option>
+          <Option value="Đen">Đen</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item
+        label="Số lượng cá Koi"
+        name="koiNumber"
+        rules={[{ required: true, message: "Vui lòng nhập số lượng" }]}
+      >
+        <Input placeholder="1" />
+      </Form.Item>
+
+      <Form.Item
+        label="Hướng đặt hồ"
+        name="pondDirection"
+        rules={[{ required: true, message: "Vui lòng chọn hướng đặt hồ" }]}
+      >
+        <Select placeholder="Chọn hướng đặt hồ">
+          {[
+            "Đông",
+            "Tây",
+            "Nam",
+            "Bắc",
+            "Đông Nam",
+            "Tây Nam",
+            "Đông Bắc",
+            "Tây Bắc",
+            "Trung tâm",
+          ].map((direction) => (
+            <Option key={direction} value={direction}>
+              {direction}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      <Form.Item
+        label="Hình dạng hồ"
+        name="pondShape"
+        rules={[{ required: true, message: "Vui lòng chọn hình dạng hồ" }]}
+      >
+        <Select placeholder="Chọn hình dạng hồ">
+          {["Vuông", "Tròn", "Chữ nhật", "Hình bầu dục"].map((shape) => (
+            <Option key={shape} value={shape}>
+              {shape}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+
+      <Form.Item>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          className="submit-button"
         >
-          <Form.Item
-            label="Năm sinh"
-            name="birthYear"
-            rules={[{ required: true, message: "Vui lòng nhập năm sinh" }]}
-          >
-            <Input placeholder="2003" />
-          </Form.Item>
+          Tính toán độ phù hợp
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 
-          <Form.Item
-            label="Màu sắc cá koi"
-            name="koiColor"
-            rules={[{ required: true, message: "Vui lòng chọn màu cá koi" }]}
-          >
-            <Select placeholder="Chọn màu cá koi">
-              <Option value="Trắng">Trắng</Option>
-              <Option value="Đỏ">Đỏ</Option>
-              <Option value="Vàng">Vàng</Option>
-              <Option value="Đen">Đen</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Số lượng cá Koi"
-            name="koiNumber"
-            rules={[{ required: true, message: "Vui lòng nhập số lượng" }]}
-          >
-            <Input placeholder="1" />
-          </Form.Item>
-          <Form.Item
-            label="Hướng đặt hồ"
-            name="pondDirection"
-            rules={[{ required: true, message: "Vui lòng chọn hướng đặt hồ" }]}
-          >
-            <Select placeholder="Chọn hướng đặt hồ">
-              <Option value="Đông">Đông</Option>
-              <Option value="Tây">Tây</Option>
-              <Option value="Nam">Nam</Option>
-              <Option value="Bắc">Bắc</Option>
-              <Option value="Đông Nam">Đông Nam</Option>
-              <Option value="Tây Nam">Tây Nam</Option>
-              <Option value="Đông Bắc">Đông Bắc</Option>
-              <Option value="Tây Bắc">Tây Bắc</Option>
-              <Option value="Trung tâm">Trung tâm</Option>
-            </Select>
-          </Form.Item>
+  const renderElementForm = () => (
+    <Form
+      name="element_advice"
+      onFinish={onFinish}
+      layout="vertical"
+      className="koi-form"
+    >
+      <Form.Item
+        label="Năm sinh"
+        name="birthYear"
+        rules={[{ required: true, message: "Vui lòng nhập năm sinh" }]}
+      >
+        <Input placeholder="2003" />
+      </Form.Item>
 
-          <Form.Item
-            label="Hình dạng hồ"
-            name="pondShape"
-            rules={[{ required: true, message: "Vui lòng chọn hình dạng hồ" }]}
-          >
-            <Select placeholder="Chọn hình dạng hồ">
-              <Option value="Vuông">Vuông</Option>
-              <Option value="Tròn">Tròn</Option>
-              <Option value="Chữ nhật">Chữ nhật</Option>
-              <Option value="Hình bầu dục">Hình bầu dục</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className="submit-button">
-              Tính toán độ phù hợp
-            </Button>
-          </Form.Item>
-        </Form>
-      );
-    } else {
-      return (
-        <Form
-          name="element_advice"
-          onFinish={onFinish}
-          layout="vertical"
-          className="koi-form"
+      <Form.Item>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          className="submit-button"
         >
-          <Form.Item
-            label="Năm sinh"
-            name="birthYear"
-            rules={[{ required: true, message: "Vui lòng nhập năm sinh" }]}
-          >
-            <Input placeholder="2003" />
-          </Form.Item>
+          Tính toán bản mệnh
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" className="submit-button">
-              Tính toán bản mệnh
-            </Button>
-          </Form.Item>
-        </Form>
-      );
-    }
-  };
+  const renderCompatibilityResults = () => (
+    <div style={{ textAlign: "center" }}>
+      <Title level={3}>Kết quả đánh giá độ phù hợp</Title>
+      <Text style={{ fontSize: "24px" }}>
+        Điểm số phù hợp của bạn là:{" "}
+        <strong>{results.overallCompatibilityScore.toFixed(2)}%</strong>
+      </Text>
+
+      {results.overallCompatibilityScore < 100 && (
+        <div style={{ marginTop: "20px" }}>
+          <Text style={{ fontSize: "20px", color: "#f5222d" }}>
+            Đề xuất cải thiện:
+          </Text>
+          <div style={{ fontSize: "16px", textAlign: "left" }}>
+            {results.recommendations.map((recommendation, index) => (
+              <Paragraph key={index}>• {recommendation}</Paragraph>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderElementResults = () => (
+    <div>
+      <Title level={3} style={{ textAlign: "center" }}>
+        Kết quả tư vấn bản mệnh
+      </Title>
+      <Descriptions
+        bordered
+        column={1}
+        size="middle"
+        labelStyle={{ fontWeight: "bold", fontSize: "16px" }}
+        contentStyle={{ fontSize: "16px" }}
+      >
+        <Descriptions.Item label="Ngũ hành">
+          {results.element}
+        </Descriptions.Item>
+        <Descriptions.Item label="Con số may mắn">
+          {results.luckyNumbers.join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item label="Giống cá phù hợp">
+          {results.fishBreeds.join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item label="Màu cá phù hợp">
+          {results.fishColors.join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item label="Hình dạng hồ phù hợp">
+          {results.suggestedPonds.join(", ")}
+        </Descriptions.Item>
+        <Descriptions.Item label="Hướng hồ phù hợp">
+          {results.suggestedDirections.join(", ")}
+        </Descriptions.Item>
+      </Descriptions>
+    </div>
+  );
 
   const renderResults = () => {
     if (!results) return null;
 
-    if (formType === "compatibility") {
-      return (
-        <Alert
-          message="Kết quả đánh giá độ phù hợp"
-          description={`Điểm số phù hợp của bạn là: ${results.score}/100`}
-          type="info"
-          showIcon
-        />
-      );
-    } else {
-      return (
-        <Alert
-          message="Kết quả tư vấn bản mệnh"
-          description={
-            <div>
-              <Text>Ngũ hành: {results.element}</Text>
-              <br />
-              <Text>Con số may mắn: {results.luckyNumber}</Text>
-              <br />
-              <Text>Màu sắc phù hợp: {results.fitColor}</Text>
-              <br />
-              <Text>Giống cá phù hợp: {results.fishBreed}</Text>
-              <br />
-              <Text>Màu cá phù hợp: {results.fishColor}</Text>
-              <br />
-              <Text>Hình dạng hồ phù hợp: {results.pondShape}</Text>
-              <br />
-              <Text>Hướng hồ phù hợp: {results.pondDirection}</Text>
-            </div>
-          }
-          type="info"
-          showIcon
-        />
-      );
-    }
+    return (
+      <Card
+        bordered={false}
+        style={{
+          margin: "20px 0",
+          padding: "20px",
+          background: "#f6f9ff",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          borderRadius: "8px",
+        }}
+      >
+        <Row justify="center" align="middle">
+          <Col span={24}>
+            {formType === "compatibility"
+              ? renderCompatibilityResults()
+              : renderElementResults()}
+          </Col>
+        </Row>
+      </Card>
+    );
   };
 
   return (
@@ -235,7 +287,9 @@ const KoiCompatibilityForm = () => {
               ? "Đánh giá độ phù hợp"
               : "Tư vấn bản mệnh"}
           </Title>
-          {renderForm()}
+          {formType === "compatibility"
+            ? renderCompatibilityForm()
+            : renderElementForm()}
           {renderResults()}
         </Card>
       </main>
