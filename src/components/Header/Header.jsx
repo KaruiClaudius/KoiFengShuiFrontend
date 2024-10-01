@@ -21,8 +21,7 @@ import {
   CloudUpload as CloudUploadIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
-import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios"; // Make sure to install axios if not already installed
+import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Logo_SWP.svg";
 
 const Search = styled("div")(({ theme }) => ({
@@ -86,39 +85,29 @@ const categories = [
 
 const AppHeader = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [userRole, setUserRole] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [categoryAnchorEl, setCategoryAnchorEl] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const email = localStorage.getItem("email");
+    const user = JSON.parse(localStorage.getItem("user"));
     setIsLoggedIn(!!token);
 
-    if (token && email) {
-      fetchUserData(email, token);
-    }
-  }, [navigate, location.pathname]);
-
-  const fetchUserData = async (email, token) => {
-    try {
-      const response = await axios.get(`/api/users/email/${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const userData = response.data;
-      setFullName(userData.fullName);
+    if (token && user) {
+      setFullName(user.fullName);
+      setUserRole(user.roleId);
       setAvatarUrl(
         `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-          userData.fullName
+          user.fullName
         )}`
       );
-    } catch (error) {
-      console.error("Error fetching user data:", error);
     }
-  };
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -246,6 +235,11 @@ const AppHeader = () => {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
+              {userRole === 1 && (
+                <MenuItem onClick={() => navigate("/dashboard")}>
+                  Dashboard
+                </MenuItem>
+              )}
               <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
@@ -260,17 +254,19 @@ const AppHeader = () => {
           </Button>
         )}
 
-        <Button
-          variant="contained"
-          startIcon={<CloudUploadIcon />}
-          sx={{
-            ml: 2,
-            backgroundColor: "#ff4d4f",
-            "&:hover": { backgroundColor: "#ff7875" },
-          }}
-        >
-          Đăng tin
-        </Button>
+        {isLoggedIn && (
+          <Button
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+            sx={{
+              ml: 2,
+              backgroundColor: "#ff4d4f",
+              "&:hover": { backgroundColor: "#ff7875" },
+            }}
+          >
+            Đăng tin
+          </Button>
+        )}
       </Toolbar>
     </AppBar>
   );

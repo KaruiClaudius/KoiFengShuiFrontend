@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { FaEye, FaEyeSlash, FaSearch } from "react-icons/fa";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 const HomePage = () => {

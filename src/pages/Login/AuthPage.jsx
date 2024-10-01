@@ -61,21 +61,32 @@ export default function AuthPage() {
     // let data;
     switch (authMode) {
       case "signin":
-        // handle Login here
         try {
           const response = await api.post("api/Auth/SignIn", {
             email: formData.get("email"),
             password: formData.get("password"),
           });
-          const { token } = response.data;
+          const { token, email } = response.data;
           localStorage.setItem("token", token);
-          localStorage.setItem("user", JSON.stringify(response.data));
+          localStorage.setItem("email", email);
+
+          // Fetch user details
+          const userDetailsResponse = await api.get(
+            `api/Account/email/${email}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const userDetails = userDetailsResponse.data;
+
+          // Store user details in localStorage
+          localStorage.setItem("user", JSON.stringify(userDetails));
+
           navigate("/");
         } catch (err) {
           console.log(err);
           alert(err.response?.data || "An error occurred during login");
         }
-
         break;
       case "signup":
         // handle SignUp
