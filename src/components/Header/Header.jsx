@@ -87,20 +87,9 @@ const AppHeader = () => {
           sx={{
             height: "64px",
             mr: 4,
-            // Option 1: Adjust brightness and contrast
             filter: "brightness(1.1) contrast(1.1)",
-
-            // Option 2: Use a combination of blend modes
             mixBlendMode: "screen",
-            backgroundColor: "#231815", // Match AppBar background
-
-            // Option 3: If logo is dark, try this
-            // filter: "invert(1)",
-
-            // Option 4: Use object-fit to crop any white space
-            // objectFit: "contain",
-
-            // Hover effect for better user experience
+            backgroundColor: "#231815",
             "&:hover": {
               cursor: "pointer",
               opacity: 0.8,

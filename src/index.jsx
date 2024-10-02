@@ -7,6 +7,7 @@ import AuthPage from "./pages/Login/AuthPage";
 import DashboardDefault from "./pages/Dashboard";
 import HomePage from "./pages/Homepage/Homepage";
 import KoiCompatibilityForm from "./pages/KoiCompatible/KoiCompatibilityForm ";
+import UserProfile from "./pages/UserProfile/UserProfile";
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/Dashboard" element={<DashboardDefault />} />
           <Route path="/" element={<HomePage />} />
           <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
+          <Route path="/profile" element={<UserProfile />} />
         </Routes>
       </Router>
     </StyledEngineProvider>

@@ -16,11 +16,9 @@ import Box from "@mui/material/Box";
 import MainCard from "../../components/MainCard";
 import AnalyticEcommerce from "../../components/cards/statistics/AnalyticEcommerce";
 import MonthlyBarChart from "./MonthlyBarChart";
-import ReportAreaChart from "./ReportAreaChart";
 import UniqueVisitorCard from "./UniqueVisitorCard";
 // import SaleReportCard from "./SaleReportCard";
 import OrdersTable from "./OrdersTable";
-import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import DashboardSidebar from "../../components/Sidebar/Sidebar";
 
@@ -28,7 +26,6 @@ import DashboardSidebar from "../../components/Sidebar/Sidebar";
 import GiftOutlined from "@ant-design/icons/GiftOutlined";
 import MessageOutlined from "@ant-design/icons/MessageOutlined";
 import SettingOutlined from "@ant-design/icons/SettingOutlined";
-import { alignProperty } from "@mui/material/styles/cssUtils";
 
 // avatar style
 const avatarSX = {
