@@ -15,7 +15,7 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import Logo from "../../assets/Logo_SWP.svg";
+import Logo from "../../assets/koi-svgrepo-com.svg";
 
 const AppHeader = () => {
   const navigate = useNavigate();
@@ -89,7 +89,7 @@ const AppHeader = () => {
             mr: 4,
             filter: "brightness(1.1) contrast(1.1)",
             mixBlendMode: "screen",
-            backgroundColor: "#231815",
+            backgroundColor: "transparent",
             "&:hover": {
               cursor: "pointer",
               opacity: 0.8,

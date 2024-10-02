@@ -31,4 +31,8 @@ export const getFengShuiConsultation = (data) => {
   return api.post("/api/Consultation/fengshui", data);
 };
 
+export const getFengShuiKoiFishPost = (data) => {
+  return api.post("/api/Post", data);
+};
+
 export default api;
