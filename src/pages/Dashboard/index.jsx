@@ -28,6 +28,7 @@ import DashboardSidebar from "../../components/Sidebar/Sidebar";
 import GiftOutlined from "@ant-design/icons/GiftOutlined";
 import MessageOutlined from "@ant-design/icons/MessageOutlined";
 import SettingOutlined from "@ant-design/icons/SettingOutlined";
+import { alignProperty } from "@mui/material/styles/cssUtils";
 
 // avatar style
 const avatarSX = {
@@ -58,14 +59,17 @@ export default function DashboardDefault() {
         backgroundColor: "#14335c",
       }}
     >
-      <AppHeader />
-      <Box sx={{ display: "flex", flexGrow: 1 }}>
+      {/* <AppHeader /> */}
+      <Box sx={{ display: "flex", flexGrow: 1, overflow: "hidden" }}>
         <DashboardSidebar />
         <Box
           component="main"
           sx={{
             flexGrow: 1,
             p: 3,
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
@@ -77,38 +81,38 @@ export default function DashboardDefault() {
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
-                title="Total Page Views"
+                title="Tiền dịch vụ"
                 count="4,42,236"
-                percentage={59.3}
-                extra="35,000"
+                // percentage={59.3}
+                // extra="35,000"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
-                title="Total Users"
+                title="AVG Revenue"
                 count="78,250"
-                percentage={70.5}
-                extra="8,900"
+                // percentage={70.5}
+                // extra="8,900"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
-                title="Total Order"
+                title="Người dùng mới"
                 count="18,800"
-                percentage={27.4}
-                isLoss
+                // percentage={27.4}
+                // isLoss
                 color="warning"
-                extra="1,943"
+                // extra="1,943"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
-                title="Total Sales"
+                title="Bài đăng mới"
                 count="$35,078"
-                percentage={27.4}
-                isLoss
+                // percentage={27.4}
+                // isLoss
                 color="warning"
-                extra="$20,395"
+                // extra="$20,395"
               />
             </Grid>
 
@@ -122,6 +126,7 @@ export default function DashboardDefault() {
             <Grid item xs={12} md={7} lg={8}>
               <UniqueVisitorCard />
             </Grid>
+
             <Grid item xs={12} md={5} lg={4}>
               <Grid
                 container
@@ -129,7 +134,9 @@ export default function DashboardDefault() {
                 justifyContent="space-between"
               >
                 <Grid item>
-                  <Typography variant="h5">Income Overview</Typography>
+                  <Typography variant="h5" color="white">
+                    Lượng truy cập
+                  </Typography>
                 </Grid>
                 <Grid item />
               </Grid>
@@ -137,9 +144,9 @@ export default function DashboardDefault() {
                 <Box sx={{ p: 3, pb: 0 }}>
                   <Stack spacing={2}>
                     <Typography variant="h6" color="text.secondary">
-                      This Week Statistics
+                      Thống kê tuần này
                     </Typography>
-                    <Typography variant="h3">$7,650</Typography>
+                    {/* <Typography variant="h3">7,650 người</Typography> */}
                   </Stack>
                 </Box>
                 <MonthlyBarChart />
@@ -154,7 +161,9 @@ export default function DashboardDefault() {
                 justifyContent="space-between"
               >
                 <Grid item>
-                  <Typography variant="h5">Recent Orders</Typography>
+                  <Typography variant="h5" color="white">
+                    Bài đăng gần đây
+                  </Typography>
                 </Grid>
                 <Grid item />
               </Grid>
@@ -162,51 +171,14 @@ export default function DashboardDefault() {
                 <OrdersTable />
               </MainCard>
             </Grid>
-            <Grid item xs={12} md={5} lg={4}>
-              <Grid
-                container
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Grid item>
-                  <Typography variant="h5">Analytics Report</Typography>
-                </Grid>
-                <Grid item />
-              </Grid>
-              <MainCard sx={{ mt: 2 }} content={false}>
-                <List sx={{ p: 0, "& .MuiListItemButton-root": { py: 2 } }}>
-                  <ListItemButton divider>
-                    <ListItemText primary="Company Finance Growth" />
-                    <Typography variant="h5">+45.14%</Typography>
-                  </ListItemButton>
-                  <ListItemButton divider>
-                    <ListItemText primary="Company Expenses Ratio" />
-                    <Typography variant="h5">0.58%</Typography>
-                  </ListItemButton>
-                  <ListItemButton>
-                    <ListItemText primary="Business Risk Cases" />
-                    <Typography variant="h5">Low</Typography>
-                  </ListItemButton>
-                </List>
-                <ReportAreaChart />
-              </MainCard>
-            </Grid>
 
-            {/* row 4 */}
-            <Grid item xs={12} md={7} lg={8}>
-              {/* <SaleReportCard /> */}
-            </Grid>
             <Grid item xs={12} md={5} lg={4}>
-              <Grid
-                container
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Grid item>
-                  <Typography variant="h5">Transaction History</Typography>
-                </Grid>
-                <Grid item />
+              <Grid item>
+                <Typography variant="h5" color="white">
+                  Người dùng mới
+                </Typography>
               </Grid>
+              <Grid item />
               <MainCard sx={{ mt: 2 }} content={false}>
                 <List
                   component="nav"
@@ -243,14 +215,7 @@ export default function DashboardDefault() {
                       secondary="Today, 2:00 AM"
                     />
                     <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end">
-                        <Typography variant="subtitle1" noWrap>
-                          + $1,430
-                        </Typography>
-                        <Typography variant="h6" color="secondary" noWrap>
-                          78%
-                        </Typography>
-                      </Stack>
+                      <Stack alignItems="flex-end"></Stack>
                     </ListItemSecondaryAction>
                   </ListItemButton>
                   <ListItemButton divider>
@@ -273,14 +238,7 @@ export default function DashboardDefault() {
                       secondary="5 August, 1:45 PM"
                     />
                     <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end">
-                        <Typography variant="subtitle1" noWrap>
-                          + $302
-                        </Typography>
-                        <Typography variant="h6" color="secondary" noWrap>
-                          8%
-                        </Typography>
-                      </Stack>
+                      <Stack alignItems="flex-end"></Stack>
                     </ListItemSecondaryAction>
                   </ListItemButton>
                   <ListItemButton>
@@ -300,51 +258,23 @@ export default function DashboardDefault() {
                       secondary="7 hours ago"
                     />
                     <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end">
-                        <Typography variant="subtitle1" noWrap>
-                          + $682
-                        </Typography>
-                        <Typography variant="h6" color="secondary" noWrap>
-                          16%
-                        </Typography>
-                      </Stack>
+                      <Stack alignItems="flex-end"></Stack>
                     </ListItemSecondaryAction>
                   </ListItemButton>
                 </List>
               </MainCard>
-              {/* <MainCard sx={{ mt: 2 }}>
-          <Stack spacing={3}>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <Stack>
-                  <Typography variant="h5" noWrap>
-                    Help & Support Chat
-                  </Typography>
-                  <Typography variant="caption" color="secondary" noWrap>
-                    Typical replay within 5 min
-                  </Typography>
-                </Stack>
-              </Grid>
-              <Grid item>
-                <AvatarGroup
-                  sx={{ "& .MuiAvatar-root": { width: 32, height: 32 } }}
-                >
-                  <Avatar alt="Remy Sharp" src={avatar1} />
-                  <Avatar alt="Travis Howard" src={avatar2} />
-                  <Avatar alt="Cindy Baker" src={avatar3} />
-                  <Avatar alt="Agnes Walker" src={avatar4} />
-                </AvatarGroup>
-              </Grid>
             </Grid>
-            <Button
-              size="small"
-              variant="contained"
-              sx={{ textTransform: "capitalize" }}
-            >
-              Need Help?
-            </Button>
-          </Stack>
-        </MainCard> */}
+
+            {/* row 4 */}
+            <Grid item xs={12} md={7} lg={8}>
+              {/* <SaleReportCard /> */}
+            </Grid>
+            <Grid item xs={12} md={5} lg={4}>
+              <Grid
+                container
+                alignItems="center"
+                justifyContent="space-between"
+              ></Grid>
             </Grid>
           </Grid>
         </Box>

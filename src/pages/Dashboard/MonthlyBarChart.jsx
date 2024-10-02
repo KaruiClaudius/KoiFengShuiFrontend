@@ -1,80 +1,92 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
+import { useTheme } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import ReactApexChart from "react-apexcharts";
 
-// material-ui
-import { useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-
-// third-party
-import ReactApexChart from 'react-apexcharts';
-
-// chart options
-const barChartOptions = {
+const pieChartOptions = {
   chart: {
-    type: 'bar',
+    type: "donut",
     height: 365,
-    toolbar: {
-      show: false
-    }
   },
-  plotOptions: {
-    bar: {
-      columnWidth: '45%',
-      borderRadius: 4
-    }
+  labels: ["Registered Users", "Guests"],
+  legend: {
+    show: true,
+    position: "bottom",
   },
   dataLabels: {
-    enabled: false
-  },
-  xaxis: {
-    categories: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
-    axisBorder: {
-      show: false
+    enabled: true,
+    formatter: function (val) {
+      return val.toFixed(1) + "%";
     },
-    axisTicks: {
-      show: false
-    }
   },
-  yaxis: {
-    show: false
+  plotOptions: {
+    pie: {
+      donut: {
+        size: "70%",
+        labels: {
+          show: true,
+          total: {
+            show: true,
+            label: "Total Traffic",
+            formatter: function (w) {
+              return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+            },
+          },
+        },
+      },
+    },
   },
-  grid: {
-    show: false
-  }
 };
 
-// ==============================|| MONTHLY BAR CHART ||============================== //
-
-export default function MonthlyBarChart() {
+export default function TrafficDistributionChart() {
   const theme = useTheme();
 
   const { primary, secondary } = theme.palette.text;
   const info = theme.palette.info.light;
+  const warning = theme.palette.warning.light;
 
-  const [series] = useState([
-    {
-      data: [80, 95, 70, 42, 65, 55, 78]
-    }
-  ]);
-
-  const [options, setOptions] = useState(barChartOptions);
+  const [series, setSeries] = useState([60, 40]); // Example data: 60% registered, 40% guests
+  const [options, setOptions] = useState(pieChartOptions);
 
   useEffect(() => {
     setOptions((prevState) => ({
       ...prevState,
-      colors: [info],
-      xaxis: {
+      colors: [info, warning],
+      theme: {
+        mode: theme.palette.mode,
+      },
+      legend: {
         labels: {
-          style: {
-            colors: [secondary, secondary, secondary, secondary, secondary, secondary, secondary]
-          }
-        }
-      }
+          colors: secondary,
+        },
+      },
+      plotOptions: {
+        ...prevState.plotOptions,
+        pie: {
+          ...prevState.plotOptions.pie,
+          donut: {
+            ...prevState.plotOptions.pie.donut,
+            labels: {
+              ...prevState.plotOptions.pie.donut.labels,
+              total: {
+                ...prevState.plotOptions.pie.donut.labels.total,
+                color: secondary,
+              },
+            },
+          },
+        },
+      },
     }));
-  }, [primary, info, secondary]);
+  }, [theme, info, warning, secondary]);
 
   return (
-    <Box id="chart" sx={{ bgcolor: 'transparent' }}>
-      <ReactApexChart options={options} series={series} type="bar" height={365} />
+    <Box id="chart" sx={{ bgcolor: "transparent" }}>
+      <ReactApexChart
+        options={options}
+        series={series}
+        type="donut"
+        height={365}
+      />
     </Box>
   );
 }

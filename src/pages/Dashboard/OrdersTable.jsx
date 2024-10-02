@@ -12,7 +12,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 // third-party
-import { NumericFormat } from "react-number-format";
+// import { NumericFormat } from "react-number-format";
 
 // project import
 import Dot from "../../components/@extended/Dot";
@@ -27,11 +27,6 @@ const rows = [
   createData(98756325, "Mobile", 355, 1, 90989),
   createData(98652366, "Handset", 50, 1, 10239),
   createData(13286564, "Computer Accessories", 100, 1, 83348),
-  createData(86739658, "TV", 99, 0, 410780),
-  createData(13256498, "Keyboard", 125, 2, 70999),
-  createData(98753263, "Mouse", 89, 2, 10570),
-  createData(98753275, "Desktop", 185, 1, 98063),
-  createData(98753291, "Chair", 100, 0, 14001),
 ];
 
 function descendingComparator(a, b, orderBy) {
@@ -67,32 +62,19 @@ const headCells = [
     id: "tracking_no",
     align: "left",
     disablePadding: false,
-    label: "Tracking No.",
+    label: "Id",
   },
   {
     id: "name",
     align: "left",
     disablePadding: true,
-    label: "Product Name",
+    label: "Tên",
   },
   {
-    id: "fat",
-    align: "right",
-    disablePadding: false,
-    label: "Total Order",
-  },
-  {
-    id: "carbs",
+    id: "status",
     align: "left",
     disablePadding: false,
-
-    label: "Status",
-  },
-  {
-    id: "protein",
-    align: "right",
-    disablePadding: false,
-    label: "Total Amount",
+    label: "Trạng thái",
   },
 ];
 
@@ -124,15 +106,15 @@ function OrderStatus({ status }) {
   switch (status) {
     case 0:
       color = "warning";
-      title = "Pending";
+      title = "Đang chờ";
       break;
     case 1:
       color = "success";
-      title = "Approved";
+      title = "Đồng ý";
       break;
     case 2:
       color = "error";
-      title = "Rejected";
+      title = "Từ chối";
       break;
     default:
       color = "primary";
@@ -184,17 +166,8 @@ export default function OrderTable() {
                       <Link color="secondary"> {row.tracking_no}</Link>
                     </TableCell>
                     <TableCell>{row.name}</TableCell>
-                    <TableCell align="right">{row.fat}</TableCell>
                     <TableCell>
                       <OrderStatus status={row.carbs} />
-                    </TableCell>
-                    <TableCell align="right">
-                      <NumericFormat
-                        value={row.protein}
-                        displayType="text"
-                        thousandSeparator
-                        prefix="$"
-                      />
                     </TableCell>
                   </TableRow>
                 );

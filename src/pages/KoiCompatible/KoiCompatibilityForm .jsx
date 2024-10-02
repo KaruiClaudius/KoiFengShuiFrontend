@@ -10,6 +10,7 @@ import {
   Typography,
   Descriptions,
   message,
+  Layout,
 } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
@@ -20,6 +21,7 @@ import {
 
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;
+const { Content } = Layout;
 
 const KoiCompatibilityForm = () => {
   const [formType, setFormType] = useState("compatibility");
@@ -250,54 +252,54 @@ const KoiCompatibilityForm = () => {
   };
 
   return (
-    <div className="page-container">
-      <header style={{ marginBottom: "24px" }}>
-        <AppHeader />
-      </header>
+    <Layout
+      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+    >
+      <AppHeader />
+      <Content style={{ flex: 1, padding: "0 50px", marginTop: 64 }}>
+        <div
+          style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px 0" }}
+        >
+          <Row gutter={16} style={{ marginBottom: "24px" }}>
+            <Col span={12}>
+              <Button
+                block
+                className={
+                  formType === "element" ? "btnElement active" : "btnElement"
+                }
+                onClick={() => setFormType("element")}
+              >
+                Tư vấn bản mệnh
+              </Button>
+            </Col>
+            <Col span={12}>
+              <Button
+                block
+                className={
+                  formType === "compatibility" ? "btnCompa active" : "btnCompa"
+                }
+                onClick={() => setFormType("compatibility")}
+              >
+                Đánh giá độ phù hợp
+              </Button>
+            </Col>
+          </Row>
 
-      <Row gutter={16} style={{ marginBottom: "24px" }}>
-        <Col span={12}>
-          <Button
-            block
-            className={
-              formType === "element" ? "btnElement active" : "btnElement"
-            }
-            onClick={() => setFormType("element")}
-          >
-            Tư vấn bản mệnh
-          </Button>
-        </Col>
-        <Col span={12}>
-          <Button
-            block
-            className={
-              formType === "compatibility" ? "btnCompa active" : "btnCompa"
-            }
-            onClick={() => setFormType("compatibility")}
-          >
-            Đánh giá độ phù hợp
-          </Button>
-        </Col>
-      </Row>
-
-      <main className="compatibility-form-container">
-        <Card className="compatibility-card" bordered={false}>
-          <Title level={2}>
+          <Card className="compatibility-card" bordered={false}>
+            <Title level={2}>
+              {formType === "compatibility"
+                ? "Đánh giá độ phù hợp"
+                : "Tư vấn bản mệnh"}
+            </Title>
             {formType === "compatibility"
-              ? "Đánh giá độ phù hợp"
-              : "Tư vấn bản mệnh"}
-          </Title>
-          {formType === "compatibility"
-            ? renderCompatibilityForm()
-            : renderElementForm()}
-          {renderResults()}
-        </Card>
-      </main>
-
-      <footer className="site-footer">
-        <FooterComponent />
-      </footer>
-    </div>
+              ? renderCompatibilityForm()
+              : renderElementForm()}
+            {renderResults()}
+          </Card>
+        </div>
+      </Content>
+      <FooterComponent />
+    </Layout>
   );
 };
 

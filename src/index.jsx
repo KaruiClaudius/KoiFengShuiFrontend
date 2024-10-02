@@ -7,6 +7,7 @@ import AuthPage from "./pages/Login/AuthPage";
 import DashboardDefault from "./pages/Dashboard";
 import HomePage from "./pages/Homepage/Homepage";
 import KoiCompatibilityForm from "./pages/KoiCompatible/KoiCompatibilityForm ";
+import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";

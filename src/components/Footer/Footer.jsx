@@ -1,177 +1,65 @@
-// FooterComponent.jsx
 import React from "react";
-import { Layout, Row, Col, Button } from "antd";
-import {
-  MailOutlined,
-  PhoneOutlined,
-  FacebookOutlined,
-  GoogleOutlined,
-} from "@ant-design/icons";
-// import "./FooterComponent.css"; // We'll use this for custom styling.
-
+import { Layout, Row, Col } from "antd";
+import Logo from "../../assets/Logo_SWP.svg";
 const { Footer } = Layout;
 
 const FooterComponent = () => {
   return (
     <Footer
-      className="footer"
       style={{
-        width: "95%",
+        backgroundColor: "#2c1b18",
+        color: "#d3b58d",
+        padding: "20px 50px",
+        textAlign: "left",
       }}
     >
-      <Row justify="space-between" align="middle">
-        <Col xs={24} md={6} className="footer-logo-qrcode">
-          <img
-            src="https://picsum.photos/200"
-            alt="Logo"
-            className="logo"
-            style={{ marginRight: "10px" }}
-          />
-          <img
-            src="https://picsum.photos/200"
-            alt="QR Code"
-            className="qrcode"
-          />
-        </Col>
-
+      <Row justify="space-between" align="top">
         <Col xs={24} md={4}>
-          <h3>HƯỚNG DẪN</h3>
-          <ul className="footer-links">
-            <li>
-              <a href="/about-us" target="_blank" rel="noopener noreferrer">
-                Về chúng tôi
-              </a>
-            </li>
-            <li>
-              <a
-                href="/pricing-support"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Báo giá & hỗ trợ
-              </a>
-            </li>
-            <li>
-              <a href="/faq" target="_blank" rel="noopener noreferrer">
-                Câu hỏi thường gặp
-              </a>
-            </li>
-            <li>
-              <a href="/report-bugs" target="_blank" rel="noopener noreferrer">
-                Góp ý báo lỗi
-              </a>
-            </li>
-          </ul>
-        </Col>
-
-        <Col xs={24} md={6}>
-          <h3>QUY ĐỊNH</h3>
-          <ul className="footer-links">
-            <li>
-              <a
-                href="/posting-rules"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Quy định đăng tin
-              </a>
-            </li>
-            <li>
-              <a
-                href="/terms-agreement"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Điều khoản thỏa thuận
-              </a>
-            </li>
-            <li>
-              <a
-                href="/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Chính sách bảo mật
-              </a>
-            </li>
-            <li>
-              <a
-                href="/complaint-resolution"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Giải quyết khiếu nại
-              </a>
-            </li>
-          </ul>
-        </Col>
-
-        <Col
-          xs={24}
-          md={6}
-          className="footer-contact"
-          style={{ fontSize: "18px", fontWeight: "bold" }}
-        >
-          <h4>Chăm sóc khách hàng</h4>
-          <MailOutlined style={{ fontSize: "24px", marginRight: "10px" }} />
-          <span>trogiup@uninest.com.vn</span>
-          <br />
-          <h4>Hotline</h4>
-          <PhoneOutlined
-            style={{ fontSize: "24px", marginRight: "10px", marginTop: "10px" }}
-          />
-          <span>1900 1886</span>
-        </Col>
-
-        <Col xs={24} md={6} className="footer-contact">
-          <h3>CHỨNG NHẬN</h3>
           <img
-            src="https://pos.nvncdn.com/b47809-47548/art/artCT/20190711_9MTXY8s2VKUAvSRYYKpweJkb.jpg"
-            alt="Chứng nhận"
-            style={{ marginLeft: "0px", width: "150px" }} // Adjust the image width as necessary
+            src={Logo}
+            alt="Logo"
+            style={{ width: "100px", marginBottom: "10px", height: 100 }}
           />
         </Col>
-        <Col xs={24} md={6} className="footer-social">
-          <h3>LIÊN KẾT</h3>
 
-          <Button
-            type="link"
-            shape="circle"
-            icon={<FacebookOutlined style={{ fontSize: "24px" }} />}
-            href="https://www.facebook.com"
-            target="_blank"
-            style={{ marginRight: "10px" }}
-          />
+        <Col xs={24} md={8}>
+          <h3 style={{ color: "#d3b58d" }}>Về chúng tôi</h3>
+          <p>
+            Koi Feng Shui - Cân Bằng Phong Thủy, Koi Vượng Tài Lộc!
+            <br />
+            Koi Feng Shui là điểm đến lý tưởng cho những người yêu thích cá Koi
+            và nghệ thuật tạo cảnh hồ cá. Chúng tôi tự hào cung cấp:
+            <ul>
+              <li>Cá Koi chất lượng cao từ các trại giống uy tín</li>
+              <li>Đa dạng sản phẩm trang trí và thiết bị cho hồ cá Koi</li>
+              <li>
+                Tư vấn chuyên sâu về cá Koi thông qua các bài blog chia sẻ kinh
+                nghiệm
+              </li>
+            </ul>
+          </p>
+        </Col>
 
-          <Button
-            type="link"
-            shape="circle"
-            icon={<GoogleOutlined style={{ fontSize: "24px" }} />}
-            href="https://www.google.com"
-            target="_blank"
-            style={{ marginRight: "10px" }}
-          />
-
-          <Button
-            type="link"
-            shape="circle"
-            href="https://zalo.me"
-            target="_blank"
-            style={{
-              padding: 0,
-              width: "34px",
-              height: "34px",
-              borderRadius: "50%",
-            }} // adjust size as needed
-          >
-            <img
-              src="https://cdn.haitrieu.com/wp-content/uploads/2022/01/Logo-Zalo-Arc.png"
-              alt="Zalo"
-              style={{ width: "24px" }}
-            />
-          </Button>
+        <Col xs={24} md={8}>
+          <h3 style={{ color: "#d3b58d" }}>Thông tin liên hệ</h3>
+          <p>
+            + Hotline 24/7: xxxx.xxxx.xxxx
+            <br />+ Email: koifengshui@gmail.com
+          </p>
+          <p>Thiết kế & duy trì bởi Koi Feng Shui | koifengshui.com.vn</p>
         </Col>
       </Row>
+      <div
+        style={{
+          backgroundColor: "#e63946",
+          color: "#fff",
+          textAlign: "center",
+          padding: "5px 0",
+          marginTop: "20px",
+        }}
+      >
+        @ Copy right 2024
+      </div>
     </Footer>
   );
 };

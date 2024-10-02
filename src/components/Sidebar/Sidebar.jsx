@@ -10,6 +10,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ApprovalIcon from "@mui/icons-material/Approval";
+import AppHeader from "../Header/Header";
 
 const drawerWidth = 240;
 
@@ -26,36 +27,46 @@ const DashboardSidebar = () => {
   ];
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
+    <Box sx={{ display: "flex", flexGrow: 1 }}>
+      <AppHeader />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+        }}
+      ></Box>
+      <Drawer
+        variant="permanent"
+        sx={{
           width: drawerWidth,
-          boxSizing: "border-box",
-          top: "64px", // Adjust this value based on your AppHeader height
-          height: "calc(100% - 64px)", // Adjust this value based on your AppHeader height
-        },
-      }}
-    >
-      <Box sx={{ overflow: "auto" }}>
-        <List>
-          {menuItems.map((item) => (
-            <ListItem
-              button
-              key={item.text}
-              component={Link}
-              to={item.path}
-              selected={location.pathname === item.path}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-    </Drawer>
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            top: "64px", // Adjust this value based on your AppHeader height
+            height: "calc(100% - 64px)", // Adjust this value based on your AppHeader height
+          },
+        }}
+      >
+        <Box sx={{ overflow: "auto" }}>
+          <List>
+            {menuItems.map((item) => (
+              <ListItem
+                button
+                key={item.text}
+                component={Link}
+                to={item.path}
+                selected={location.pathname === item.path}
+              >
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
+    </Box>
   );
 };
 

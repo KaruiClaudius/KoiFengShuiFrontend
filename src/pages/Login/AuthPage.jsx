@@ -35,13 +35,13 @@ export default function AuthPage() {
   };
 
   const CompanyLogoButton = () => (
-    <IconButton sx={{ padding: 2, width: 64, height: 64 }}>
+    <IconButton sx={{ padding: 2, width: 98, height: 98 }}>
       <img
         src={KoiLogo}
         alt="Company Logo"
         style={{
-          width: 64,
-          height: 64,
+          width: 90,
+          height: 90,
           objectFit: "contain",
         }}
       />

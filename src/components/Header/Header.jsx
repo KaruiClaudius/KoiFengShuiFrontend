@@ -4,94 +4,26 @@ import {
   Toolbar,
   Typography,
   Button,
-  InputBase,
   Avatar,
   Menu,
   MenuItem,
   IconButton,
   Box,
 } from "@mui/material";
-import { styled, alpha } from "@mui/material/styles";
 import {
-  Notifications as NotificationsIcon,
-  Message as MessageIcon,
-  Description as DescriptionIcon,
-  Search as SearchIcon,
-  Menu as MenuIcon,
   CloudUpload as CloudUploadIcon,
   Person as PersonIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Logo_SWP.svg";
 
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(3),
-    width: "auto",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: "60ch",
-    },
-  },
-}));
-
-const categories = [
-  {
-    label: "Category",
-    key: "SubMenu",
-    icon: <MenuIcon />,
-    children: [
-      {
-        label: "Thuê nhà",
-        key: "setting:1",
-        navigate: "/renting",
-      },
-      {
-        label: "Dịch vụ bên thứ ba",
-        key: "setting:2",
-        navigate: "/services",
-      },
-    ],
-  },
-];
-
 const AppHeader = () => {
   const navigate = useNavigate();
-  // const location = useLocation();
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [fullName, setFullName] = useState("");
   const [userRole, setUserRole] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [categoryAnchorEl, setCategoryAnchorEl] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -128,20 +60,25 @@ const AppHeader = () => {
     setAnchorEl(null);
   };
 
-  const handleCategoryMenu = (event) => {
-    setCategoryAnchorEl(event.currentTarget);
-  };
-
-  const handleCategoryClose = () => {
-    setCategoryAnchorEl(null);
-  };
-
   const handleLogoClick = () => {
     navigate("/");
   };
 
+  const sellingFishClick = () => {
+    navigate("/sellingFish");
+  };
+  const koiCompatible = () => {
+    navigate("/KoiCompatible");
+  };
+  const blogClick = () => {
+    navigate("/blog");
+  };
+  const faqClick = () => {
+    navigate("/faq");
+  };
+
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#F9A825" }}>
+    <AppBar sx={{ backgroundColor: "#231815" }}>
       <Toolbar>
         <Box
           component="img"
@@ -149,64 +86,88 @@ const AppHeader = () => {
           alt="UNINEST"
           sx={{
             height: "64px",
-            mixBlendMode: "multiply", // This can help with white backgrounds
-            backgroundColor: "transparent",
+            mr: 4,
+            // Option 1: Adjust brightness and contrast
+            filter: "brightness(1.1) contrast(1.1)",
+
+            // Option 2: Use a combination of blend modes
+            mixBlendMode: "screen",
+            backgroundColor: "#231815", // Match AppBar background
+
+            // Option 3: If logo is dark, try this
+            // filter: "invert(1)",
+
+            // Option 4: Use object-fit to crop any white space
+            // objectFit: "contain",
+
+            // Hover effect for better user experience
+            "&:hover": {
+              cursor: "pointer",
+              opacity: 0.8,
+            },
           }}
           onClick={handleLogoClick}
         />
 
-        <IconButton
-          size="large"
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          onClick={handleCategoryMenu}
-          sx={{ ml: 2 }}
+        <Box sx={{ flexGrow: 1 }} />
+        <Typography
+          variant="h6"
+          sx={{
+            ml: 1,
+            mr: 7,
+            "&:hover": {
+              cursor: "pointer",
+              opacity: 0.8,
+            },
+          }}
+          onClick={sellingFishClick}
         >
-          <MenuIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ ml: 1 }}>
-          Categories
+          Mua bán cá Koi
         </Typography>
-        <Menu
-          anchorEl={categoryAnchorEl}
-          open={Boolean(categoryAnchorEl)}
-          onClose={handleCategoryClose}
+        <Typography
+          variant="h6"
+          sx={{
+            ml: 1,
+            mr: 7,
+            "&:hover": {
+              cursor: "pointer",
+              opacity: 0.8,
+            },
+          }}
+          onClick={koiCompatible}
         >
-          {categories[0].children.map((item) => (
-            <MenuItem
-              key={item.key}
-              onClick={() => {
-                handleCategoryClose();
-                navigate(item.navigate);
-              }}
-            >
-              {item.label}
-            </MenuItem>
-          ))}
-        </Menu>
-
-        <Search>
-          <SearchIconWrapper>
-            <SearchIcon />
-          </SearchIconWrapper>
-          <StyledInputBase
-            placeholder="Search…"
-            inputProps={{ "aria-label": "search" }}
-          />
-        </Search>
+          Tư vấn bản mệnh
+        </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            ml: 1,
+            mr: 7,
+            "&:hover": {
+              cursor: "pointer",
+              opacity: 0.8,
+            },
+          }}
+          onClick={blogClick}
+        >
+          Kinh nghiệm hay
+        </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            ml: 1,
+            mr: 7,
+            "&:hover": {
+              cursor: "pointer",
+              opacity: 0.8,
+            },
+          }}
+          onClick={faqClick}
+        >
+          FAQ
+        </Typography>
 
         <Box sx={{ flexGrow: 1 }} />
-
-        <IconButton color="inherit">
-          <NotificationsIcon />
-        </IconButton>
-        <IconButton color="inherit">
-          <MessageIcon />
-        </IconButton>
-        <IconButton color="inherit">
-          <DescriptionIcon />
-        </IconButton>
 
         {isLoggedIn ? (
           <>
@@ -263,6 +224,7 @@ const AppHeader = () => {
               backgroundColor: "#ff4d4f",
               "&:hover": { backgroundColor: "#ff7875" },
             }}
+            onClick={() => navigate("/upPost")}
           >
             Đăng tin
           </Button>
