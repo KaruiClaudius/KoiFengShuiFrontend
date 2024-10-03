@@ -30,7 +30,6 @@ export default function HomePage() {
     return (
       <div className="property-card">
         <img src={image} alt="Card" className="property-image" />
-
         <div className="property-content">
           <a href={`/property`} className="property-title-link">
             <h2 className="property-title">[Mệnh]Tiêu đề</h2>
@@ -40,6 +39,10 @@ export default function HomePage() {
             {/* Replace icon as needed */}
             <span className="property-price-text">Giá tiền</span>
           </div>
+          <div className="property-price-container"></div>
+          <span className="property-price-text">Icon:</span>{" "}
+          {/* Replace icon as needed */}
+          <span className="property-price-text">Nguyễn Minh Quang</span>
         </div>
       </div>
     );
@@ -95,8 +98,10 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      <div>{renderCards()}</div>
-      <div>{renderCards()}</div>
+      <div>
+        {renderCards()}
+        {renderCards()}
+      </div>
       <FooterComponent />
     </div>
   );

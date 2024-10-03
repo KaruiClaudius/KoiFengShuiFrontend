@@ -15,7 +15,7 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import Logo from "../../assets/koi-svgrepo-com.svg";
+import Logo from "../../assets/Logo.png";
 
 const AppHeader = () => {
   const navigate = useNavigate();

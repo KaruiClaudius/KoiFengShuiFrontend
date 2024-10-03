@@ -1,6 +1,6 @@
 import React from "react";
 import { Layout, Row, Col } from "antd";
-import Logo from "../../assets/koi-svgrepo-com.svg";
+import Logo from "../../assets/Logo.png";
 const { Footer } = Layout;
 
 const FooterComponent = () => {

@@ -110,13 +110,14 @@
 }
 
 .property-card {
-  width: fit-content;
+  justify-content: center;
   margin-top: 50px;
   margin-bottom: 50px;
   margin-right: 16px; /* Equal to Material-UI spacing of '2' */
   border-radius: 5px;
   overflow: hidden; /* To handle rounded corners */
-  border: 1px solid #e0e0e0; /* You can add a border if needed */
+  border: 1px solid #e0e0e0;  /*You can add a border if needed */
+  width: 50%;
 }
 
 .property-image {
@@ -127,22 +128,26 @@
 
 .property-content {
   padding: 10px; /* You can adjust the padding as needed */
+  width: fit-content;
 }
 
 .property-title-link {
   text-decoration: none;
   color: inherit;
+  width: 25%;
 }
 
 .property-title {
   font-size: 24px;
   margin: 0;
+  width: fit-content;
 }
 
 .property-price-container {
   display: flex;
   align-items: center;
   margin-top: 8px; /* Spacing similar to Material-UI's marginTop 1 */
+  width: 25%;
 }
 
 .property-price-icon {
