@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 // material-ui
 import Avatar from "@mui/material/Avatar";
 // import AvatarGroup from "@mui/material/AvatarGroup";
@@ -21,11 +22,10 @@ import UniqueVisitorCard from "./UniqueVisitorCard";
 import OrdersTable from "./OrdersTable";
 import FooterComponent from "../../components/Footer/Footer";
 import DashboardSidebar from "../../components/Sidebar/Sidebar";
+import { getNewUsersCount, getNewUsersList } from "../../config/axios"; // Update the import path as needed
 
 // assets
 import GiftOutlined from "@ant-design/icons/GiftOutlined";
-import MessageOutlined from "@ant-design/icons/MessageOutlined";
-import SettingOutlined from "@ant-design/icons/SettingOutlined";
 
 // avatar style
 const avatarSX = {
@@ -47,6 +47,26 @@ const actionSX = {
 // ==============================|| DASHBOARD - DEFAULT ||============================== //
 
 export default function DashboardDefault() {
+  const [newUsersCount, setNewUsersCount] = useState(0);
+  const [newUsersList, setNewUsersList] = useState([]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const countResponse = await getNewUsersCount();
+        setNewUsersCount(countResponse.data.count);
+
+        const usersResponse = await getNewUsersList();
+        setNewUsersList(usersResponse.data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        // Handle error (e.g., show an error message to the user)
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <Box
       sx={{
@@ -95,11 +115,8 @@ export default function DashboardDefault() {
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
                 title="Người dùng mới"
-                count="18,800"
-                // percentage={27.4}
-                // isLoss
+                count={newUsersCount.toString()}
                 color="warning"
-                // extra="1,943"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
@@ -172,7 +189,7 @@ export default function DashboardDefault() {
             <Grid item xs={12} md={5} lg={4}>
               <Grid item>
                 <Typography variant="h5" color="white">
-                  Người dùng mới
+                  Người đăng kí mới
                 </Typography>
               </Grid>
               <Grid item />
@@ -192,72 +209,30 @@ export default function DashboardDefault() {
                     },
                   }}
                 >
-                  <ListItemButton divider>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{
-                          color: "success.main",
-                          bgcolor: "success.lighter",
-                        }}
-                      >
-                        <GiftOutlined />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle1">
-                          Order #002434
-                        </Typography>
-                      }
-                      secondary="Today, 2:00 AM"
-                    />
-                    <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end"></Stack>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                  <ListItemButton divider>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{
-                          color: "primary.main",
-                          bgcolor: "primary.lighter",
-                        }}
-                      >
-                        <MessageOutlined />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle1">
-                          Order #984947
-                        </Typography>
-                      }
-                      secondary="5 August, 1:45 PM"
-                    />
-                    <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end"></Stack>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                  <ListItemButton>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{ color: "error.main", bgcolor: "error.lighter" }}
-                      >
-                        <SettingOutlined />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle1">
-                          Order #988784
-                        </Typography>
-                      }
-                      secondary="7 hours ago"
-                    />
-                    <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end"></Stack>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
+                  {newUsersList.slice(0, 3).map((user, index) => (
+                    <ListItemButton key={user.accountId} divider={index < 2}>
+                      <ListItemAvatar>
+                        <Avatar
+                          src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                            user.fullName
+                          )}`}
+                          alt={user.fullName}
+                          sx={avatarSX}
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Typography variant="subtitle1">
+                            {user.fullName}
+                          </Typography>
+                        }
+                        secondary={new Date(user.createAt).toLocaleString()}
+                      />
+                      <ListItemSecondaryAction>
+                        <Stack alignItems="flex-end"></Stack>
+                      </ListItemSecondaryAction>
+                    </ListItemButton>
+                  ))}
                 </List>
               </MainCard>
             </Grid>

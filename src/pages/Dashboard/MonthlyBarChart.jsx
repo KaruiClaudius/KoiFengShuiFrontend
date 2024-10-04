@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import ReactApexChart from "react-apexcharts";
+import { getTrafficDistribution } from "../../config/axios"; // Add this import
 
 const pieChartOptions = {
   chart: {
@@ -47,6 +48,20 @@ export default function TrafficDistributionChart() {
 
   const [series, setSeries] = useState([60, 40]); // Example data: 60% registered, 40% guests
   const [options, setOptions] = useState(pieChartOptions);
+
+  useEffect(() => {
+    const fetchTrafficData = async () => {
+      try {
+        const response = await getTrafficDistribution();
+        const { registeredUsers, guests } = response.data;
+        setSeries([registeredUsers, guests]);
+      } catch (error) {
+        console.error("Error fetching traffic distribution:", error);
+      }
+    };
+
+    fetchTrafficData();
+  }, []);
 
   useEffect(() => {
     setOptions((prevState) => ({
