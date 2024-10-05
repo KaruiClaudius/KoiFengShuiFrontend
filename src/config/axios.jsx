@@ -44,4 +44,18 @@ export const getTrafficDistribution = () => {
   return api.get("/api/Dashboard/traffic-distribution");
 };
 
+export const getNewMarketListingsCount = (days = 30) => {
+  return api.get(`/api/dashboard/new-market-listings-count?days=${days}`);
+};
+
+export const getNewMarketListingsByCategory = (days = 30) => {
+  return api.get(`/api/dashboard/new-market-listings-by-category?days=${days}`);
+};
+
+export const getMarketListings = (page = 1, pageSize = 10) => {
+  return api.get(
+    `/api/dashboard/market-listings?page=${page}&pageSize=${pageSize}`
+  );
+};
+
 export default api;

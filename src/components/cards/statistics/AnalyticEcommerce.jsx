@@ -27,7 +27,6 @@ export default function AnalyticEcommerce({
   count,
   percentage,
   isLoss,
-  extra,
 }) {
   return (
     <MainCard contentSX={{ p: 2.25 }}>

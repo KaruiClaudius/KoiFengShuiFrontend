@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 // material-ui
 import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
@@ -10,75 +11,34 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-
-// third-party
-// import { NumericFormat } from "react-number-format";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // project import
 import Dot from "../../components/@extended/Dot";
 
-function createData(tracking_no, name, fat, carbs, protein) {
-  return { tracking_no, name, fat, carbs, protein };
-}
-
-const rows = [
-  createData(84564564, "Camera Lens", 40, 2, 40570),
-  createData(98764564, "Laptop", 300, 0, 180139),
-  createData(98756325, "Mobile", 355, 1, 90989),
-  createData(98652366, "Handset", 50, 1, 10239),
-  createData(13286564, "Computer Accessories", 100, 1, 83348),
-];
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
+// Import the API function
+import { getMarketListings } from "../../config/axios";
 
 const headCells = [
   {
-    id: "tracking_no",
+    id: "listingId",
     align: "left",
     disablePadding: false,
     label: "Id",
   },
   {
-    id: "name",
+    id: "title",
     align: "left",
     disablePadding: true,
     label: "Tên",
   },
   {
-    id: "status",
+    id: "isActive",
     align: "left",
     disablePadding: false,
     label: "Trạng thái",
   },
 ];
-
-// ==============================|| ORDER TABLE - HEADER ||============================== //
 
 function OrderTableHead({ order, orderBy }) {
   return (
@@ -99,27 +59,9 @@ function OrderTableHead({ order, orderBy }) {
   );
 }
 
-function OrderStatus({ status }) {
-  let color;
-  let title;
-
-  switch (status) {
-    case 0:
-      color = "warning";
-      title = "Đang chờ";
-      break;
-    case 1:
-      color = "success";
-      title = "Đồng ý";
-      break;
-    case 2:
-      color = "error";
-      title = "Từ chối";
-      break;
-    default:
-      color = "primary";
-      title = "None";
-  }
+function OrderStatus({ isActive }) {
+  const color = isActive ? "success" : "error";
+  const title = isActive ? "Đang hoạt động" : "Không hoạt động";
 
   return (
     <Stack direction="row" spacing={1} alignItems="center">
@@ -129,11 +71,54 @@ function OrderStatus({ status }) {
   );
 }
 
-// ==============================|| ORDER TABLE ||============================== //
-
 export default function OrderTable() {
-  const order = "asc";
-  const orderBy = "tracking_no";
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("listingId");
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        setLoading(true);
+        const response = await getMarketListings();
+        setListings(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch market listings");
+        setLoading(false);
+      }
+    };
+
+    fetchListings();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="200px"
+      >
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -150,29 +135,23 @@ export default function OrderTable() {
         <Table aria-labelledby="tableTitle">
           <OrderTableHead order={order} orderBy={orderBy} />
           <TableBody>
-            {stableSort(rows, getComparator(order, orderBy)).map(
-              (row, index) => {
-                const labelId = `enhanced-table-checkbox-${index}`;
-
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                    tabIndex={-1}
-                    key={row.tracking_no}
-                  >
-                    <TableCell component="th" id={labelId} scope="row">
-                      <Link color="secondary"> {row.tracking_no}</Link>
-                    </TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell>
-                      <OrderStatus status={row.carbs} />
-                    </TableCell>
-                  </TableRow>
-                );
-              }
-            )}
+            {listings.map((row) => (
+              <TableRow
+                hover
+                role="checkbox"
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                tabIndex={-1}
+                key={row.listingId}
+              >
+                <TableCell component="th" scope="row">
+                  <Link color="secondary">{row.listingId}</Link>
+                </TableCell>
+                <TableCell>{row.title}</TableCell>
+                <TableCell>
+                  <OrderStatus isActive={row.isActive} />
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -180,6 +159,8 @@ export default function OrderTable() {
   );
 }
 
-OrderTableHead.propTypes = { order: PropTypes.any, orderBy: PropTypes.string };
-
-OrderStatus.propTypes = { status: PropTypes.number };
+OrderTableHead.propTypes = {
+  order: PropTypes.string,
+  orderBy: PropTypes.string,
+};
+OrderStatus.propTypes = { isActive: PropTypes.bool };

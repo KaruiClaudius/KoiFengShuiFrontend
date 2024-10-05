@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -27,6 +27,13 @@ const KoiCompatibilityForm = () => {
   const [formType, setFormType] = useState("compatibility");
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [compatibilityForm] = Form.useForm();
+  const [elementForm] = Form.useForm();
+
+  useEffect(() => {
+    // Reset results when formType changes
+    setResults(null);
+  }, [formType]);
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -56,6 +63,7 @@ const KoiCompatibilityForm = () => {
 
   const renderCompatibilityForm = () => (
     <Form
+      form={compatibilityForm}
       name="koi_compatibility"
       onFinish={onFinish}
       layout="vertical"
@@ -143,6 +151,7 @@ const KoiCompatibilityForm = () => {
 
   const renderElementForm = () => (
     <Form
+      form={elementForm}
       name="element_advice"
       onFinish={onFinish}
       layout="vertical"
@@ -168,6 +177,13 @@ const KoiCompatibilityForm = () => {
       </Form.Item>
     </Form>
   );
+
+  const handleFormTypeChange = (newFormType) => {
+    setFormType(newFormType);
+    setResults(null);
+    compatibilityForm.resetFields();
+    elementForm.resetFields();
+  };
 
   const renderCompatibilityResults = () => (
     <div style={{ textAlign: "center" }}>
@@ -267,7 +283,7 @@ const KoiCompatibilityForm = () => {
                 className={
                   formType === "element" ? "btnElement active" : "btnElement"
                 }
-                onClick={() => setFormType("element")}
+                onClick={() => handleFormTypeChange("element")}
               >
                 Tư vấn bản mệnh
               </Button>
@@ -278,7 +294,7 @@ const KoiCompatibilityForm = () => {
                 className={
                   formType === "compatibility" ? "btnCompa active" : "btnCompa"
                 }
-                onClick={() => setFormType("compatibility")}
+                onClick={() => handleFormTypeChange("compatibility")}
               >
                 Đánh giá độ phù hợp
               </Button>

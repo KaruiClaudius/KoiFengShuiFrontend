@@ -22,10 +22,13 @@ import UniqueVisitorCard from "./UniqueVisitorCard";
 import OrdersTable from "./OrdersTable";
 import FooterComponent from "../../components/Footer/Footer";
 import DashboardSidebar from "../../components/Sidebar/Sidebar";
-import { getNewUsersCount, getNewUsersList } from "../../config/axios"; // Update the import path as needed
+import {
+  getNewUsersCount,
+  getNewUsersList,
+  getNewMarketListingsCount,
+} from "../../config/axios"; // Update the import path as needed
 
 // assets
-import GiftOutlined from "@ant-design/icons/GiftOutlined";
 
 // avatar style
 const avatarSX = {
@@ -49,6 +52,7 @@ const actionSX = {
 export default function DashboardDefault() {
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newUsersList, setNewUsersList] = useState([]);
+  const [newMarketListingsCount, setNewMarketListingsCount] = useState(0);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -58,6 +62,9 @@ export default function DashboardDefault() {
 
         const usersResponse = await getNewUsersList();
         setNewUsersList(usersResponse.data);
+
+        const marketListingsCountResponse = await getNewMarketListingsCount();
+        setNewMarketListingsCount(marketListingsCountResponse.data.count);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         // Handle error (e.g., show an error message to the user)
@@ -91,26 +98,17 @@ export default function DashboardDefault() {
         >
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
             {/* row 1 */}
+
             <Grid item xs={12} sx={{ mb: -2.25 }}>
               <Typography variant="h5" color="white">
                 Dashboard
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="Tiền dịch vụ"
-                count="4,42,236"
-                // percentage={59.3}
-                // extra="35,000"
-              />
+              <AnalyticEcommerce title="Tiền dịch vụ" count="4,42,236" />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="AVG Revenue"
-                count="78,250"
-                // percentage={70.5}
-                // extra="8,900"
-              />
+              <AnalyticEcommerce title="AVG Revenue" count="78,250" />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
@@ -122,11 +120,8 @@ export default function DashboardDefault() {
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
                 title="Bài đăng mới"
-                count="$35,078"
-                // percentage={27.4}
-                // isLoss
+                count={newMarketListingsCount.toString()}
                 color="warning"
-                // extra="$20,395"
               />
             </Grid>
 
@@ -137,6 +132,7 @@ export default function DashboardDefault() {
             />
 
             {/* row 2 */}
+            {/* Total traffic */}
             <Grid item xs={12} md={7} lg={8}>
               <UniqueVisitorCard />
             </Grid>
@@ -168,6 +164,7 @@ export default function DashboardDefault() {
             </Grid>
 
             {/* row 3 */}
+            {/* Recent post */}
             <Grid item xs={12} md={7} lg={8}>
               <Grid
                 container
@@ -186,6 +183,7 @@ export default function DashboardDefault() {
               </MainCard>
             </Grid>
 
+            {/* List new user */}
             <Grid item xs={12} md={5} lg={4}>
               <Grid item>
                 <Typography variant="h5" color="white">
