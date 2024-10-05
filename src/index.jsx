@@ -9,7 +9,7 @@ import HomePage from "./pages/Homepage/Homepage";
 import KoiCompatibilityForm from "./pages/KoiCompatible/KoiCompatibilityForm ";
 import UserProfile from "./pages/UserProfile/UserProfile";
 import ProtectedRoute from "./config/ProtectedRoute";
-
+import PaymentMethod from "./pages/Payment/Payment";
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
@@ -46,6 +46,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/payment" element={<PaymentMethod />} />
         </Routes>
       </Router>
     </StyledEngineProvider>
