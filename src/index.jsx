@@ -8,10 +8,12 @@ import DashboardDefault from "./pages/Dashboard";
 import HomePage from "./pages/Homepage/Homepage";
 import KoiCompatibilityForm from "./pages/KoiCompatible/KoiCompatibilityForm ";
 import UserProfile from "./pages/UserProfile/UserProfile";
+import PaymentMethod from "./pages/Payment/Payment";
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 
 const App = () => {
   return (
@@ -24,6 +26,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/payment" element={<PaymentMethod />} />
         </Routes>
       </Router>
     </StyledEngineProvider>

@@ -1,0 +1,83 @@
+.payment-method {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    max-width: 90%; 
+}
+
+.payment-method .title {
+    margin: 0;
+}
+
+.payment-method .subtitle {
+    margin: 10px 0;
+}
+
+.payment-method .option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.payment-method .label {
+    cursor: pointer;
+    text-align: left;
+    flex-grow: 1;
+}
+
+.payment-method .icon {
+    width: 20px;
+    height: 20px;
+}
+
+.payment-method .button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.payment-method .button:hover {
+    background-color: #45a049;
+}
+
+.MuiModal-root {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.success-modal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    max-width: 90%;
+    height: auto; 
+    text-align: center;
+    img{
+        display: block;     
+        margin: 0 auto;     
+        width: 50px; 
+        height: 50px; 
+        margin-bottom: 10px;
+    }
+}
+
+
+
+.success-modal button {
+    margin-top: 15px;
+}
