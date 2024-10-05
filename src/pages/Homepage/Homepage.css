@@ -53,14 +53,15 @@
 }
 
 .search-bar-container input{
-  padding-left: 20px;
+  padding-left: 20px; 
+  outline: none;
 }
 
 .search-bar {
   padding: 3px;
   width: 100%;
-  border: 1px solid #d2b48c; /* Adjust the color to fit your theme */
-  border-radius: 15px; /* For rounded edges */
+  border: 1px solid #623d0d; /* Adjust the color to fit your theme */
+  border-radius: 10px; /* For rounded edges */
   font-size: 0.8em;
   padding-right: 40px; /* Space for the icon */
 }
@@ -109,54 +110,83 @@
   backdrop-filter: blur(15px); /* More intense blur on hover */
 }
 
+.card-container{
+  text-align: center;
+  width: 20%;
+  margin: 5px;
+}
+
 .property-card {
   justify-content: center;
-  margin-top: 50px;
-  margin-bottom: 50px;
-  margin-right: 16px; /* Equal to Material-UI spacing of '2' */
+  margin: 10px auto;
   border-radius: 5px;
   overflow: hidden; /* To handle rounded corners */
   border: 1px solid #e0e0e0;  /*You can add a border if needed */
-  width: 50%;
+  width: fit-content;
+  text-align: center;
 }
 
 .property-image {
-  width: 25%;
-  height:  25%;
-  object-fit: cover; /* To maintain image aspect ratio */
+  width: 5%;
+  height:  10%;
+  object-fit: contain; /* To maintain image aspect ratio */
+  width: fit-content;
 }
 
 .property-content {
-  padding: 10px; /* You can adjust the padding as needed */
+  padding: 6px; 
   width: fit-content;
+  text-align: center;
 }
+
+
 
 .property-title-link {
   text-decoration: none;
   color: inherit;
   width: 25%;
+  text-align: center;
+  justify-items: center;
+  margin: auto;
 }
 
 .property-title {
-  font-size: 24px;
+  font-size: 15px;
   margin: 0;
-  width: fit-content;
+  width: 100%;
+  text-align: center;
 }
 
 .property-price-container {
   display: flex;
   align-items: center;
   margin-top: 8px; /* Spacing similar to Material-UI's marginTop 1 */
-  width: 25%;
+  width: fit-content;
 }
 
 .property-price-icon {
-  color: red;
-  font-size: 20px;
+  width: 30%;
+  height: 30%;
   margin-right: 8px; /* Spacing between icon and text */
 }
 
 .property-price-text {
   color: #757575; /* 'text.secondary' equivalent */
   font-size: 14px;
+}
+
+.white-box {
+  background-color: rgba(255, 255, 255, 0.3); /* The white background of the box */
+  padding: 5px; /* Adds space inside the box */
+  width: 50%; /* Define the width of the box */
+  margin: 20px auto; /* Center the box horizontally and add vertical spacing */
+  border-radius: 10px; /* Optional: round the corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add shadow for a 3D effect */
+  text-align: center; /* Center the text inside the box */
+  display: block;
+}
+
+.container-title{
+  display: flex;
+  justify-content: space-between;
 }

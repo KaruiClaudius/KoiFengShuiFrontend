@@ -2,14 +2,19 @@ import React, { useState } from "react";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
+import ex from "../../assets/koio_ex.png";
+import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { CardContent } from "@mui/material";
 import { Typography } from "antd";
-export default function HomePage() {
+import api, { getFengShuiKoiFishPost } from "../../config/axios";
+export default function Homepage() {
   const navigate = useNavigate();
-
+  const [cardData, setCardData] = React.useState([]); // Store data
+  const [loading, setLoading] = React.useState(true); // Handle loading state
+  const [error, setError] = React.useState(null); // Handle errors
   const sellingFishClick = () => {
     navigate("/sellingFish");
   };
@@ -26,27 +31,56 @@ export default function HomePage() {
     navigate("/blog");
   };
 
-  const renderCards = () => {
-    return (
-      <div className="property-card">
-        <img src={image} alt="Card" className="property-image" />
-        <div className="property-content">
-          <a href={`/property`} className="property-title-link">
-            <h2 className="property-title">[Mệnh]Tiêu đề</h2>
-          </a>
-          <div className="property-price-container">
-            <span className="property-price-icon">💰</span>{" "}
-            {/* Replace icon as needed */}
-            <span className="property-price-text">Giá tiền</span>
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getFengShuiKoiFishPost(); // Adjust endpoint
+        setCardData(response.data); // Store the data
+      } catch (error) {
+        setError(error.message); // Handle error
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    };
+    // Fetch data from API when the component mounts
+    fetchData();
+  }, []);
+  const renderCards = (data) => {
+    return data.map((item) => (
+      <div className="card-container">
+        <div className="property-card">
+          <img src={ex} alt="Card" className="property-image" />
+          <div className="property-content">
+            <a href={`/property`} className="property-title-link">
+              {/* {item.element && item.element.length > 0 ? ( */}
+              <h1 className="property-title">
+                [{item.elementName}]{item.name}
+              </h1>
+              {/* ) : (
+                <h1 className="property-title">{item.name}</h1>
+              )} */}
+            </a>
+            <div className="property-price-container">
+              <h2 className="property-price-text">Giá tiền:</h2>{" "}
+              {/* Replace icon as needed */}
+              <div className="property-price-text">{item.price}</div>
+            </div>
+            <div className="property-price-container">
+              <img
+                src={usericon}
+                alt="Banner"
+                className="property-price-icon"
+              />{" "}
+              {/* Replace icon as needed */}
+              <span className="property-price-text">{item.createBy}</span>
+            </div>
           </div>
-          <div className="property-price-container"></div>
-          <span className="property-price-text">Icon:</span>{" "}
-          {/* Replace icon as needed */}
-          <span className="property-price-text">Nguyễn Minh Quang</span>
         </div>
       </div>
-    );
+    ));
   };
+  if (loading) return <p>Loading...</p>; // Display loading message
+  if (error) return <p>Error: {error}</p>;
   return (
     <div
       style={{
@@ -98,9 +132,12 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-      <div>
-        {renderCards()}
-        {renderCards()}
+      <div class="white-box">
+        <div className="container-title">
+          <h2 style={{ margin: "auto" }}>Cá koi theo bản mệnh</h2>
+          <h2>Xem thêm {">"}</h2>
+        </div>
+        <div style={{ display: "flex" }}>{renderCards(cardData)}</div>
       </div>
       <FooterComponent />
     </div>
