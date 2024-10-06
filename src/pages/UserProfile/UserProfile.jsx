@@ -60,6 +60,8 @@ const UserProfile = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
+      // Update localStorage with fetched data
+      localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error) {
       console.error("Error fetching user data:", error);
       setSnackbar({

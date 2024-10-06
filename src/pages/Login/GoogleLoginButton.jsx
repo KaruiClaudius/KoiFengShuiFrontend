@@ -23,12 +23,20 @@ export default function GoogleLoginButton() {
 
       // Store the token
       localStorage.setItem("token", res.data.token);
-      // Store user info if needed
-      localStorage.setItem("user", JSON.stringify(res.data));
+
+      // Store user info
+      const userInfo = {
+        id: res.data.id,
+        fullName: res.data.fullName,
+        email: res.data.email,
+      };
+      localStorage.setItem("user", JSON.stringify(userInfo));
+      localStorage.setItem("email", res.data.email); // Store email separately for consistency
 
       // Set the token in the default Authorization header for future requests
       api.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
 
+      // Redirect to the home page or dashboard
       navigate("/");
     } catch (error) {
       console.error("Login failed", error);
