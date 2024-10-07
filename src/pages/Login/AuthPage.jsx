@@ -24,28 +24,6 @@ import KoiLogo from "../../assets/Logo_SWP.svg";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-// function ColorSchemeToggle(props) {
-// const { onClick, ...other } = props;
-// const { mode, setMode } = useColorScheme();
-// const [mounted, setMounted] = React.useState(false);
-// React.useEffect(() => setMounted(true), []);
-// return (
-//   <IconButton
-//     aria-label="toggle light/dark mode"
-//     size="sm"
-//     variant="outlined"
-//     disabled={!mounted}
-//     onClick={(event) => {
-//       setMode(mode === "light" ? "dark" : "light");
-//       onClick?.(event);
-//     }}
-//     {...other}
-//   >
-//     {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
-//   </IconButton>
-// );
-// }
-
 const customTheme = extendTheme({ defaultColorScheme: "dark" });
 
 export default function AuthPage() {
@@ -57,13 +35,13 @@ export default function AuthPage() {
   };
 
   const CompanyLogoButton = () => (
-    <IconButton sx={{ padding: 2, width: 64, height: 64 }}>
+    <IconButton sx={{ padding: 2, width: 98, height: 98 }}>
       <img
         src={KoiLogo}
         alt="Company Logo"
         style={{
-          width: 64,
-          height: 64,
+          width: 90,
+          height: 90,
           objectFit: "contain",
         }}
       />
@@ -74,7 +52,7 @@ export default function AuthPage() {
   // const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const handleHomeClick = () => {
-    navigate("/homepage");
+    navigate("/");
   };
 
   const handleSubmit = async (event) => {
@@ -83,39 +61,34 @@ export default function AuthPage() {
     // let data;
     switch (authMode) {
       case "signin":
-        // data = {
-        //   email: formData.get("email"),
-        //   password: formData.get("password"),
-        //   persistent: formData.get("persistent") === "on",
-        // };
-
-        // handle Login here
         try {
           const response = await api.post("api/Auth/SignIn", {
             email: formData.get("email"),
             password: formData.get("password"),
           });
-          const { token } = response.data;
+          const { token, email } = response.data;
           localStorage.setItem("token", token);
-          localStorage.setItem("user", JSON.stringify(response.data));
+          localStorage.setItem("email", email);
+
+          // Fetch user details
+          const userDetailsResponse = await api.get(
+            `api/Account/email/${email}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const userDetails = userDetailsResponse.data;
+
+          // Store user details in localStorage
+          localStorage.setItem("user", JSON.stringify(userDetails));
+
           navigate("/");
         } catch (err) {
           console.log(err);
           alert(err.response?.data || "An error occurred during login");
         }
-
         break;
       case "signup":
-        // data = {
-        //   fullName: formData.get("fullName"),
-        //   email: formData.get("email"),
-        //   password: formData.get("password"),
-        //   doB: formData.get("doB"),
-        //   phone: formData.get("phone"),
-        //   gender: formData.get("gender"),
-        //   terms: formData.get("terms") === "on",
-        // };
-
         // handle SignUp
         try {
           await api.post("api/Auth/SignUp", {
@@ -136,11 +109,6 @@ export default function AuthPage() {
         break;
 
       case "forgotpassword":
-        // data = {
-        //   email: formData.get("email"),
-        // };
-        // handle forgot password
-
         try {
           await api.post("api/Auth/ForgotPassword", {
             email: formData.get("email"),

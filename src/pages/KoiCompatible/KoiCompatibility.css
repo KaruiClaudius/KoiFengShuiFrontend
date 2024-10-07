@@ -1,0 +1,120 @@
+/* Container and Layout */
+.page-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+}
+
+.compatibility-form-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 40px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.compatibility-card {
+  background-color: #f6f9ff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+/* Form Elements */
+.koi-form .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.submit-button {
+  width: 100%;
+  background-color: #1890ff;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  height: 45px;
+}
+
+.submit-button:hover,
+.submit-button:focus {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* Header */
+header {
+  background-color: #001529;
+  padding: 20px;
+}
+
+header .ant-typography {
+  color: white;
+  font-size: 24px;
+  text-align: center;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #001529;
+  text-align: center;
+  color: white;
+}
+
+/* Buttons for form type selection */
+.btnElement,
+.btnCompa {
+  background-color: #ffffff;
+  color: #1890ff;
+  font-size: 16px;
+  font-weight: bold;
+  height: 50px;
+  border: 2px solid #1890ff;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btnElement:hover,
+.btnCompa:hover,
+.btnElement:focus,
+.btnCompa:focus {
+  background-color: #40a9ff;
+  color: #ffffff;
+  border-color: #40a9ff;
+}
+
+.btnElement.active,
+.btnCompa.active {
+  background-color: #1890ff;
+  color: #ffffff;
+  border-color: #1890ff;
+}
+
+/* Card and Result Display */
+.ant-card {
+  background-color: #f6f9ff;
+  border: none;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ant-descriptions-item-label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.ant-descriptions-item-content {
+  font-size: 16px;
+}
+
+/* Titles */
+.ant-typography {
+  text-align: center;
+  font-size: 24px;
+}
+
+.ant-typography h2 {
+  color: #1890ff;
+  margin-bottom: 20px;
+}
