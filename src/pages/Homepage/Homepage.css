@@ -6,6 +6,8 @@
   margin-top: 40px;
 }
 
+
+
 .image-container {
   width: 100%;
   display: flex;
@@ -126,6 +128,17 @@
   text-align: center;
 }
 
+.featured-badge {
+  position: absolute;
+  background-color: red;
+  color: white;
+  padding: 3px 3px;
+  font-weight: bold;
+  border-radius: 5px;
+  z-index: 1;
+  
+}
+
 .property-image {
   width: 5%;
   height:  10%;
@@ -161,7 +174,8 @@
   display: flex;
   align-items: center;
   margin-top: 8px; /* Spacing similar to Material-UI's marginTop 1 */
-  width: fit-content;
+  width: 100%;
+  justify-content: center;
 }
 
 .property-price-icon {
@@ -171,22 +185,40 @@
 }
 
 .property-price-text {
+  width: 70%;
   color: #757575; /* 'text.secondary' equivalent */
-  font-size: 14px;
+  font-size: 12px;
+  text-align: center;
+  margin-left: 3px;
+  margin-right: 3px;
 }
 
 .white-box {
-  background-color: rgba(255, 255, 255, 0.3); /* The white background of the box */
-  padding: 5px; /* Adds space inside the box */
-  width: 50%; /* Define the width of the box */
-  margin: 20px auto; /* Center the box horizontally and add vertical spacing */
-  border-radius: 10px; /* Optional: round the corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add shadow for a 3D effect */
-  text-align: center; /* Center the text inside the box */
-  display: block;
+  background-color: #ffffff;
+  padding: 15px;
+  width: 50%;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
-.container-title{
+.container-title {
   display: flex;
-  justify-content: space-between;
+  width: 100%;
+}
+
+.container-title-title {
+  width: 100%;
+  text-align: center;
+  margin-left: 140px;
+}
+
+.container-title-link {
+  text-decoration: none;
+  color: inherit;
+  width: 35%;
+  text-align: right;
 }

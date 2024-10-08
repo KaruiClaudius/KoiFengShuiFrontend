@@ -32,6 +32,21 @@ export const getFengShuiConsultation = (data) => {
 };
 
 export const getFengShuiKoiFishPost = () => {
-  return api.get("/api/Post/GetAll").then((response) => response.data);
+  return api
+    .get("/api/Post/GetAllByPostType/1?page=1&pageSize=5")
+    .then((response) => response.data);
 };
+
+export const getFengShuiKoiDecorationPost = () => {
+  return api
+    .get("/api/Post/GetAllByPostType/2?page=1&pageSize=5")
+    .then((response) => response.data);
+};
+
+export const getFengShuiKoiPost = () => {
+  return api
+    .get("/api/Post/GetAllByPostType/3?page=1&pageSize=5")
+    .then((response) => response.data);
+};
+
 export default api;

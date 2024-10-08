@@ -3,18 +3,27 @@ import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
 import ex from "../../assets/koio_ex.png";
+import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { CardContent } from "@mui/material";
 import { Typography } from "antd";
-import api, { getFengShuiKoiFishPost } from "../../config/axios";
+import TruncatedText from "../../utils/TruncatedText";
+import api, {
+  getFengShuiKoiFishPost,
+  getFengShuiKoiDecorationPost,
+  getFengShuiKoiPost,
+} from "../../config/axios";
 export default function Homepage() {
   const navigate = useNavigate();
-  const [cardData, setCardData] = React.useState([]); // Store data
+  const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
+  const [cardDataDecoration, setCardDataDecoration] = React.useState([]); // Store data
+  const [cardDataPost, setCardDataPost] = React.useState([]); // Store data
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [error, setError] = React.useState(null); // Handle errors
+
   const sellingFishClick = () => {
     navigate("/sellingFish");
   };
@@ -34,8 +43,12 @@ export default function Homepage() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getFengShuiKoiFishPost(); // Adjust endpoint
-        setCardData(response.data); // Store the data
+        const responseKoi = await getFengShuiKoiFishPost(); // Adjust endpoint
+        const responseDecoration = await getFengShuiKoiDecorationPost();
+        const responsePost = await getFengShuiKoiPost();
+        setCardDataKoi(responseKoi.data); // Store the data
+        setCardDataDecoration(responseDecoration.data);
+        setCardDataPost(responsePost.data);
       } catch (error) {
         setError(error.message); // Handle error
       } finally {
@@ -49,12 +62,15 @@ export default function Homepage() {
     return data.map((item) => (
       <div className="card-container">
         <div className="property-card">
+          <div className="featured-badge">
+            <span>Nổi bật</span>
+          </div>
           <img src={ex} alt="Card" className="property-image" />
           <div className="property-content">
             <a href={`/property`} className="property-title-link">
               {/* {item.element && item.element.length > 0 ? ( */}
               <h1 className="property-title">
-                [{item.elementName}]{item.name}
+                [{item.elementName}] <TruncatedText text={item.name} />
               </h1>
               {/* ) : (
                 <h1 className="property-title">{item.name}</h1>
@@ -63,7 +79,9 @@ export default function Homepage() {
             <div className="property-price-container">
               <h2 className="property-price-text">Giá tiền:</h2>{" "}
               {/* Replace icon as needed */}
-              <div className="property-price-text">{item.price}</div>
+              <span className="property-price-text" style={{ color: "red" }}>
+                {item.price}.000đ
+              </span>
             </div>
             <div className="property-price-container">
               <img
@@ -72,7 +90,47 @@ export default function Homepage() {
                 className="property-price-icon"
               />{" "}
               {/* Replace icon as needed */}
-              <span className="property-price-text">{item.createBy}</span>
+              <span className="property-price-text">{item.accountName}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  };
+  const longText = "This is a very long piece of text that will be truncated.";
+  const renderCardsDeconration = (data) => {
+    return data.map((item) => (
+      <div className="card-container">
+        <div className="property-card">
+          <div className="featured-badge">
+            <span>Nổi bật</span>
+          </div>
+          <img src={des} alt="Card" className="property-image" />
+          <div className="property-content">
+            <a href={`/property`} className="property-title-link">
+              {/* {item.element && item.element.length > 0 ? ( */}
+              <h1 className="property-title">
+                [{item.elementName}] <TruncatedText text={item.name} />
+              </h1>
+              {/* ) : (
+                <h1 className="property-title">{item.name}</h1>
+              )} */}
+            </a>
+            <div className="property-price-container">
+              <h2 className="property-price-text">Giá tiền:</h2>{" "}
+              {/* Replace icon as needed */}
+              <span className="property-price-text" style={{ color: "red" }}>
+                {item.price}.000đ
+              </span>
+            </div>
+            <div className="property-price-container">
+              <img
+                src={usericon}
+                alt="Banner"
+                className="property-price-icon"
+              />{" "}
+              {/* Replace icon as needed */}
+              <span className="property-price-text">{item.accountName}</span>
             </div>
           </div>
         </div>
@@ -85,7 +143,7 @@ export default function Homepage() {
     <div
       style={{
         minHeight: "150vh",
-        background: "white",
+        background: "#f6f4f3",
       }}
       className="homepage-container"
     >
@@ -134,10 +192,41 @@ export default function Homepage() {
       </div>
       <div class="white-box">
         <div className="container-title">
-          <h2 style={{ margin: "auto" }}>Cá koi theo bản mệnh</h2>
-          <h2>Xem thêm {">"}</h2>
+          <h2 className="container-title-title">Cá Koi Theo Bản Mệnh</h2>
+          <a href={`/fishProduct`} className="container-title-link">
+            <h2>Xem thêm {">"}</h2>
+          </a>
         </div>
-        <div style={{ display: "flex" }}>{renderCards(cardData)}</div>
+        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
+      </div>
+      <div class="white-box">
+        <div className="container-title">
+          <h2 className="container-title-title">Bán Cá Koi</h2>
+          <a href={`/fishProduct`} className="container-title-link">
+            <h2>Xem thêm {">"}</h2>
+          </a>
+        </div>
+        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
+      </div>
+      <div class="white-box">
+        <div className="container-title">
+          <h2 className="container-title-title">Phụ kiện hồ cá</h2>
+          <a href={`/fishProduct`} className="container-title-link">
+            <h2>Xem thêm {">"}</h2>
+          </a>
+        </div>
+        <div style={{ display: "flex" }}>
+          {renderCardsDeconration(cardDataDecoration)}
+        </div>
+      </div>
+      <div class="white-box">
+        <div className="container-title">
+          <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
+          <a href={`/blog`} className="container-title-link">
+            <h2>Xem thêm {">"}</h2>
+          </a>
+        </div>
+        <div style={{ display: "flex" }}>{renderCards(cardDataPost)}</div>
       </div>
       <FooterComponent />
     </div>
