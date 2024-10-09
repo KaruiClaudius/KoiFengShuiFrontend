@@ -18,19 +18,25 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
 } from "@mui/material";
 import {
   Edit as EditIcon,
   Save as SaveIcon,
   Lock as LockIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon,
+  Cancel as CancelIcon,
 } from "@mui/icons-material";
 import api from "../../config/axios";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
+import "./UserProfile.css";
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [originalUser, setOriginalUser] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -43,6 +49,11 @@ const UserProfile = () => {
     confirm: "",
   });
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
   useEffect(() => {
     fetchUserData();
@@ -60,7 +71,7 @@ const UserProfile = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
-      // Update localStorage with fetched data
+      setOriginalUser(response.data);
       localStorage.setItem("user", JSON.stringify(response.data));
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -109,6 +120,7 @@ const UserProfile = () => {
         severity: "success",
       });
       localStorage.setItem("user", JSON.stringify(user));
+      setOriginalUser(user);
     } catch (error) {
       console.error(
         "Error updating profile:",
@@ -170,113 +182,142 @@ const UserProfile = () => {
     }
   };
 
+  const handleCancelEdit = () => {
+    setUser(originalUser);
+    setEditing(false);
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
+  };
+
   if (!user) return <Typography>Loading...</Typography>;
 
   return (
-    <Container maxWidth="md">
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <AppHeader />
-      <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
-        <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={4}>
-            <Avatar
-              src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                user.fullName
-              )}`}
-              alt={user.fullName}
-              sx={{ width: 150, height: 150, mx: "auto" }}
-            />
-          </Grid>
-          <Grid item xs={12} md={8}>
-            <Typography variant="h4" gutterBottom>
-              {user.fullName}
-            </Typography>
-            <form onSubmit={handleSubmit}>
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Full Name"
-                name="fullName"
-                value={user.fullName}
-                onChange={handleInputChange}
-                disabled={!editing}
+      <Container maxWidth="md" sx={{ flexGrow: 1, py: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
+          <Grid container spacing={3} alignItems="center">
+            <Grid item xs={12} md={4}>
+              <Avatar
+                src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                  user.fullName
+                )}`}
+                alt={user.fullName}
+                sx={{ width: 150, height: 150, mx: "auto" }}
               />
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Email"
-                name="email"
-                value={user.email}
-                disabled
-              />
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Phone"
-                name="phone"
-                value={user.phone}
-                onChange={handleInputChange}
-                disabled={!editing}
-              />
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Date of Birth"
-                name="dob"
-                type="date"
-                value={user.dob ? user.dob.split("T")[0] : ""}
-                onChange={handleInputChange}
-                disabled={!editing}
-                InputLabelProps={{ shrink: true }}
-              />
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="gender-label">Gender</InputLabel>
-                <Select
-                  labelId="gender-label"
-                  name="gender"
-                  value={user.gender}
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <Typography variant="h4" gutterBottom>
+                {user.fullName}
+              </Typography>
+              <form onSubmit={handleSubmit}>
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Full Name"
+                  name="fullName"
+                  value={user.fullName}
                   onChange={handleInputChange}
                   disabled={!editing}
+                />
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Email"
+                  name="email"
+                  value={user.email}
+                  disabled
+                />
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Phone"
+                  name="phone"
+                  value={user.phone}
+                  onChange={handleInputChange}
+                  disabled={!editing}
+                />
+                <TextField
+                  fullWidth
+                  margin="normal"
+                  label="Date of Birth"
+                  name="dob"
+                  type="date"
+                  value={user.dob ? user.dob.split("T")[0] : ""}
+                  onChange={handleInputChange}
+                  disabled={!editing}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <FormControl fullWidth margin="normal">
+                  <InputLabel id="gender-label">Gender</InputLabel>
+                  <Select
+                    labelId="gender-label"
+                    name="gender"
+                    value={user.gender}
+                    onChange={handleInputChange}
+                    disabled={!editing}
+                  >
+                    <MenuItem value="male">Male</MenuItem>
+                    <MenuItem value="female">Female</MenuItem>
+                    <MenuItem value="other">Other</MenuItem>
+                  </Select>
+                </FormControl>
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
                 >
-                  <MenuItem value="male">Male</MenuItem>
-                  <MenuItem value="female">Female</MenuItem>
-                  <MenuItem value="other">Other</MenuItem>
-                </Select>
-              </FormControl>
-              <Box
-                sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}
-              >
-                {editing ? (
+                  {editing ? (
+                    <>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        type="submit"
+                        startIcon={<SaveIcon />}
+                      >
+                        Save Changes
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={handleCancelEdit}
+                        startIcon={<CancelIcon />}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        setOriginalUser({ ...user });
+                        setEditing(true);
+                      }}
+                      startIcon={<EditIcon />}
+                    >
+                      Edit Profile
+                    </Button>
+                  )}
                   <Button
                     variant="contained"
-                    color="primary"
-                    type="submit"
-                    startIcon={<SaveIcon />}
+                    color="secondary"
+                    onClick={() => setPasswordDialog(true)}
+                    startIcon={<LockIcon />}
                   >
-                    Save Changes
+                    Change Password
                   </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setEditing(true)}
-                    startIcon={<EditIcon />}
-                  >
-                    Edit Profile
-                  </Button>
-                )}
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => setPasswordDialog(true)}
-                  startIcon={<LockIcon />}
-                >
-                  Change Password
-                </Button>
-              </Box>
-            </form>
+                </Box>
+              </form>
+            </Grid>
           </Grid>
-        </Grid>
-      </Paper>
+        </Paper>
+      </Container>
+      <FooterComponent />
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -292,39 +333,41 @@ const UserProfile = () => {
       <Dialog open={passwordDialog} onClose={() => setPasswordDialog(false)}>
         <DialogTitle>Change Password</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            name="current"
-            label="Current Password"
-            type="password"
-            fullWidth
-            variant="standard"
-            value={passwords.current}
-            onChange={handlePasswordChange}
-          />
-          <TextField
-            margin="dense"
-            name="new"
-            label="New Password"
-            type="password"
-            fullWidth
-            variant="standard"
-            value={passwords.new}
-            onChange={handlePasswordChange}
-          />
-          <TextField
-            margin="dense"
-            name="confirm"
-            label="Confirm New Password"
-            type="password"
-            fullWidth
-            variant="standard"
-            value={passwords.confirm}
-            onChange={handlePasswordChange}
-            error={!passwordsMatch}
-            helperText={!passwordsMatch ? "Passwords do not match" : ""}
-          />
+          {["current", "new", "confirm"].map((field) => (
+            <TextField
+              key={field}
+              margin="dense"
+              name={field}
+              label={`${
+                field.charAt(0).toUpperCase() + field.slice(1)
+              } Password`}
+              type={showPasswords[field] ? "text" : "password"}
+              fullWidth
+              variant="standard"
+              value={passwords[field]}
+              onChange={handlePasswordChange}
+              error={field === "confirm" && !passwordsMatch}
+              helperText={
+                field === "confirm" && !passwordsMatch
+                  ? "Passwords do not match"
+                  : ""
+              }
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    onClick={() => togglePasswordVisibility(field)}
+                    edge="end"
+                  >
+                    {showPasswords[field] ? (
+                      <VisibilityOffIcon />
+                    ) : (
+                      <VisibilityIcon />
+                    )}
+                  </IconButton>
+                ),
+              }}
+            />
+          ))}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPasswordDialog(false)}>Cancel</Button>
@@ -333,8 +376,7 @@ const UserProfile = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <FooterComponent />
-    </Container>
+    </Box>
   );
 };
 
