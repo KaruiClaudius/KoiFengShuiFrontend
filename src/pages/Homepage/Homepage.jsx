@@ -97,7 +97,6 @@ export default function Homepage() {
       </div>
     ));
   };
-  const longText = "This is a very long piece of text that will be truncated.";
   const renderCardsDeconration = (data) => {
     return data.map((item) => (
       <div className="card-container">
