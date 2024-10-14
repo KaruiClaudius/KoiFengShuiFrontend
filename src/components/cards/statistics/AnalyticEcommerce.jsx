@@ -27,7 +27,6 @@ export default function AnalyticEcommerce({
   count,
   percentage,
   isLoss,
-  extra,
 }) {
   return (
     <MainCard contentSX={{ p: 2.25 }}>
@@ -61,7 +60,7 @@ export default function AnalyticEcommerce({
           )}
         </Grid>
       </Stack>
-      <Box sx={{ pt: 2.25 }}>
+      {/* <Box sx={{ pt: 2.25 }}>
         <Typography variant="caption" color="text.secondary">
           You made an extra{" "}
           <Typography
@@ -72,7 +71,7 @@ export default function AnalyticEcommerce({
           </Typography>{" "}
           this year
         </Typography>
-      </Box>
+      </Box> */}
     </MainCard>
   );
 }

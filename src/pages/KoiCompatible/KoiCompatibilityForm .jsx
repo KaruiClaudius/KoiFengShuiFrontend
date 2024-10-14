@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -27,6 +27,12 @@ const KoiCompatibilityForm = () => {
   const [formType, setFormType] = useState("compatibility");
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [compatibilityForm] = Form.useForm();
+  const [elementForm] = Form.useForm();
+
+  useEffect(() => {
+    setResults(null);
+  }, [formType]);
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -37,7 +43,7 @@ const KoiCompatibilityForm = () => {
           dateOfBirth: parseInt(values.birthYear),
           direction: values.pondDirection,
           pondShape: values.pondShape,
-          fishColor: values.koiColor,
+          fishColors: values.koiColors,
           fishQuantity: parseInt(values.koiNumber),
         });
       } else {
@@ -56,6 +62,7 @@ const KoiCompatibilityForm = () => {
 
   const renderCompatibilityForm = () => (
     <Form
+      form={compatibilityForm}
       name="koi_compatibility"
       onFinish={onFinish}
       layout="vertical"
@@ -71,14 +78,17 @@ const KoiCompatibilityForm = () => {
 
       <Form.Item
         label="Màu sắc cá koi"
-        name="koiColor"
+        name="koiColors"
         rules={[{ required: true, message: "Vui lòng chọn màu cá koi" }]}
       >
-        <Select placeholder="Chọn màu cá koi">
+        <Select mode="multiple" placeholder="Chọn màu cá koi">
           <Option value="Trắng">Trắng</Option>
           <Option value="Đỏ">Đỏ</Option>
           <Option value="Vàng">Vàng</Option>
           <Option value="Đen">Đen</Option>
+          <Option value="Xanh">Xanh</Option>
+          <Option value="Nâu">Nâu</Option>
+          <Option value="Kim loại">Kim loại</Option>
         </Select>
       </Form.Item>
 
@@ -105,7 +115,6 @@ const KoiCompatibilityForm = () => {
             "Tây Nam",
             "Đông Bắc",
             "Tây Bắc",
-            "Trung tâm",
           ].map((direction) => (
             <Option key={direction} value={direction}>
               {direction}
@@ -120,7 +129,14 @@ const KoiCompatibilityForm = () => {
         rules={[{ required: true, message: "Vui lòng chọn hình dạng hồ" }]}
       >
         <Select placeholder="Chọn hình dạng hồ">
-          {["Vuông", "Tròn", "Chữ nhật", "Hình bầu dục"].map((shape) => (
+          {[
+            "Vuông",
+            "Tròn",
+            "Chữ nhật",
+            "Hình bầu dục",
+            "Tam giác",
+            "Không đều đặn",
+          ].map((shape) => (
             <Option key={shape} value={shape}>
               {shape}
             </Option>
@@ -143,6 +159,7 @@ const KoiCompatibilityForm = () => {
 
   const renderElementForm = () => (
     <Form
+      form={elementForm}
       name="element_advice"
       onFinish={onFinish}
       layout="vertical"
@@ -169,6 +186,13 @@ const KoiCompatibilityForm = () => {
     </Form>
   );
 
+  const handleFormTypeChange = (newFormType) => {
+    setFormType(newFormType);
+    setResults(null);
+    compatibilityForm.resetFields();
+    elementForm.resetFields();
+  };
+
   const renderCompatibilityResults = () => (
     <div style={{ textAlign: "center" }}>
       <Title level={3}>Kết quả đánh giá độ phù hợp</Title>
@@ -177,7 +201,44 @@ const KoiCompatibilityForm = () => {
         <strong>{results.overallCompatibilityScore.toFixed(2)}%</strong>
       </Text>
 
-      {results.overallCompatibilityScore < 100 && (
+      <Descriptions
+        bordered
+        column={1}
+        size="middle"
+        style={{ marginTop: "20px" }}
+        labelStyle={{ fontWeight: "bold", fontSize: "16px" }}
+        contentStyle={{ fontSize: "16px" }}
+      >
+        <Descriptions.Item label="Điểm hướng">
+          {results.directionScore.toFixed(2)}%
+        </Descriptions.Item>
+        <Descriptions.Item label="Điểm hình dạng">
+          {results.shapeScore.toFixed(2)}%
+        </Descriptions.Item>
+        <Descriptions.Item label="Điểm số lượng">
+          {results.quantityScore.toFixed(2)}%
+        </Descriptions.Item>
+      </Descriptions>
+
+      <div style={{ marginTop: "20px" }}>
+        <Text style={{ fontSize: "20px", fontWeight: "bold" }}>
+          Điểm màu sắc:
+        </Text>
+        <Descriptions
+          bordered
+          column={1}
+          size="small"
+          style={{ marginTop: "10px" }}
+        >
+          {Object.entries(results.colorScores).map(([color, score]) => (
+            <Descriptions.Item key={color} label={color}>
+              {score.toFixed(2)}%
+            </Descriptions.Item>
+          ))}
+        </Descriptions>
+      </div>
+
+      {results.recommendations.length > 0 && (
         <div style={{ marginTop: "20px" }}>
           <Text style={{ fontSize: "20px", color: "#f5222d" }}>
             Đề xuất cải thiện:
@@ -267,7 +328,7 @@ const KoiCompatibilityForm = () => {
                 className={
                   formType === "element" ? "btnElement active" : "btnElement"
                 }
-                onClick={() => setFormType("element")}
+                onClick={() => handleFormTypeChange("element")}
               >
                 Tư vấn bản mệnh
               </Button>
@@ -278,7 +339,7 @@ const KoiCompatibilityForm = () => {
                 className={
                   formType === "compatibility" ? "btnCompa active" : "btnCompa"
                 }
-                onClick={() => setFormType("compatibility")}
+                onClick={() => handleFormTypeChange("compatibility")}
               >
                 Đánh giá độ phù hợp
               </Button>

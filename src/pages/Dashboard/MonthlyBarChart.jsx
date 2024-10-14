@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import ReactApexChart from "react-apexcharts";
+import { getTrafficDistribution } from "../../config/axios";
 
 const pieChartOptions = {
   chart: {
     type: "donut",
     height: 365,
   },
-  labels: ["Registered Users", "Guests"],
+  labels: ["Registered Users", "Unique Guests"],
   legend: {
     show: true,
     position: "bottom",
@@ -27,7 +28,7 @@ const pieChartOptions = {
           show: true,
           total: {
             show: true,
-            label: "Total Traffic",
+            label: "Total Visitors",
             formatter: function (w) {
               return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
             },
@@ -41,17 +42,34 @@ const pieChartOptions = {
 export default function TrafficDistributionChart() {
   const theme = useTheme();
 
-  const { primary, secondary } = theme.palette.text;
+  const { secondary } = theme.palette.text;
   const info = theme.palette.info.light;
   const warning = theme.palette.warning.light;
+  const error = theme.palette.error.light;
 
-  const [series, setSeries] = useState([60, 40]); // Example data: 60% registered, 40% guests
+  const [series, setSeries] = useState([0, 0, 0]);
   const [options, setOptions] = useState(pieChartOptions);
+  const [totalVisitors, setTotalVisitors] = useState(0);
+
+  useEffect(() => {
+    const fetchTrafficData = async () => {
+      try {
+        const response = await getTrafficDistribution();
+        const { registeredUsers, uniqueGuests, totalVisitors } = response.data;
+        setSeries([registeredUsers, uniqueGuests]);
+        setTotalVisitors(totalVisitors);
+      } catch (error) {
+        console.error("Error fetching traffic distribution:", error);
+      }
+    };
+
+    fetchTrafficData();
+  }, []);
 
   useEffect(() => {
     setOptions((prevState) => ({
       ...prevState,
-      colors: [info, warning],
+      colors: [info, warning, error],
       theme: {
         mode: theme.palette.mode,
       },
@@ -71,13 +89,16 @@ export default function TrafficDistributionChart() {
               total: {
                 ...prevState.plotOptions.pie.donut.labels.total,
                 color: secondary,
+                formatter: function () {
+                  return totalVisitors;
+                },
               },
             },
           },
         },
       },
     }));
-  }, [theme, info, warning, secondary]);
+  }, [theme, info, warning, error, secondary, totalVisitors]);
 
   return (
     <Box id="chart" sx={{ bgcolor: "transparent" }}>

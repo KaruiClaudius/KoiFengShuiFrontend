@@ -1,16 +1,15 @@
+import React, { useState, useEffect } from "react";
 // material-ui
 import Avatar from "@mui/material/Avatar";
-// import AvatarGroup from "@mui/material/AvatarGroup";
-// import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import List from "@mui/material/List";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
-import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
 import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { Pagination } from "@mui/material";
 
 // project import
 import MainCard from "../../components/MainCard";
@@ -21,11 +20,13 @@ import UniqueVisitorCard from "./UniqueVisitorCard";
 import OrdersTable from "./OrdersTable";
 import FooterComponent from "../../components/Footer/Footer";
 import DashboardSidebar from "../../components/Sidebar/Sidebar";
+import {
+  getNewUsersCount,
+  getNewUsersList,
+  getNewMarketListingsCount,
+} from "../../config/axios"; // Update the import path as needed
 
 // assets
-import GiftOutlined from "@ant-design/icons/GiftOutlined";
-import MessageOutlined from "@ant-design/icons/MessageOutlined";
-import SettingOutlined from "@ant-design/icons/SettingOutlined";
 
 // avatar style
 const avatarSX = {
@@ -47,6 +48,41 @@ const actionSX = {
 // ==============================|| DASHBOARD - DEFAULT ||============================== //
 
 export default function DashboardDefault() {
+  const [newUsersCount, setNewUsersCount] = useState(0);
+  const [newUsersList, setNewUsersList] = useState([]);
+  const [newMarketListingsCount, setNewMarketListingsCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const itemsPerPage = 3;
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const countResponse = await getNewUsersCount();
+        setNewUsersCount(countResponse.data.count);
+
+        const usersResponse = await getNewUsersList();
+        setNewUsersList(usersResponse.data);
+
+        const marketListingsCountResponse = await getNewMarketListingsCount();
+        setNewMarketListingsCount(marketListingsCountResponse.data.count);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        // Handle error (e.g., show an error message to the user)
+      }
+    };
+    setTotalPages(Math.ceil(newUsersList.length / itemsPerPage));
+    fetchDashboardData();
+  }, [newUsersList]);
+
+  const handleChangePage = (event, newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
   return (
     <Box
       sx={{
@@ -71,45 +107,30 @@ export default function DashboardDefault() {
         >
           <Grid container rowSpacing={4.5} columnSpacing={2.75}>
             {/* row 1 */}
+
             <Grid item xs={12} sx={{ mb: -2.25 }}>
               <Typography variant="h5" color="white">
                 Dashboard
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="Tiền dịch vụ"
-                count="4,42,236"
-                // percentage={59.3}
-                // extra="35,000"
-              />
+              <AnalyticEcommerce title="Tiền dịch vụ" count="4,42,236" />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="AVG Revenue"
-                count="78,250"
-                // percentage={70.5}
-                // extra="8,900"
-              />
+              <AnalyticEcommerce title="AVG Revenue" count="78,250" />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
                 title="Người dùng mới"
-                count="18,800"
-                // percentage={27.4}
-                // isLoss
+                count={newUsersCount.toString()}
                 color="warning"
-                // extra="1,943"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
                 title="Bài đăng mới"
-                count="$35,078"
-                // percentage={27.4}
-                // isLoss
+                count={newMarketListingsCount.toString()}
                 color="warning"
-                // extra="$20,395"
               />
             </Grid>
 
@@ -120,6 +141,7 @@ export default function DashboardDefault() {
             />
 
             {/* row 2 */}
+            {/* Total posts */}
             <Grid item xs={12} md={7} lg={8}>
               <UniqueVisitorCard />
             </Grid>
@@ -143,7 +165,6 @@ export default function DashboardDefault() {
                     <Typography variant="h6" color="text.secondary">
                       Thống kê tuần này
                     </Typography>
-                    {/* <Typography variant="h3">7,650 người</Typography> */}
                   </Stack>
                 </Box>
                 <MonthlyBarChart />
@@ -151,6 +172,7 @@ export default function DashboardDefault() {
             </Grid>
 
             {/* row 3 */}
+            {/* Recent post */}
             <Grid item xs={12} md={7} lg={8}>
               <Grid
                 container
@@ -159,7 +181,7 @@ export default function DashboardDefault() {
               >
                 <Grid item>
                   <Typography variant="h5" color="white">
-                    Bài đăng gần đây
+                    Giao dịch gần đây
                   </Typography>
                 </Grid>
                 <Grid item />
@@ -169,10 +191,11 @@ export default function DashboardDefault() {
               </MainCard>
             </Grid>
 
+            {/* List new user */}
             <Grid item xs={12} md={5} lg={4}>
               <Grid item>
                 <Typography variant="h5" color="white">
-                  Người dùng mới
+                  Người đăng kí mới
                 </Typography>
               </Grid>
               <Grid item />
@@ -192,86 +215,42 @@ export default function DashboardDefault() {
                     },
                   }}
                 >
-                  <ListItemButton divider>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{
-                          color: "success.main",
-                          bgcolor: "success.lighter",
-                        }}
+                  {newUsersList
+                    .slice(startIndex, endIndex)
+                    .map((user, index) => (
+                      <ListItemButton
+                        key={user.accountId}
+                        divider={index < itemsPerPage - 1}
                       >
-                        <GiftOutlined />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle1">
-                          Order #002434
-                        </Typography>
-                      }
-                      secondary="Today, 2:00 AM"
-                    />
-                    <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end"></Stack>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                  <ListItemButton divider>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{
-                          color: "primary.main",
-                          bgcolor: "primary.lighter",
-                        }}
-                      >
-                        <MessageOutlined />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle1">
-                          Order #984947
-                        </Typography>
-                      }
-                      secondary="5 August, 1:45 PM"
-                    />
-                    <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end"></Stack>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                  <ListItemButton>
-                    <ListItemAvatar>
-                      <Avatar
-                        sx={{ color: "error.main", bgcolor: "error.lighter" }}
-                      >
-                        <SettingOutlined />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle1">
-                          Order #988784
-                        </Typography>
-                      }
-                      secondary="7 hours ago"
-                    />
-                    <ListItemSecondaryAction>
-                      <Stack alignItems="flex-end"></Stack>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
+                        <ListItemAvatar>
+                          <Avatar
+                            src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                              user.fullName
+                            )}`}
+                            alt={user.fullName}
+                            sx={avatarSX}
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1">
+                              {user.fullName}
+                            </Typography>
+                          }
+                          secondary={new Date(user.createAt).toLocaleString()}
+                        />
+                      </ListItemButton>
+                    ))}
                 </List>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handleChangePage}
+                  color="primary"
+                  size="small"
+                  sx={{ mt: 2 }}
+                />
               </MainCard>
-            </Grid>
-
-            {/* row 4 */}
-            <Grid item xs={12} md={7} lg={8}>
-              {/* <SaleReportCard /> */}
-            </Grid>
-            <Grid item xs={12} md={5} lg={4}>
-              <Grid
-                container
-                alignItems="center"
-                justifyContent="space-between"
-              ></Grid>
             </Grid>
           </Grid>
         </Box>

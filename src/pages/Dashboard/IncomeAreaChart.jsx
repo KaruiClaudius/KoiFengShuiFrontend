@@ -1,13 +1,9 @@
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-
-// material-ui
 import { useTheme } from "@mui/material/styles";
-
-// third-party
 import ReactApexChart from "react-apexcharts";
+import { getNewMarketListingsByCategory } from "../../config/axios";
 
-// chart options
 const areaChartOptions = {
   chart: {
     height: 450,
@@ -28,104 +24,74 @@ const areaChartOptions = {
   },
 };
 
-// ==============================|| INCOME AREA CHART ||============================== //
-
 export default function IncomeAreaChart({ slot }) {
   const theme = useTheme();
-
-  const { primary, secondary } = theme.palette.text;
+  const { secondary } = theme.palette.text;
   const line = theme.palette.divider;
 
   const [options, setOptions] = useState(areaChartOptions);
+  const [series, setSeries] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setOptions((prevState) => ({
-      ...prevState,
-      colors: [theme.palette.primary.main, theme.palette.primary[700]],
-      xaxis: {
-        categories:
-          slot === "month"
-            ? [
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-              ]
-            : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        labels: {
-          style: {
-            colors: [
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-              secondary,
-            ],
-          },
-        },
-        axisBorder: {
-          show: true,
-          color: line,
-        },
-        tickAmount: slot === "month" ? 11 : 7,
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: [secondary],
-          },
-        },
-      },
-      grid: {
-        borderColor: line,
-      },
-    }));
-  }, [primary, secondary, line, theme, slot]);
+    const fetchCategoryData = async () => {
+      setLoading(true);
+      try {
+        const days = slot === "month" ? 30 : 7;
+        const response = await getNewMarketListingsByCategory(days);
+        const categoryData = response.data;
 
-  const [series, setSeries] = useState([
-    {
-      name: "Page Views",
-      data: [0, 86, 28, 115, 48, 210, 136],
-    },
-    {
-      name: "Sessions",
-      data: [0, 43, 14, 56, 24, 105, 68],
-    },
-  ]);
+        // Process data for chart
+        const categories = categoryData.map((item) => item.categoryName);
+        const seriesData = [
+          {
+            name: "Số lượng bài đăng",
+            data: categoryData.map((item) => item.count),
+          },
+        ];
 
-  useEffect(() => {
-    setSeries([
-      {
-        name: "Cá Koi",
-        data:
-          slot === "month"
-            ? [76, 85, 101, 98, 87, 105, 91, 114, 94, 86, 115, 35]
-            : [31, 40, 28, 51, 42, 109, 100],
-      },
-      {
-        name: "Phụ kiện",
-        data:
-          slot === "month"
-            ? [110, 60, 150, 35, 60, 36, 26, 45, 65, 52, 53, 41]
-            : [11, 32, 45, 32, 34, 52, 41],
-      },
-    ]);
-  }, [slot]);
+        setOptions((prevState) => ({
+          ...prevState,
+          colors: [theme.palette.primary.main],
+          xaxis: {
+            categories: categories,
+            labels: {
+              style: {
+                colors: Array(categories.length).fill(secondary),
+              },
+            },
+            axisBorder: {
+              show: true,
+              color: line,
+            },
+            tickAmount: categories.length,
+          },
+          yaxis: {
+            labels: {
+              style: {
+                colors: [secondary],
+              },
+            },
+          },
+          grid: {
+            borderColor: line,
+          },
+        }));
+
+        setSeries(seriesData);
+      } catch (error) {
+        console.error("Error fetching category data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategoryData();
+  }, [slot, theme, secondary, line]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <ReactApexChart

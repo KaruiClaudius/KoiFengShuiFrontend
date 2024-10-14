@@ -27,7 +27,7 @@ const DashboardSidebar = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", flexGrow: 1 }}>
+    <Box sx={{ display: "sticky", flexGrow: 1, paddingBottom: 50 }}>
       <AppHeader />
       <Box
         component="main"
@@ -44,8 +44,9 @@ const DashboardSidebar = () => {
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
-            top: "64px", // Adjust this value based on your AppHeader height
-            height: "calc(100% - 64px)", // Adjust this value based on your AppHeader height
+            top: "64px",
+            bottom: "60px", // Adjust this value based on your AppHeader height
+            height: "calc(100% - 64px - 64px)", // Adjust this value based on your AppHeader height
           },
         }}
       >

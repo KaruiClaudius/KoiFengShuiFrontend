@@ -185,7 +185,7 @@ const AppHeader = () => {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              {userRole === 1 && (
+              {isLoggedIn && userRole === 1 && (
                 <MenuItem onClick={() => navigate("/dashboard")}>
                   Dashboard
                 </MenuItem>
