@@ -6,6 +6,7 @@ const { Footer } = Layout;
 const FooterComponent = () => {
   return (
     <Footer
+      className="ant-layout-footer"
       style={{
         backgroundColor: "#2c1b18",
         color: "#d3b58d",
