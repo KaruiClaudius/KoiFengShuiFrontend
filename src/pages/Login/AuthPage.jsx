@@ -110,7 +110,6 @@ export default function AuthPage() {
             doB: formData.get("doB"),
             phone: formData.get("phone"),
             gender: formData.get("gender"),
-            terms: formData.get("terms") === "on",
           });
           toggleAuthMode("signin");
         } catch (err) {

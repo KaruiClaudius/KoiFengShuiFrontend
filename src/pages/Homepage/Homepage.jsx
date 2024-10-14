@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
@@ -7,11 +7,11 @@ import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
-import { Link, useNavigate } from "react-router-dom";
-import { CardContent } from "@mui/material";
-import { Typography } from "antd";
+import { useNavigate } from "react-router-dom";
+// import { CardContent } from "@mui/material";
+// import { Typography } from "antd";
 import TruncatedText from "../../utils/TruncatedText";
-import api, {
+import {
   getFengShuiKoiFishPost,
   getFengShuiKoiDecorationPost,
   getFengShuiKoiPost,
@@ -189,7 +189,7 @@ export default function Homepage() {
           </div>
         </div>
       </div>
-      <div class="white-box">
+      <div className="white-box">
         <div className="container-title">
           <h2 className="container-title-title">Cá Koi Theo Bản Mệnh</h2>
           <a href={`/fishProduct`} className="container-title-link">
@@ -198,7 +198,7 @@ export default function Homepage() {
         </div>
         <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
       </div>
-      <div class="white-box">
+      <div className="white-box">
         <div className="container-title">
           <h2 className="container-title-title">Bán Cá Koi</h2>
           <a href={`/fishProduct`} className="container-title-link">
@@ -207,7 +207,7 @@ export default function Homepage() {
         </div>
         <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
       </div>
-      <div class="white-box">
+      <div className="white-box">
         <div className="container-title">
           <h2 className="container-title-title">Phụ kiện hồ cá</h2>
           <a href={`/fishProduct`} className="container-title-link">
@@ -218,7 +218,7 @@ export default function Homepage() {
           {renderCardsDeconration(cardDataDecoration)}
         </div>
       </div>
-      <div class="white-box">
+      <div className="white-box">
         <div className="container-title">
           <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
           <a href={`/blog`} className="container-title-link">

@@ -17,7 +17,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Dot from "../../components/@extended/Dot";
 
 // Import the API function
-import { getMarketListings } from "../../config/axios";
+import { getTransactionListing } from "../../config/axios";
 
 const headCells = [
   {
@@ -94,7 +94,7 @@ export default function OrderTable() {
     const fetchListings = async () => {
       try {
         setLoading(true);
-        const response = await getMarketListings();
+        const response = await getTransactionListing();
         setListings(response.data);
         setLoading(false);
       } catch (err) {
