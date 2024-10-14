@@ -1,0 +1,224 @@
+.homepage-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  margin-top: 40px;
+}
+
+
+
+.image-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.half-page-image {
+  width: 100%; /* Makes the image cover 50% of the viewport width */
+  height: 60vh;
+  object-fit: cover;
+}
+
+.centered-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  font-size: 2em;
+}
+
+.centered-text h1 {
+  margin: 0;
+}
+
+.centered-text p {
+  margin-top: 10px;
+  font-size: 1.1em;
+}
+
+.title-banner {
+  justify-content: center;
+  display: flex;
+}
+
+.search-bar-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+.search-bar-container input{
+  padding-left: 20px; 
+  outline: none;
+}
+
+.search-bar {
+  padding: 3px;
+  width: 100%;
+  border: 1px solid #623d0d; /* Adjust the color to fit your theme */
+  border-radius: 10px; /* For rounded edges */
+  font-size: 0.8em;
+  padding-right: 40px; /* Space for the icon */
+}
+
+.search-icon-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 50px;
+}
+
+.search-icon {
+  width: 20px; /* Adjust icon size */
+  height: 20px;
+  margin-left: 20px;
+}
+
+.button-group {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px; /* Space between the buttons */
+  justify-content: center;
+}
+
+.custom-button {
+  padding: 10px 20px;
+  background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent background */
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Light border */
+  border-radius: 5px;
+  font-size: 20px;
+  cursor: pointer;
+  position: relative;
+  z-index: 1; /* Ensures button text stays above background */
+  backdrop-filter: blur(10px); /* Blur effect */
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  transition: background-color 0.3s ease;
+}
+
+.custom-button:hover {
+  background-color: rgba(255, 255, 255, 0.4); /* Darker background on hover */
+  backdrop-filter: blur(15px); /* More intense blur on hover */
+}
+
+.card-container{
+  text-align: center;
+  width: 20%;
+  margin: 5px;
+}
+
+.property-card {
+  justify-content: center;
+  margin: 10px auto;
+  border-radius: 5px;
+  overflow: hidden; /* To handle rounded corners */
+  border: 1px solid #e0e0e0;  /*You can add a border if needed */
+  width: fit-content;
+  text-align: center;
+}
+
+.featured-badge {
+  position: absolute;
+  background-color: red;
+  color: white;
+  padding: 3px 3px;
+  font-weight: bold;
+  border-radius: 5px;
+  z-index: 1;
+  
+}
+
+.property-image {
+  width: 5%;
+  height:  10%;
+  object-fit: contain; /* To maintain image aspect ratio */
+  width: fit-content;
+}
+
+.property-content {
+  padding: 6px; 
+  width: fit-content;
+  text-align: center;
+}
+
+
+
+.property-title-link {
+  text-decoration: none;
+  color: inherit;
+  width: 25%;
+  text-align: center;
+  justify-items: center;
+  margin: auto;
+}
+
+.property-title {
+  font-size: 15px;
+  margin: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.property-price-container {
+  display: flex;
+  align-items: center;
+  margin-top: 8px; /* Spacing similar to Material-UI's marginTop 1 */
+  width: 100%;
+  justify-content: center;
+}
+
+.property-price-icon {
+  width: 30%;
+  height: 30%;
+  margin-right: 8px; /* Spacing between icon and text */
+}
+
+.property-price-text {
+  width: 70%;
+  color: #757575; /* 'text.secondary' equivalent */
+  font-size: 12px;
+  text-align: center;
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+.white-box {
+  background-color: #ffffff;
+  padding: 15px;
+  width: 50%;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.container-title {
+  display: flex;
+  width: 100%;
+}
+
+.container-title-title {
+  width: 100%;
+  text-align: center;
+  margin-left: 140px;
+}
+
+.container-title-link {
+  text-decoration: none;
+  color: inherit;
+  width: 35%;
+  text-align: right;
+}

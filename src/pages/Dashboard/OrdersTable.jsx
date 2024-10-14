@@ -21,10 +21,16 @@ import { getMarketListings } from "../../config/axios";
 
 const headCells = [
   {
-    id: "listingId",
+    id: "transactionId",
     align: "left",
     disablePadding: false,
-    label: "Id",
+    label: "Transaction ID",
+  },
+  {
+    id: "type",
+    align: "left",
+    disablePadding: true,
+    label: "Loại",
   },
   {
     id: "title",
@@ -37,6 +43,12 @@ const headCells = [
     align: "left",
     disablePadding: false,
     label: "Trạng thái",
+  },
+  {
+    id: "amount",
+    align: "left",
+    disablePadding: false,
+    label: "Giá",
   },
 ];
 
@@ -72,7 +84,7 @@ function OrderStatus({ isActive }) {
 }
 
 export default function OrderTable() {
-  const [order, setOrder] = useState("asc");
+  const [order, setOrder] = useState("desc");
   const [orderBy, setOrderBy] = useState("listingId");
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -141,15 +153,17 @@ export default function OrderTable() {
                 role="checkbox"
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 tabIndex={-1}
-                key={row.listingId}
+                key={row.transactionId}
               >
                 <TableCell component="th" scope="row">
-                  <Link color="secondary">{row.listingId}</Link>
+                  {row.transactionId}
                 </TableCell>
+                <TableCell>{row.type}</TableCell>
                 <TableCell>{row.title}</TableCell>
                 <TableCell>
                   <OrderStatus isActive={row.isActive} />
                 </TableCell>
+                <TableCell>{row.amount}</TableCell>
               </TableRow>
             ))}
           </TableBody>

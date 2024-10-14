@@ -1,10 +1,10 @@
 import * as React from "react";
+import { useState } from "react";
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
 import GlobalStyles from "@mui/joy/GlobalStyles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
-// import Checkbox from "@mui/joy/Checkbox";
 import Divider from "@mui/joy/Divider";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
@@ -16,8 +16,6 @@ import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Stack from "@mui/joy/Stack";
 import { useNavigate } from "react-router-dom";
-// import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-// import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import api from "../../config/axios";
 import KoiLogo from "../../assets/Logo_SWP.svg";
@@ -27,11 +25,13 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 const customTheme = extendTheme({ defaultColorScheme: "dark" });
 
 export default function AuthPage() {
-  const [authMode, setAuthMode] = React.useState("signin");
-  // 'signin', 'signup', or 'forgotpassword'
+  const [authMode, setAuthMode] = useState("signin");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const toggleAuthMode = (mode) => {
     setAuthMode(mode);
+    setError(""); // Clear any existing error when switching modes
   };
 
   const CompanyLogoButton = () => (
@@ -48,17 +48,15 @@ export default function AuthPage() {
     </IconButton>
   );
 
-  const navigate = useNavigate();
-  // const [anchorElUser, setAnchorElUser] = React.useState(null);
-
   const handleHomeClick = () => {
     navigate("/");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError(""); // Clear any existing error
     const formData = new FormData(event.currentTarget);
-    // let data;
+
     switch (authMode) {
       case "signin":
         try {
@@ -85,11 +83,25 @@ export default function AuthPage() {
           navigate("/");
         } catch (err) {
           console.log(err);
-          alert(err.response?.data || "An error occurred during login");
+          if (err.response && err.response.status === 400) {
+            if (err.response.data.message === "Email not found.") {
+              setError("Email không tồn tại.");
+            } else if (err.response.data.message === "Incorrect password.") {
+              setError("Mật khẩu không đúng.");
+            } else {
+              setError(
+                err.response.data.message ||
+                  "Đăng nhập thất bại. Vui lòng thử lại."
+              );
+            }
+          } else {
+            setError(
+              "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại sau."
+            );
+          }
         }
         break;
       case "signup":
-        // handle SignUp
         try {
           await api.post("api/Auth/SignUp", {
             fullName: formData.get("fullName"),
@@ -103,11 +115,12 @@ export default function AuthPage() {
           toggleAuthMode("signin");
         } catch (err) {
           console.error(err);
-          alert(err.response?.data || "An error occurred during Sign Up");
+          setError(
+            err.response?.data ||
+              "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại."
+          );
         }
-
         break;
-
       case "forgotpassword":
         try {
           await api.post("api/Auth/ForgotPassword", {
@@ -116,14 +129,13 @@ export default function AuthPage() {
           toggleAuthMode("signin");
         } catch (err) {
           console.error(err);
-          alert(
-            err.response?.data || "An error occured during Forgot Password"
+          setError(
+            err.response?.data ||
+              "Đã xảy ra lỗi trong quá trình khôi phục mật khẩu. Vui lòng thử lại."
           );
         }
-
         break;
     }
-    // alert(JSON.stringify(data, null, 2));
   };
 
   return (
@@ -168,7 +180,6 @@ export default function AuthPage() {
               sx={{ py: 3, display: "flex", justifyContent: "space-between" }}
             >
               <Box sx={{ gap: 2, display: "flex", alignItems: "center" }}>
-                {/* <CompanyLogoButton /> */}
                 <Button
                   variant="plain"
                   startDecorator={<CompanyLogoButton />}
@@ -179,7 +190,6 @@ export default function AuthPage() {
                   Koi Feng Shui
                 </Button>
               </Box>
-              {/* <ColorSchemeToggle /> */}
             </Box>
             <Box
               component="main"
@@ -252,6 +262,7 @@ export default function AuthPage() {
                 {authMode === "signin" && <GoogleLoginButton />}
               </Stack>
               {authMode === "signin" && <Divider>Hoặc đăng nhập bằng</Divider>}
+
               <Stack sx={{ gap: 4, mt: 2 }}>
                 <form onSubmit={handleSubmit}>
                   {authMode === "signup" && (
@@ -292,6 +303,15 @@ export default function AuthPage() {
                       </Select>
                     </FormControl>
                   )}
+                  {error && (
+                    <Typography
+                      color="danger"
+                      fontSize="sm"
+                      sx={{ mt: 1, mb: 2 }}
+                    >
+                      {error}
+                    </Typography>
+                  )}
                   <Stack sx={{ gap: 4, mt: 2 }}>
                     {authMode === "signin" && (
                       <Box
@@ -311,13 +331,6 @@ export default function AuthPage() {
                         </Link>
                       </Box>
                     )}
-                    {/* {authMode === "signup" && (
-                    <Checkbox
-                      size="sm"
-                      label="I agree to the terms and conditions"
-                      name="terms"
-                    />
-                  )} */}
                     <Button type="submit" fullWidth>
                       {authMode === "signin"
                         ? "Đăng nhập"

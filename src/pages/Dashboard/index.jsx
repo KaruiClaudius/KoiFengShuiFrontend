@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 // material-ui
 import Avatar from "@mui/material/Avatar";
-// import AvatarGroup from "@mui/material/AvatarGroup";
-// import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import List from "@mui/material/List";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
-import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
 import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { Pagination } from "@mui/material";
 
 // project import
 import MainCard from "../../components/MainCard";
@@ -53,6 +51,10 @@ export default function DashboardDefault() {
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newUsersList, setNewUsersList] = useState([]);
   const [newMarketListingsCount, setNewMarketListingsCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const itemsPerPage = 3;
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -70,9 +72,16 @@ export default function DashboardDefault() {
         // Handle error (e.g., show an error message to the user)
       }
     };
-
+    setTotalPages(Math.ceil(newUsersList.length / itemsPerPage));
     fetchDashboardData();
-  }, []);
+  }, [newUsersList]);
+
+  const handleChangePage = (event, newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
 
   return (
     <Box
@@ -132,7 +141,7 @@ export default function DashboardDefault() {
             />
 
             {/* row 2 */}
-            {/* Total traffic */}
+            {/* Total posts */}
             <Grid item xs={12} md={7} lg={8}>
               <UniqueVisitorCard />
             </Grid>
@@ -156,7 +165,6 @@ export default function DashboardDefault() {
                     <Typography variant="h6" color="text.secondary">
                       Thống kê tuần này
                     </Typography>
-                    {/* <Typography variant="h3">7,650 người</Typography> */}
                   </Stack>
                 </Box>
                 <MonthlyBarChart />
@@ -173,7 +181,7 @@ export default function DashboardDefault() {
               >
                 <Grid item>
                   <Typography variant="h5" color="white">
-                    Bài đăng gần đây
+                    Giao dịch gần đây
                   </Typography>
                 </Grid>
                 <Grid item />
@@ -207,44 +215,42 @@ export default function DashboardDefault() {
                     },
                   }}
                 >
-                  {newUsersList.slice(0, 3).map((user, index) => (
-                    <ListItemButton key={user.accountId} divider={index < 2}>
-                      <ListItemAvatar>
-                        <Avatar
-                          src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                            user.fullName
-                          )}`}
-                          alt={user.fullName}
-                          sx={avatarSX}
+                  {newUsersList
+                    .slice(startIndex, endIndex)
+                    .map((user, index) => (
+                      <ListItemButton
+                        key={user.accountId}
+                        divider={index < itemsPerPage - 1}
+                      >
+                        <ListItemAvatar>
+                          <Avatar
+                            src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                              user.fullName
+                            )}`}
+                            alt={user.fullName}
+                            sx={avatarSX}
+                          />
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Typography variant="subtitle1">
+                              {user.fullName}
+                            </Typography>
+                          }
+                          secondary={new Date(user.createAt).toLocaleString()}
                         />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography variant="subtitle1">
-                            {user.fullName}
-                          </Typography>
-                        }
-                        secondary={new Date(user.createAt).toLocaleString()}
-                      />
-                      <ListItemSecondaryAction>
-                        <Stack alignItems="flex-end"></Stack>
-                      </ListItemSecondaryAction>
-                    </ListItemButton>
-                  ))}
+                      </ListItemButton>
+                    ))}
                 </List>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handleChangePage}
+                  color="primary"
+                  size="small"
+                  sx={{ mt: 2 }}
+                />
               </MainCard>
-            </Grid>
-
-            {/* row 4 */}
-            <Grid item xs={12} md={7} lg={8}>
-              {/* <SaleReportCard /> */}
-            </Grid>
-            <Grid item xs={12} md={5} lg={4}>
-              <Grid
-                container
-                alignItems="center"
-                justifyContent="space-between"
-              ></Grid>
             </Grid>
           </Grid>
         </Box>

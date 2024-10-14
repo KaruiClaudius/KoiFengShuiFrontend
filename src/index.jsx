@@ -14,6 +14,7 @@ import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import KoiDetailPage from "./pages/KoiDetailPage/KoiDetailPage";
 
 const App = () => {
   return (
@@ -31,6 +32,8 @@ const App = () => {
           />
           <Route path="/" element={<HomePage />} />
           <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/KoiDetail" element={<KoiDetailPage />} />
           <Route
             path="/profile"
             element={
