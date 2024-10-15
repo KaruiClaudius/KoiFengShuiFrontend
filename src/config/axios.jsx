@@ -34,13 +34,13 @@ export const getFengShuiConsultation = (data) => {
 
 export const getFengShuiKoiFishPost = () => {
   return api
-    .get("/api/Post/GetAllByPostType/1?page=1&pageSize=5")
+    .get("/api/MarketplaceListings/GetAllByCategoryType/1?page=1&pageSize=10")
     .then((response) => response.data);
 };
 
 export const getFengShuiKoiDecorationPost = () => {
   return api
-    .get("/api/Post/GetAllByPostType/2?page=1&pageSize=5")
+    .get("/api/MarketplaceListings/GetAllByCategoryType/2?page=1&pageSize=5")
     .then((response) => response.data);
 };
 

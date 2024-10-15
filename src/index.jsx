@@ -33,7 +33,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/KoiDetail" element={<KoiDetailPage />} />
+          <Route path="/KoiDetail/:id" element={<KoiDetailPage />} />
           <Route
             path="/profile"
             element={
