@@ -11,6 +11,7 @@ import {
   Col,
   message,
   Breadcrumb,
+  Typography,
 } from "antd";
 import moment from "moment";
 import AppHeader from "../../components/Header/Header";
@@ -44,6 +45,7 @@ const UserProfile = () => {
       form.setFieldsValue({
         ...user,
         dob: user.dob ? moment(user.dob) : null,
+        elementName: user.elementName || "Not available", // Add this line
       });
       setLoading(false);
     } catch (error) {
@@ -235,6 +237,12 @@ const UserProfile = () => {
                 >
                   <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
                 </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Typography.Text>
+                  <strong>Mệnh:</strong>{" "}
+                  {userData?.elementName || "Not available"}
+                </Typography.Text>
               </Col>
             </Row>
             <Form.Item>
