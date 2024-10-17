@@ -10,7 +10,6 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ApprovalIcon from "@mui/icons-material/Approval";
-import AppHeader from "../Header/Header";
 
 const drawerWidth = 240;
 
@@ -27,8 +26,7 @@ const DashboardSidebar = () => {
   ];
 
   return (
-    <Box sx={{ display: "sticky", flexGrow: 1, paddingBottom: 50 }}>
-      <AppHeader />
+    <Box sx={{ flexGrow: 1, paddingBottom: 50, position: "sticky" }}>
       <Box
         component="main"
         sx={{
@@ -36,6 +34,7 @@ const DashboardSidebar = () => {
           p: 3,
         }}
       ></Box>
+
       <Drawer
         variant="permanent"
         sx={{
@@ -46,7 +45,7 @@ const DashboardSidebar = () => {
             boxSizing: "border-box",
             top: "64px",
             bottom: "60px", // Adjust this value based on your AppHeader height
-            height: "calc(100% - 64px - 64px)", // Adjust this value based on your AppHeader height
+            height: "calc(100% - 30px - 30px)", // Adjust this value based on your AppHeader height
           },
         }}
       >

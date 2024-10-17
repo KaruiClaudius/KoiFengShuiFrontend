@@ -18,13 +18,14 @@ import MonthlyBarChart from "./MonthlyBarChart";
 import UniqueVisitorCard from "./UniqueVisitorCard";
 // import SaleReportCard from "./SaleReportCard";
 import OrdersTable from "./OrdersTable";
-import FooterComponent from "../../components/Footer/Footer";
 import DashboardSidebar from "../../components/Sidebar/Sidebar";
 import {
   getNewUsersCount,
   getNewUsersList,
   getNewMarketListingsCount,
 } from "../../config/axios"; // Update the import path as needed
+import AppHeader from "../../components/Header/Header";
+import FooterComponent from "../../components/Footer/Footer";
 
 // assets
 
@@ -92,7 +93,7 @@ export default function DashboardDefault() {
         backgroundColor: "#14335c",
       }}
     >
-      {/* <AppHeader /> */}
+      <AppHeader />
       <Box sx={{ display: "flex", flexGrow: 1, overflow: "hidden" }}>
         <DashboardSidebar />
         <Box

@@ -4,7 +4,6 @@ import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
 import ex from "../../assets/koio_ex.png";
 import usericon from "../../assets/icons/userIcon.png";
-import "./KoiDetailPage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CardContent } from "@mui/material";

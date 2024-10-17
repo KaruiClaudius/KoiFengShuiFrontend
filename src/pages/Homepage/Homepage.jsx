@@ -305,7 +305,7 @@ export default function Homepage() {
             <div class="white-box">
               <div className="container-title">
                 <h2 className="container-title-title">Phụ kiện hồ cá</h2>
-                <a href={`/fishProduct`} className="container-link">
+                <a href={`/fishProduct`} className="container-title-link">
                   <h2>Xem thêm {">"}</h2>
                 </a>
               </div>
