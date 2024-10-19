@@ -11,7 +11,6 @@ import {
   Col,
   message,
   Breadcrumb,
-  Typography,
 } from "antd";
 import moment from "moment";
 import AppHeader from "../../components/Header/Header";
@@ -27,7 +26,13 @@ const UserProfile = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState("1");
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const elementMapping = {
+    1: "Mộc",
+    2: "Hoả",
+    3: "Thổ",
+    4: "Kim",
+    5: "Thuỷ",
+  };
   useEffect(() => {
     fetchUserData();
   }, []);
@@ -41,11 +46,14 @@ const UserProfile = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const user = response.data;
+      const elementName = user.elementId
+        ? elementMapping[user.elementId]
+        : "Không xác định";
       setUserData(user);
       form.setFieldsValue({
         ...user,
         dob: user.dob ? moment(user.dob) : null,
-        elementName: user.elementName || "Not available", // Add this line
+        elementName: elementName,
       });
       setLoading(false);
     } catch (error) {
@@ -69,10 +77,10 @@ const UserProfile = () => {
 
   const onFinish = async (values) => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       const email = localStorage.getItem("email");
 
-      // First, fetch the user data to get the accountId
       const userResponse = await api.get(`api/Account/email/${email}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -82,31 +90,43 @@ const UserProfile = () => {
       const dataToSend = {
         email: values.email,
         fullName: values.fullName,
-        dob: values.dob.format("YYYY-MM-DD"), // Format date as YYYY-MM-DD
+        dob: values.dob.format("YYYY-MM-DD"),
         gender: values.gender,
         phone: values.phone,
       };
-
-      // Log the data being sent for debugging
-      console.log("Data being sent:", dataToSend);
 
       const response = await api.put(`api/Account/${accountId}`, dataToSend, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("Server response:", response.data);
-      message.success("Profile updated successfully");
-      fetchUserData(); // Refresh the user data after update
+      // Fetch updated user data
+      await fetchUserData();
+
+      // Dispatch custom event with updated user data
+      const updatedUserData = await api.get(`api/Account/email/${email}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      localStorage.setItem("user", JSON.stringify(updatedUserData.data));
+      window.dispatchEvent(
+        new CustomEvent("userProfileUpdated", { detail: updatedUserData.data })
+      );
+
+      message.success("Thông tin cá nhân đã được cập nhật thành công");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error(
         "Error updating profile:",
         error.response?.data || error.message
       );
       message.error(
-        `Error updating profile: ${
+        `Lỗi cập nhật thông tin: ${
           error.response?.data?.message || error.message
         }`
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -239,10 +259,9 @@ const UserProfile = () => {
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Typography.Text>
-                  <strong>Mệnh:</strong>{" "}
-                  {userData?.elementName || "Not available"}
-                </Typography.Text>
+                <Form.Item name="elementName" label="Mệnh">
+                  <Input disabled style={{ color: "rgba(0, 0, 0, 0.85)" }} />
+                </Form.Item>
               </Col>
             </Row>
             <Form.Item>

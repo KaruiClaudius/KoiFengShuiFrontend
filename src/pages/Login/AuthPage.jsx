@@ -28,6 +28,54 @@ export default function AuthPage() {
   const [authMode, setAuthMode] = useState("signin");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateForm = (formData) => {
+    const errors = {};
+
+    // Validate Full Name
+    if (!formData.get("fullName").trim()) {
+      errors.fullName = "Họ và tên không được để trống";
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.get("fullName"))) {
+      errors.fullName = "Họ và tên chỉ được chứa chữ cái và khoảng trắng";
+    }
+
+    // Validate Email
+    if (!formData.get("email").trim()) {
+      errors.email = "Email không được để trống";
+    } else if (!/\S+@\S+\.\S+/.test(formData.get("email"))) {
+      errors.email = "Email không hợp lệ";
+    }
+
+    // Validate Password
+    if (!formData.get("password")) {
+      errors.password = "Mật khẩu không được để trống";
+    } else if (formData.get("password").length < 6) {
+      errors.password = "Mật khẩu phải có ít nhất 8 ký tự";
+    }
+
+    // Validate Date of Birth
+    const dob = new Date(formData.get("doB"));
+    if (!formData.get("doB")) {
+      errors.doB = "Ngày sinh không được để trống";
+    } else if (isNaN(dob.getTime())) {
+      errors.doB = "Ngày sinh không hợp lệ";
+    }
+
+    // Validate Phone Number
+    if (!formData.get("phone").trim()) {
+      errors.phone = "Số điện thoại không được để trống";
+    } else if (!/^[0-9]{10}$/.test(formData.get("phone"))) {
+      errors.phone = "Số điện thoại không hợp lệ";
+    }
+
+    // Validate Gender
+    if (!formData.get("gender")) {
+      errors.gender = "Vui lòng chọn giới tính";
+    }
+
+    return errors;
+  };
 
   const toggleAuthMode = (mode) => {
     setAuthMode(mode);
@@ -56,6 +104,14 @@ export default function AuthPage() {
     event.preventDefault();
     setError(""); // Clear any existing error
     const formData = new FormData(event.currentTarget);
+    if (authMode === "signup") {
+      const validationErrors = validateForm(formData);
+      setFormErrors(validationErrors);
+
+      if (Object.keys(validationErrors).length > 0) {
+        return; // Stop form submission if there are errors
+      }
+    }
 
     switch (authMode) {
       case "signin":
@@ -265,42 +321,70 @@ export default function AuthPage() {
               <Stack sx={{ gap: 4, mt: 2 }}>
                 <form onSubmit={handleSubmit}>
                   {authMode === "signup" && (
-                    <FormControl required>
+                    <FormControl required error={!!formErrors.fullName}>
                       <FormLabel>Họ và tên</FormLabel>
                       <Input type="text" name="fullName" />
+                      {formErrors.fullName && (
+                        <Typography color="danger" fontSize="sm">
+                          {formErrors.fullName}
+                        </Typography>
+                      )}
                     </FormControl>
                   )}
-                  <FormControl required>
+                  <FormControl required error={!!formErrors.email}>
                     <FormLabel>Email</FormLabel>
                     <Input type="email" name="email" />
+                    {formErrors.email && (
+                      <Typography color="danger" fontSize="sm">
+                        {formErrors.email}
+                      </Typography>
+                    )}
                   </FormControl>
                   {authMode !== "forgotpassword" && (
-                    <FormControl required>
+                    <FormControl required error={!!formErrors.password}>
                       <FormLabel>Mật khẩu</FormLabel>
                       <Input type="password" name="password" />
+                      {formErrors.password && (
+                        <Typography color="danger" fontSize="sm">
+                          {formErrors.password}
+                        </Typography>
+                      )}
                     </FormControl>
                   )}
                   {authMode === "signup" && (
-                    <FormControl required>
-                      <FormLabel>Năm sinh</FormLabel>
-                      <Input type="date" name="doB" />
-                    </FormControl>
-                  )}
-                  {authMode === "signup" && (
-                    <FormControl required>
-                      <FormLabel>Số điện thoại</FormLabel>
-                      <Input type="text" name="phone" />
-                    </FormControl>
-                  )}
-                  {authMode === "signup" && (
-                    <FormControl required>
-                      <FormLabel>Giới tính</FormLabel>
-                      <Select defaultValue="gender" name="gender">
-                        <Option value="male">Nam</Option>
-                        <Option value="female">Nữ</Option>
-                        <Option value="other">Khác</Option>
-                      </Select>
-                    </FormControl>
+                    <>
+                      <FormControl required error={!!formErrors.doB}>
+                        <FormLabel>Năm sinh</FormLabel>
+                        <Input type="date" name="doB" />
+                        {formErrors.doB && (
+                          <Typography color="danger" fontSize="sm">
+                            {formErrors.doB}
+                          </Typography>
+                        )}
+                      </FormControl>
+                      <FormControl required error={!!formErrors.phone}>
+                        <FormLabel>Số điện thoại</FormLabel>
+                        <Input type="text" name="phone" />
+                        {formErrors.phone && (
+                          <Typography color="danger" fontSize="sm">
+                            {formErrors.phone}
+                          </Typography>
+                        )}
+                      </FormControl>
+                      <FormControl required error={!!formErrors.gender}>
+                        <FormLabel>Giới tính</FormLabel>
+                        <Select defaultValue="gender" name="gender">
+                          <Option value="male">Nam</Option>
+                          <Option value="female">Nữ</Option>
+                          <Option value="other">Khác</Option>
+                        </Select>
+                        {formErrors.gender && (
+                          <Typography color="danger" fontSize="sm">
+                            {formErrors.gender}
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </>
                   )}
                   {error && (
                     <Typography

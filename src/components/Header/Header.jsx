@@ -28,23 +28,46 @@ const AppHeader = () => {
   const [userData, setUserData] = useState(null);
   const user = JSON.parse(localStorage.getItem("user"));
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    console.log("User object from localStorage:", user);
-    setIsLoggedIn(!!token);
+  const elementMapping = {
+    1: "Mộc",
+    2: "Hoả",
+    3: "Thổ",
+    4: "Kim",
+    5: "Thuỷ",
+  };
 
-    if (token && user) {
-      setUserData(user);
-      setFullName(user.fullName);
-      setUserRole(user.roleId);
-      setElementName(user.elementName || "No Element");
+  useEffect(() => {
+    const updateUserData = (event) => {
+      const updatedUser = event.detail;
+      setUserData(updatedUser);
+      setFullName(updatedUser.fullName);
+      setUserRole(updatedUser.roleId);
+      const elementName = updatedUser.elementId
+        ? elementMapping[updatedUser.elementId]
+        : "Unknown";
+      setElementName(elementName);
       setAvatarUrl(
         `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-          user.fullName
+          updatedUser.fullName
         )}`
       );
+    };
+
+    // Add event listener
+    window.addEventListener("userProfileUpdated", updateUserData);
+
+    // Initial data load
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (token && user) {
+      updateUserData({ detail: user });
     }
+    setIsLoggedIn(!!token);
+
+    // Cleanup function to remove event listener
+    return () => {
+      window.removeEventListener("userProfileUpdated", updateUserData);
+    };
   }, []);
 
   const handleLogout = () => {
