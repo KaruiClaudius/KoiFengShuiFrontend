@@ -77,5 +77,7 @@ export const getTransactionListing = (page = 1, pageSize = 10) => {
 export const getTotalTransaction = () => {
   return api.get("/api/Dashboard/total-amount");
 };
-
+export const getAllFAQs = () => {
+  return api.get("/api/FAQ/GetAll");
+};
 export default api;

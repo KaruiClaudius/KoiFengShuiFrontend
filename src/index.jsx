@@ -9,12 +9,17 @@ import HomePage from "./pages/Homepage/Homepage";
 import KoiCompatibilityForm from "./pages/KoiCompatible/KoiCompatibilityForm ";
 import UserProfile from "./pages/UserProfile/UserProfile";
 import ProtectedRoute from "./config/ProtectedRoute";
+// import PaymentMethod from "./pages/Payment/Payment";
+import FAQ from "./components/FAQ/FAQ.jsx";
 
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import KoiDetailPage from "./pages/KoiDetailPage/KoiDetailPage";
+
+//import Homepage, Detail Page
+ import KoiDetailPage from "./pages/KoiDetailPage/KoiDetailPage";
+ //import DecorationPage from "./pages/DecorationPage/DecorationPage";
 
 const App = () => {
   return (
@@ -33,7 +38,9 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/KoiDetail" element={<KoiDetailPage />} />
+          <Route path="/KoiDetail/:id" element={<KoiDetailPage />} />
+          {/* <Route path="/Decoration/:id" element={<DecorationPage />} /> */}
+          <Route path="/FAQ" element={<FAQ />} />
           <Route
             path="/profile"
             element={
@@ -42,6 +49,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          {/* <Route path="/payment" element={<PaymentMethod />} /> */}
         </Routes>
       </Router>
     </StyledEngineProvider>

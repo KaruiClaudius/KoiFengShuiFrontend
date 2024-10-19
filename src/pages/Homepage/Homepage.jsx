@@ -1,3 +1,4 @@
+
 import React from "react";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
@@ -16,6 +17,7 @@ import {
   getFengShuiKoiDecorationPost,
   getFengShuiKoiPost,
 } from "../../config/axios";
+
 export default function Homepage() {
   const navigate = useNavigate();
   const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
@@ -61,9 +63,10 @@ export default function Homepage() {
   const renderCards = (data) => {
     return data.map((item) => (
       <div className="card-container">
-        <div className="property-card">
+        <div className="property-card"> 
           <div className="featured-badge">
             <span>Nổi bật</span>
+           
           </div>
           <img src={ex} alt="Card" className="property-image" />
           <div className="property-content">
