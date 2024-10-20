@@ -80,13 +80,18 @@ export const getTotalTransaction = () => {
 export const getAllFAQs = () => {
   return api.get("/api/FAQ/GetAll");
 };
-export const createFAQ = () => {
-  return api.get("/api/FAQ/Create");
+export const createFAQ = (data) => {
+  return api.post("/api/FAQ/Create", data, {
+    headers: { "Content-Type": "application/json" },
+  });
 };
-export const updateFAQ = () => {
-  return api.get("/api/FAQ/Update/{id}");
+
+export const updateFAQ = (faqId, data) => {
+  return api.put(`/api/FAQ/Update/${faqId}`, data);
 };
-export const deleteFAQ = () => {
-  return api.get("/api/FAQ/Delete/{id}");
+
+export const deleteFAQ = (faqId) => {
+  return api.delete(`/api/FAQ/Delete/${faqId}`);
 };
+
 export default api;

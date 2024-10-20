@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Alert, Button, Form, Input, Modal } from "antd";
 import { getAllFAQs, createFAQ, updateFAQ, deleteFAQ } from "../../config/axios";
 
-
 const AdminFAQ = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [currentFaq, setCurrentFaq] = useState({});
+
 
   useEffect(() => {
     const fetchFAQs = async () => {
@@ -29,11 +29,12 @@ const AdminFAQ = () => {
     fetchFAQs();
   }, []);
 
+
   const handleDelete = async (faqId) => {
     setLoading(true);
     try {
       await deleteFAQ(faqId);
-      setFaqs(faqs.filter(faq => faq.faqId !== faqId));
+      setFaqs(faqs.filter((faq) => faq.faqId !== faqId));
     } catch (err) {
       console.error("Error deleting FAQ", err);
       setError("An error occurred while deleting FAQ");
@@ -45,20 +46,26 @@ const AdminFAQ = () => {
   const showModal = (faq = {}) => {
     setCurrentFaq(faq);
     setIsEdit(!!faq.faqId);
-    setIsModalVisible(true);
+    setIsModalOpen(true);
   };
 
+ 
   const handleOk = async () => {
     setLoading(true);
     try {
       if (isEdit) {
+       
         await updateFAQ(currentFaq.faqId, currentFaq);
-        setFaqs(faqs.map(faq => (faq.faqId === currentFaq.faqId ? currentFaq : faq)));
+        setFaqs(
+          faqs.map((faq) => (faq.faqId === currentFaq.faqId ? currentFaq : faq))
+        );
       } else {
-        const response = await createFAQ(currentFaq);
+       
+        const newFaq = { ...currentFaq, accountId: 1 };
+        const response = await createFAQ(newFaq);
         setFaqs([...faqs, response.data]);
       }
-      setIsModalVisible(false);
+      setIsModalOpen(false);
     } catch (err) {
       console.error("Error saving FAQ", err);
       setError("An error occurred while saving FAQ");
@@ -67,10 +74,12 @@ const AdminFAQ = () => {
     }
   };
 
+
   const handleCancel = () => {
-    setIsModalVisible(false);
+    setIsModalOpen(false);
     setCurrentFaq({});
   };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,38 +89,46 @@ const AdminFAQ = () => {
   return (
     <div className="faq">
       <h2>Manage FAQs</h2>
-      {error && (
-        <Alert className="alert">
-          {error}
-        </Alert>
-      )}
+      {error && <Alert className="alert">{error}</Alert>}
       {loading ? (
         <p className="loading">Loading FAQs...</p>
       ) : (
         <div>
-          <Button type="primary" onClick={() => showModal()}>Add FAQ</Button>
-          {faqs.map(faq => (
+          <Button type="primary" onClick={() => showModal()}>
+            Add FAQ
+          </Button>
+          {faqs.map((faq) => (
             <div key={faq.faqId} className="faq-item">
               <h3>{faq.question}</h3>
               <p>{faq.answer}</p>
               <Button onClick={() => showModal(faq)}>Edit</Button>
-              <Button danger onClick={() => handleDelete(faq.faqId)}>Delete</Button>
+              <Button danger onClick={() => handleDelete(faq.faqId)}>
+                Delete
+              </Button>
             </div>
           ))}
         </div>
       )}
       <Modal
         title={isEdit ? "Edit FAQ" : "Add FAQ"}
-        visible={isModalVisible}
+        open={isModalOpen} 
         onOk={handleOk}
         onCancel={handleCancel}
       >
         <Form layout="vertical">
           <Form.Item label="Question">
-            <Input name="question" value={currentFaq.question || ''} onChange={handleChange} />
+            <Input
+              name="question"
+              value={currentFaq.question || ""}
+              onChange={handleChange}
+            />
           </Form.Item>
           <Form.Item label="Answer">
-            <Input.TextArea name="answer" value={currentFaq.answer || ''} onChange={handleChange} />
+            <Input.TextArea
+              name="answer"
+              value={currentFaq.answer || ""}
+              onChange={handleChange}
+            />
           </Form.Item>
         </Form>
       </Modal>
