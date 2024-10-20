@@ -80,4 +80,13 @@ export const getTotalTransaction = () => {
 export const getAllFAQs = () => {
   return api.get("/api/FAQ/GetAll");
 };
+export const createFAQ = () => {
+  return api.get("/api/FAQ/Create");
+};
+export const updateFAQ = () => {
+  return api.get("/api/FAQ/Update/{id}");
+};
+export const deleteFAQ = () => {
+  return api.get("/api/FAQ/Delete/{id}");
+};
 export default api;

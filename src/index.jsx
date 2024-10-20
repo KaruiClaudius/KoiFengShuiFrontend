@@ -11,7 +11,7 @@ import UserProfile from "./pages/UserProfile/UserProfile";
 import ProtectedRoute from "./config/ProtectedRoute";
 // import PaymentMethod from "./pages/Payment/Payment";
 import FAQ from "./components/FAQ/FAQ.jsx";
-
+import AdminFAQ from "./pages/Dashboard/AdminFAQ.jsx"
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
@@ -41,6 +41,7 @@ const App = () => {
           <Route path="/KoiDetail/:id" element={<KoiDetailPage />} />
           {/* <Route path="/Decoration/:id" element={<DecorationPage />} /> */}
           <Route path="/FAQ" element={<FAQ />} />
+          <Route path="/AdminFAQ" element={<AdminFAQ />} />
           <Route
             path="/profile"
             element={
