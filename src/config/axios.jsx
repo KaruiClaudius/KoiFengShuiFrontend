@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = "https://localhost:7285";
 
 const config = {
   baseUrl: baseUrl,
@@ -23,25 +23,22 @@ const handleBefore = (config) => {
 
 api.interceptors.request.use(handleBefore, null);
 
-export const assessCompatibility = (data) => {
-  return api.post("/api/Compatibility/lookup", data);
-};
+// export const assessCompatibility = (data) => {
+//   return api.post("/api/Compatibility/lookup", data);
+// };
 
-export const getFengShuiConsultation = (data) => {
-  return api.post("/api/Consultation/fengshui", data);
-};
+// export const getFengShuiConsultation = (data) => {
+//   return api.post("/api/Consultation/fengshui", data);
+// };
 
-export const getFengShuiKoiFishPost = () => {
-  return api
-    .get("/api/Post/GetAllByPostType/1?page=1&pageSize=5")
-    .then((response) => response.data);
-};
+// export const getFengShuiKoiFishPost = (data) => {
+//   return api.post("/api/Post", data);
+// };
 
-export const getFengShuiKoiDecorationPost = () => {
-  return api
-    .get("/api/Post/GetAllByPostType/2?page=1&pageSize=5")
-    .then((response) => response.data);
-};
+// export const getFengShuiKoiFishTransaction= (data) => {
+//   return api.post("/api/Transaction", data);
+// };
+
 
 export const getFengShuiKoiPost = () => {
   return api
