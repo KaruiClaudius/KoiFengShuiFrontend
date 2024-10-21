@@ -6,10 +6,10 @@ const AdminFAQ = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCRUDModalOpen, setIsCRUDModalOpen] = useState(false); 
   const [isEdit, setIsEdit] = useState(false);
   const [currentFaq, setCurrentFaq] = useState({});
-
+  const [isFAQModalOpen, setIsFAQModalOpen] = useState(false); 
 
   useEffect(() => {
     const fetchFAQs = async () => {
@@ -29,7 +29,6 @@ const AdminFAQ = () => {
     fetchFAQs();
   }, []);
 
-
   const handleDelete = async (faqId) => {
     setLoading(true);
     try {
@@ -43,29 +42,26 @@ const AdminFAQ = () => {
     }
   };
 
-  const showModal = (faq = {}) => {
+  const showCRUDModal = (faq = {}) => {
     setCurrentFaq(faq);
     setIsEdit(!!faq.faqId);
-    setIsModalOpen(true);
+    setIsCRUDModalOpen(true);
   };
 
- 
-  const handleOk = async () => {
+  const handleCRUDOk = async () => {
     setLoading(true);
     try {
       if (isEdit) {
-       
         await updateFAQ(currentFaq.faqId, currentFaq);
         setFaqs(
           faqs.map((faq) => (faq.faqId === currentFaq.faqId ? currentFaq : faq))
         );
       } else {
-       
         const newFaq = { ...currentFaq, accountId: 1 };
         const response = await createFAQ(newFaq);
         setFaqs([...faqs, response.data]);
       }
-      setIsModalOpen(false);
+      setIsCRUDModalOpen(false);
     } catch (err) {
       console.error("Error saving FAQ", err);
       setError("An error occurred while saving FAQ");
@@ -74,12 +70,10 @@ const AdminFAQ = () => {
     }
   };
 
-
   const handleCancel = () => {
-    setIsModalOpen(false);
+    setIsCRUDModalOpen(false);
     setCurrentFaq({});
   };
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,32 +81,44 @@ const AdminFAQ = () => {
   };
 
   return (
-    <div className="faq">
-      <h2>Manage FAQs</h2>
-      {error && <Alert className="alert">{error}</Alert>}
-      {loading ? (
-        <p className="loading">Loading FAQs...</p>
-      ) : (
-        <div>
-          <Button type="primary" onClick={() => showModal()}>
-            Add FAQ
-          </Button>
-          {faqs.map((faq) => (
-            <div key={faq.faqId} className="faq-item">
-              <h3>{faq.question}</h3>
-              <p>{faq.answer}</p>
-              <Button onClick={() => showModal(faq)}>Edit</Button>
-              <Button danger onClick={() => handleDelete(faq.faqId)}>
-                Delete
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="admin-faq">
+      <Button type="primary" onClick={() => setIsFAQModalOpen(true)}>
+        FAQ
+      </Button>
+
+      <Modal
+        title="Manage FAQs"
+        open={isFAQModalOpen}
+        onCancel={() => setIsFAQModalOpen(false)}
+        footer={null} 
+        width={800}
+      >
+        {error && <Alert message={error} type="error" showIcon />}
+        {loading ? (
+          <p>Loading FAQs...</p>
+        ) : (
+          <div>
+            <Button type="primary" onClick={() => showCRUDModal()}>
+              Add FAQ
+            </Button>
+            {faqs.map((faq) => (
+              <div key={faq.faqId} className="faq-item">
+                <h3>{faq.question}</h3>
+                <p>{faq.answer}</p>
+                <Button onClick={() => showCRUDModal(faq)}>Edit</Button>
+                <Button danger onClick={() => handleDelete(faq.faqId)}>
+                  Delete
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
+
       <Modal
         title={isEdit ? "Edit FAQ" : "Add FAQ"}
-        open={isModalOpen} 
-        onOk={handleOk}
+        open={isCRUDModalOpen}
+        onOk={handleCRUDOk}
         onCancel={handleCancel}
       >
         <Form layout="vertical">
