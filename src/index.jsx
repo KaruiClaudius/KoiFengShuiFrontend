@@ -41,7 +41,14 @@ const App = () => {
           <Route path="/KoiDetail/:id" element={<KoiDetailPage />} />
           {/* <Route path="/Decoration/:id" element={<DecorationPage />} /> */}
           <Route path="/FAQ" element={<FAQ />} />
-          <Route path="/AdminFAQ" element={<AdminFAQ />} />
+          <Route
+            path="/AdminFAQ"
+            element={
+              <ProtectedRoute requiredRole={1}>
+                <AdminFAQ />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/profile"
             element={
