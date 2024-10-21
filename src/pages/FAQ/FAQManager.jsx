@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Button, Form, Input, Modal } from "antd";
 import { getAllFAQs, createFAQ, updateFAQ, deleteFAQ } from "../../config/axios";
-
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import DashboardSidebar from "../../components/Sidebar/Sidebar";
-
 import Box from "@mui/material/Box"; 
 
-const AdminFAQ = () => {
+const FAQManager = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isCRUDModalOpen, setIsCRUDModalOpen] = useState(false); 
   const [isEdit, setIsEdit] = useState(false);
   const [currentFaq, setCurrentFaq] = useState({});
+  const [currentAccountId, setCurrentAccountId] = useState(null);
 
   useEffect(() => {
     const fetchFAQs = async () => {
@@ -32,6 +31,17 @@ const AdminFAQ = () => {
     };
 
     fetchFAQs();
+
+    const userString = localStorage.getItem('user');
+    if (userString) {
+      try {
+        const user = JSON.parse(userString);
+        setCurrentAccountId(user.accountId);
+      } catch (err) {
+        console.error("Error parsing user data", err);
+        setError("An error occurred while getting user information");
+      }
+    }
   }, []);
 
   const handleDelete = async (faqId) => {
@@ -62,7 +72,10 @@ const AdminFAQ = () => {
           faqs.map((faq) => (faq.faqId === currentFaq.faqId ? currentFaq : faq))
         );
       } else {
-        const newFaq = { ...currentFaq, accountId: 1 };
+        if (!currentAccountId) {
+          throw new Error("User not logged in or account ID not available");
+        }
+        const newFaq = { ...currentFaq, accountId: currentAccountId };
         const response = await createFAQ(newFaq);
         setFaqs([...faqs, response.data]);
       }
@@ -170,4 +183,4 @@ const AdminFAQ = () => {
   );
 };
 
-export default AdminFAQ;
+export default FAQManager;

@@ -28,7 +28,7 @@ const DashboardSidebar = () => {
     {
       text: "Manage FAQs", 
       icon: <HelpIcon />, 
-      path: "/AdminFAQ", 
+      path: "/FAQManager", 
     },
   ];
 
