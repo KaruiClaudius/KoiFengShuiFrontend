@@ -23,28 +23,30 @@ const handleBefore = (config) => {
 
 api.interceptors.request.use(handleBefore, null);
 
-// export const assessCompatibility = (data) => {
-//   return api.post("/api/Compatibility/lookup", data);
-// };
+// Xuất các hàm API cần thiết
+export const assessCompatibility = (data) => {
+  return api.post("/api/Compatibility/lookup", data);
+};
 
-// export const getFengShuiConsultation = (data) => {
-//   return api.post("/api/Consultation/fengshui", data);
-// };
+export const getFengShuiConsultation = (data) => {
+  return api.post("/api/Consultation/fengshui", data);
+};
 
-// export const getFengShuiKoiFishPost = (data) => {
-//   return api.post("/api/Post", data);
-// };
-
-// export const getFengShuiKoiFishTransaction= (data) => {
-//   return api.post("/api/Transaction", data);
-// };
-
-
-export const getFengShuiKoiPost = () => {
-  return api
-    .get("/api/Post/GetAllByPostType/3?page=1&pageSize=5")
+export const getFengShuiKoiFishPost = () => {
+  return api.get("/api/Post/GetAllByPostType/1?page=1&pageSize=5") // Điều chỉnh endpoint nếu cần
     .then((response) => response.data);
 };
+
+export const getFengShuiKoiDecorationPost = () => {
+  return api.get("/api/Post/GetAllByPostType/2?page=1&pageSize=5") // Điều chỉnh endpoint nếu cần
+    .then((response) => response.data);
+};
+
+export const getFengShuiKoiPost = () => {
+  return api.get("/api/Post/GetAllByPostType/3?page=1&pageSize=5")
+    .then((response) => response.data);
+};
+
 // New dashboard API calls
 export const getNewUsersCount = (days = 30) => {
   return api.get("/api/Dashboard/new-users-count", { params: { days } });
@@ -77,12 +79,11 @@ export const getTotalTransaction = () => {
 export const getAllFAQs = () => {
   return api.get("/api/FAQ/GetAll");
 };
-export const createFAQ = (data) => {
-  return api.post("/api/FAQ/Create", data, {
-    headers: { "Content-Type": "application/json" },
-  });
-};
 
+
+export const createFAQ = (data) => {
+  return api.post("/api/FAQ/Create", data);
+};
 export const updateFAQ = (faqId, data) => {
   return api.put(`/api/FAQ/Update/${faqId}`, data);
 };
