@@ -121,3 +121,15 @@
 .ant-picker-input > input {
   height: 38px !important;  /* Adjust height for date picker input */
 }
+.wallet-card {
+  background-color: #f0f2f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.wallet-card h3 {
+  margin: 0;
+  color: #1890ff;
+  font-weight: bold;
+}
