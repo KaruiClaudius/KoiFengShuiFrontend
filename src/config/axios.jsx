@@ -33,12 +33,12 @@ export const getFengShuiConsultation = (data) => {
 };
 
 export const getFengShuiKoiFishPost = () => {
-  return api.get("/api/Post/GetAllByPostType/1?page=1&pageSize=5") // Điều chỉnh endpoint nếu cần
+  return api.get("/api/Post/GetAllByPostType/1?page=1&pageSize=5") 
     .then((response) => response.data);
 };
 
 export const getFengShuiKoiDecorationPost = () => {
-  return api.get("/api/Post/GetAllByPostType/2?page=1&pageSize=5") // Điều chỉnh endpoint nếu cần
+  return api.get("/api/Post/GetAllByPostType/2?page=1&pageSize=5") 
     .then((response) => response.data);
 };
 
@@ -91,5 +91,19 @@ export const updateFAQ = (faqId, data) => {
 export const deleteFAQ = (faqId) => {
   return api.delete(`/api/FAQ/Delete/${faqId}`);
 };
+// Admin post
+export const createPost = (data) => {
+  return api.post("/api/Post/Create", data) 
+    .then((response) => response.data);
+};
 
+export const updatePost = (postId, data) => {
+  return api.put(`/api/Post/Update/${postId}`, data) 
+    .then((response) => response.data);
+};
+
+export const deletePost = (postId) => {
+  return api.delete(`/api/Post/Delete/${postId}`) 
+    .then((response) => response.data);
+};
 export default api;
