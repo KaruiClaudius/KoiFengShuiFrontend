@@ -78,4 +78,8 @@ export const getTotalTransaction = () => {
   return api.get("/api/Dashboard/total-amount");
 };
 
+export const getTotalTransactionCount = () => {
+  return api.get("/api/Dashboard/transactions/count");
+};
+
 export default api;

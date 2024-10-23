@@ -27,19 +27,19 @@ const headCells = [
     label: "Transaction ID",
   },
   {
-    id: "type",
+    id: "tierName",
     align: "left",
     disablePadding: true,
     label: "Loại",
   },
   {
-    id: "title",
+    id: "accountFullName",
     align: "left",
     disablePadding: true,
     label: "Tên",
   },
   {
-    id: "isActive",
+    id: "status",
     align: "left",
     disablePadding: false,
     label: "Trạng thái",
@@ -71,17 +71,36 @@ function OrderTableHead({ order, orderBy }) {
   );
 }
 
-function OrderStatus({ isActive }) {
-  const color = isActive ? "success" : "error";
-  const title = isActive ? "Đang hoạt động" : "Không hoạt động";
+const getStatusColor = (status) => {
+  switch (status.toLowerCase()) {
+    case "pending":
+      return "warning";
+    case "paid":
+      return "success";
+    case "cancel":
+      return "error";
+    default:
+      return "default";
+  }
+};
+
+function OrderStatus({ status }) {
+  const color = getStatusColor(status);
 
   return (
     <Stack direction="row" spacing={1} alignItems="center">
       <Dot color={color} />
-      <Typography>{title}</Typography>
+      <Typography>{status}</Typography>
     </Stack>
   );
 }
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+};
 
 export default function OrderTable() {
   const [order, setOrder] = useState("desc");
@@ -158,12 +177,12 @@ export default function OrderTable() {
                 <TableCell component="th" scope="row">
                   {row.transactionId}
                 </TableCell>
-                <TableCell>{row.type}</TableCell>
-                <TableCell>{row.title}</TableCell>
+                <TableCell>{row.tierName}</TableCell>
+                <TableCell>{row.accountFullName}</TableCell>
                 <TableCell>
-                  <OrderStatus isActive={row.isActive} />
+                  <OrderStatus status={row.status} />
                 </TableCell>
-                <TableCell>{row.amount}</TableCell>
+                <TableCell>{formatCurrency(row.amount)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -177,4 +196,7 @@ OrderTableHead.propTypes = {
   order: PropTypes.string,
   orderBy: PropTypes.string,
 };
-OrderStatus.propTypes = { isActive: PropTypes.bool };
+
+OrderStatus.propTypes = {
+  status: PropTypes.string.isRequired,
+};
