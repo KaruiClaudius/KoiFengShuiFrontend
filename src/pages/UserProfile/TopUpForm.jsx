@@ -90,6 +90,7 @@ const TopUpForm = ({ visible, onSuccess, onClose, initialAmount = 0 }) => {
         cancelUrl: window.location.origin,
         price: parseInt(amount),
         buyerName: "",
+        buyerEmail: "",
       });
 
       if (response.data.error === 0) {
