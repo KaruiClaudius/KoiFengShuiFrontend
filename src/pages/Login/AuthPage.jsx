@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import api from "../../config/axios";
 import KoiLogo from "../../assets/Logo_SWP.svg";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -29,6 +31,11 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [formErrors, setFormErrors] = useState({});
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleTogglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const validateForm = (formData) => {
     const errors = {};
@@ -343,7 +350,19 @@ export default function AuthPage() {
                   {authMode !== "forgotpassword" && (
                     <FormControl required error={!!formErrors.password}>
                       <FormLabel>Mật khẩu</FormLabel>
-                      <Input type="password" name="password" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        endDecorator={
+                          <IconButton onClick={handleTogglePassword}>
+                            {showPassword ? (
+                              <VisibilityOffIcon />
+                            ) : (
+                              <VisibilityIcon />
+                            )}
+                          </IconButton>
+                        }
+                      />
                       {formErrors.password && (
                         <Typography color="danger" fontSize="sm">
                           {formErrors.password}
