@@ -91,19 +91,23 @@ export const updateFAQ = (faqId, data) => {
 export const deleteFAQ = (faqId) => {
   return api.delete(`/api/FAQ/Delete/${faqId}`);
 };
-// Admin post
+//Admin post
+
+
+export const getAllAdminPosts = () => {
+  return api.get("/api/AdminPost/GetAllAdminPosts");
+};
+
 export const createPost = (data) => {
-  return api.post("/api/Post/Create", data) 
-    .then((response) => response.data);
+  return api.post("/api/AdminPost/Create", data);
 };
 
 export const updatePost = (postId, data) => {
-  return api.put(`/api/Post/Update/${postId}`, data) 
-    .then((response) => response.data);
+  return api.put(`/api/AdminPost/Update/${postId}`, data);
 };
 
 export const deletePost = (postId) => {
-  return api.delete(`/api/Post/Delete/${postId}`) 
-    .then((response) => response.data);
+  return api.delete(`/api/AdminPost/Delete/${postId}`);
 };
+
 export default api;

@@ -11,6 +11,7 @@ import UserProfile from "./pages/UserProfile/UserProfile";
 import ProtectedRoute from "./config/ProtectedRoute";
 // import PaymentMethod from "./pages/Payment/Payment";
 import AdminFAQ from "./pages/FAQ/FAQManager.jsx"
+import AdminPost from "./pages/AdminPost/AdminPost";
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
@@ -44,6 +45,14 @@ const App = () => {
             element={
               <ProtectedRoute requiredRole={1}>
                 <AdminFAQ />
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/AdminPost"
+            element={
+              <ProtectedRoute requiredRole={1}>
+                <AdminPost />
               </ProtectedRoute>
             }
           />
