@@ -23,6 +23,8 @@ import {
   getNewUsersCount,
   getNewUsersList,
   getNewMarketListingsCount,
+  getTotalTransaction,
+  getTotalTransactionCount,
 } from "../../config/axios"; // Update the import path as needed
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
@@ -51,11 +53,22 @@ const actionSX = {
 export default function DashboardDefault() {
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newUsersList, setNewUsersList] = useState([]);
+  const [newTotalTransaction, setNewTotalTransaction] = useState([]);
   const [newMarketListingsCount, setNewMarketListingsCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalTransactionCount, setTotalTransactionCount] = useState(0);
 
   const itemsPerPage = 3;
+
+  const formatVND = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -68,6 +81,12 @@ export default function DashboardDefault() {
 
         const marketListingsCountResponse = await getNewMarketListingsCount();
         setNewMarketListingsCount(marketListingsCountResponse.data.count);
+
+        const totalTransaction = await getTotalTransaction();
+        setNewTotalTransaction(totalTransaction.data);
+
+        const transactionCountResponse = await getTotalTransactionCount();
+        setTotalTransactionCount(transactionCountResponse.data.totalCount);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         // Handle error (e.g., show an error message to the user)
@@ -115,10 +134,16 @@ export default function DashboardDefault() {
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce title="Tiền dịch vụ" count="4,42,236" />
+              <AnalyticEcommerce
+                title="Tiền dịch vụ"
+                count={formatVND(newTotalTransaction.totalAmount || 0)}
+              />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce title="AVG Revenue" count="78,250" />
+              <AnalyticEcommerce
+                title="Tổng giao dịch"
+                count={totalTransactionCount.toLocaleString()}
+              />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce

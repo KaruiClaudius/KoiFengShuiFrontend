@@ -1,6 +1,5 @@
 import axios from "axios";
-const baseUrl = "https://localhost:7285";
-// const baseUrl = "https://localhost:44389";
+const baseUrl = import.meta.env.VITE_API_URL;
 
 const config = {
   baseUrl: baseUrl,
@@ -80,10 +79,17 @@ export const getNewMarketListingsByCategory = (days = 30) => {
   return api.get(`/api/dashboard/new-market-listings-by-category?days=${days}`);
 };
 
-export const getMarketListings = (page = 1, pageSize = 10) => {
+export const getTransactionListing = (page = 1, pageSize = 10) => {
   return api.get(
-    `/api/dashboard/market-listings?page=${page}&pageSize=${pageSize}`
+    `/api/dashboard/transaction-listing?page=${page}&pageSize=${pageSize}`
   );
+};
+export const getTotalTransaction = () => {
+  return api.get("/api/Dashboard/total-amount");
+};
+
+export const getTotalTransactionCount = () => {
+  return api.get("/api/Dashboard/transactions/count");
 };
 
 export default api;

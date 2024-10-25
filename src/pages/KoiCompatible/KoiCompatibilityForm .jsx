@@ -60,6 +60,13 @@ const KoiCompatibilityForm = () => {
     }
   };
 
+  const validateNonNegativeInteger = (_, value) => {
+    if (value && (!Number.isInteger(Number(value)) || Number(value) <= 0)) {
+      return Promise.reject("Vui lòng nhập số nguyên không âm và lớn hơn 0");
+    }
+    return Promise.resolve();
+  };
+
   const renderCompatibilityForm = () => (
     <Form
       form={compatibilityForm}
@@ -71,7 +78,10 @@ const KoiCompatibilityForm = () => {
       <Form.Item
         label="Năm sinh"
         name="birthYear"
-        rules={[{ required: true, message: "Vui lòng nhập năm sinh" }]}
+        rules={[
+          { required: true, message: "Vui lòng nhập số lượng" },
+          { validator: validateNonNegativeInteger },
+        ]}
       >
         <Input placeholder="2003" />
       </Form.Item>
@@ -86,16 +96,18 @@ const KoiCompatibilityForm = () => {
           <Option value="Đỏ">Đỏ</Option>
           <Option value="Vàng">Vàng</Option>
           <Option value="Đen">Đen</Option>
-          <Option value="Xanh">Xanh</Option>
+          <Option value="Cam">Cam</Option>
           <Option value="Nâu">Nâu</Option>
-          <Option value="Kim loại">Kim loại</Option>
         </Select>
       </Form.Item>
 
       <Form.Item
         label="Số lượng cá Koi"
         name="koiNumber"
-        rules={[{ required: true, message: "Vui lòng nhập số lượng" }]}
+        rules={[
+          { required: true, message: "Vui lòng nhập số lượng" },
+          { validator: validateNonNegativeInteger },
+        ]}
       >
         <Input placeholder="1" />
       </Form.Item>
@@ -168,7 +180,10 @@ const KoiCompatibilityForm = () => {
       <Form.Item
         label="Năm sinh"
         name="birthYear"
-        rules={[{ required: true, message: "Vui lòng nhập năm sinh" }]}
+        rules={[
+          { required: true, message: "Vui lòng nhập năm sinh" },
+          { validator: validateNonNegativeInteger },
+        ]}
       >
         <Input placeholder="2003" />
       </Form.Item>

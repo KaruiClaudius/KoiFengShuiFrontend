@@ -7,11 +7,11 @@ import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
-import { Link, useNavigate } from "react-router-dom";
-import { CardContent } from "@mui/material";
-import { Typography } from "antd";
+import { useNavigate } from "react-router-dom";
+// import { CardContent } from "@mui/material";
+// import { Typography } from "antd";
 import TruncatedText from "../../utils/TruncatedText";
-import api, {
+import {
   getFengShuiKoiFishPost,
   getFengShuiKoiDecorationPost,
   getFengShuiKoiPost,
