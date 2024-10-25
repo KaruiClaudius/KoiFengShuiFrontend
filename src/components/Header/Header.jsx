@@ -102,9 +102,7 @@ const AppHeader = () => {
   const blogClick = () => {
     navigate("/blog");
   };
-  const faqClick = () => {
-    navigate("/faq");
-  };
+
 
   return (
     <AppBar sx={{ backgroundColor: "#231815" }}>
@@ -180,9 +178,9 @@ const AppHeader = () => {
               opacity: 0.8,
             },
           }}
-          onClick={faqClick}
+          
         >
-          FAQ
+     
         </Typography>
 
         <Box sx={{ flexGrow: 1 }} />

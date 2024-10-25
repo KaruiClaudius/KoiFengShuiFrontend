@@ -16,6 +16,7 @@ import {
   getFengShuiKoiDecorationPost,
   getFengShuiKoiPost,
 } from "../../config/axios";
+import FAQDisplay from "../FAQ/FAQDisplay";
 export default function Homepage() {
   const navigate = useNavigate();
   const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
@@ -362,6 +363,7 @@ export default function Homepage() {
           </div>
         </div>
       </div>
+      <FAQDisplay />
       <FooterComponent />
     </div>
   );

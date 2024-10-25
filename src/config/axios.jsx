@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = "https://localhost:7285";
 
 const config = {
   baseUrl: baseUrl,
@@ -23,6 +23,7 @@ const handleBefore = (config) => {
 
 api.interceptors.request.use(handleBefore, null);
 
+// Xuất các hàm API cần thiết
 export const assessCompatibility = (data) => {
   return api.post("/api/Compatibility/lookup", data);
 };
@@ -58,6 +59,7 @@ export const getFengShuiKoiDetail = (id) => {
     .get(`/api/MarketplaceListings/Details/${id}`)
     .then((response) => response.data);
 };
+
 // New dashboard API calls
 export const getNewUsersCount = (days = 30) => {
   return api.get("/api/Dashboard/new-users-count", { params: { days } });
@@ -86,6 +88,45 @@ export const getTransactionListing = (page = 1, pageSize = 10) => {
 };
 export const getTotalTransaction = () => {
   return api.get("/api/Dashboard/total-amount");
+};
+export const getAllFAQs = () => {
+  return api.get("/api/FAQ/GetAll");
+};
+
+export const createFAQ = (data) => {
+  return api.post("/api/FAQ/Create", data);
+};
+export const updateFAQ = (faqId, data) => {
+  return api.put(`/api/FAQ/Update/${faqId}`, data);
+};
+
+export const deleteFAQ = (faqId) => {
+  return api.delete(`/api/FAQ/Delete/${faqId}`);
+};
+//Admin post
+
+export const getAllPosts = () => {
+  return api.get("/api/AdminPost/GetAllPosts");
+};
+
+export const createPost = (data) => {
+  return api.post("/api/AdminPost/CreatePostWithImages", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const updatePost = (postId, data) => {
+  return api.put(`/api/AdminPost/UpdatePost/${postId}`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const deletePost = (postId) => {
+  return api.delete(`/api/AdminPost/DeletePostWithAllRelated/${postId}`);
 };
 
 export const getTotalTransactionCount = () => {
