@@ -30,6 +30,11 @@ const DashboardSidebar = () => {
       icon: <HelpIcon />, 
       path: "/FAQManager", 
     },
+    {
+      text: "Admin Posts", 
+      icon: <HelpIcon />, 
+      path: "/AdminPost", 
+    },
   ];
 
   return (
