@@ -63,14 +63,40 @@ export default function Homepage() {
     // Fetch data from API when the component mounts
     fetchData();
   }, []);
-  const formatVietnameseCurrency = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+
+  function formatCurrency(value) {
+    // Ensure value is a number
+    const numValue = Number(value);
+
+    if (isNaN(numValue)) {
+      return "Invalid input";
+    }
+
+    if (numValue < 1e6) {
+      // Less than a million
+      return numValue.toLocaleString("vi-VN");
+    } else if (numValue >= 1e6 && numValue < 1e9) {
+      // Millions
+      return formatLargeNumber(numValue, 1e6, "triệu");
+    } else if (numValue >= 1e9) {
+      // Billions
+      return formatLargeNumber(numValue, 1e9, "tỷ");
+    } else {
+      // Default case (shouldn't normally be reached)
+      return numValue.toLocaleString("vi-VN");
+    }
+  }
+
+  function formatLargeNumber(value, unitValue, unitName) {
+    const wholePart = Math.floor(value / unitValue);
+    const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
+
+    let result = wholePart.toLocaleString("vi-VN") + " " + unitName;
+    if (fractionalPart > 0) {
+      result += " " + fractionalPart.toLocaleString("vi-VN");
+    }
+    return result;
+  }
 
   // Function to scroll left by a specific amount
   const scrollLeft = (containerRef) => {
@@ -114,7 +140,7 @@ export default function Homepage() {
           <img src={ex} alt="Card" className="property-image" />
           <div className="property-content">
             <a
-              href={`/KoiDetail/${item.listingId}`}
+              href={`/KoiDetails/${item.listingId}`}
               className="property-title-link"
             >
               <div className="property-title-wrapper">
@@ -125,9 +151,11 @@ export default function Homepage() {
               </div>
             </a>
             <div className="property-price-container">
-              <h2 className="property-price-text">Giá tiền:</h2>
+              <h2 className="property-price-text" style={{ marginRight: 5 }}>
+                Giá tiền:
+              </h2>
               <span className="property-price-text" style={{ color: "red" }}>
-                {formatVietnameseCurrency(item.price)}
+                {formatCurrency(item.price)}VNĐ
               </span>
             </div>
             <div className="property-user-container">
@@ -159,7 +187,7 @@ export default function Homepage() {
           <img src={des} alt="Card" className="property-image" />
           <div className="property-content">
             <a
-              href={`/KoiDetail/${item.listingId}`}
+              href={`/Decoration/${item.listingId}`}
               className="property-title-link"
             >
               {/* {item.element && item.element.length > 0 ? ( */}
@@ -173,10 +201,12 @@ export default function Homepage() {
               )} */}
             </a>
             <div className="property-price-container">
-              <h2 className="property-price-text">Giá tiền:</h2>{" "}
+              <h2 className="property-price-text" style={{ marginRight: 5 }}>
+                Giá tiền:
+              </h2>{" "}
               {/* Replace icon as needed */}
               <span className="property-price-text" style={{ color: "red" }}>
-                {formatVietnameseCurrency(item.price)}
+                {formatCurrency(item.price)}VNĐ
               </span>
             </div>
             <div className="property-user-container">
@@ -257,7 +287,7 @@ export default function Homepage() {
               </div>
 
               <div
-                style={{ display: "flex", overflowX: "scroll" }}
+                style={{ display: "flex", overflowX: "scroll", width: "100%" }}
                 ref={scrollContainerRef1}
                 className="scroll-container"
               >

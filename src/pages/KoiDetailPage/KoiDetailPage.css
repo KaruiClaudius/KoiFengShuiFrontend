@@ -13,3 +13,14 @@
     width: 75%;
     background-color: aqua;
 }
+
+.detail-page-detail {
+    margin-top: 15px;
+    padding: 0 50px;
+    padding-bottom: 10px;
+    background-color: white;
+}
+
+.detail-page-user {
+    width: 50%;
+}

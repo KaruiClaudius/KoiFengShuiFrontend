@@ -32,21 +32,31 @@ export const getFengShuiConsultation = (data) => {
   return api.post("/api/Consultation/fengshui", data);
 };
 
-export const getFengShuiKoiFishPost = () => {
+export const getFengShuiKoiFishPost = (page = 1, pageSize = 10) => {
   return api
-    .get("/api/MarketplaceListings/GetAllByCategoryType/1?page=1&pageSize=10")
+    .get(
+      `/api/MarketplaceListings/GetAllByCategoryType/1?page=${page}&pageSize=${pageSize}`
+    )
     .then((response) => response.data);
 };
 
-export const getFengShuiKoiDecorationPost = () => {
+export const getFengShuiKoiDecorationPost = (page = 1, pageSize = 5) => {
   return api
-    .get("/api/MarketplaceListings/GetAllByCategoryType/2?page=1&pageSize=5")
+    .get(
+      `/api/MarketplaceListings/GetAllByCategoryType/2?page=${page}&pageSize=${pageSize}`
+    )
     .then((response) => response.data);
 };
 
-export const getFengShuiKoiPost = () => {
+export const getFengShuiKoiPost = (page = 1, pageSize = 5) => {
   return api
-    .get("/api/Post/GetAllByPostType/3?page=1&pageSize=5")
+    .get(`/api/Post/GetAllByPostType/3?page=${page}&pageSize=${pageSize}`)
+    .then((response) => response.data);
+};
+
+export const getFengShuiKoiDetail = (id) => {
+  return api
+    .get(`/api/MarketplaceListings/Details/${id}`)
     .then((response) => response.data);
 };
 // New dashboard API calls
