@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
@@ -7,15 +7,16 @@ import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
-import { Link, useNavigate } from "react-router-dom";
-import { CardContent } from "@mui/material";
-import { Typography } from "antd";
+import { useNavigate } from "react-router-dom";
+// import { CardContent } from "@mui/material";
+// import { Typography } from "antd";
 import TruncatedText from "../../utils/TruncatedText";
-import api, {
+import {
   getFengShuiKoiFishPost,
   getFengShuiKoiDecorationPost,
   getFengShuiKoiPost,
 } from "../../config/axios";
+import FAQDisplay from "../FAQ/FAQDisplay";
 export default function Homepage() {
   const navigate = useNavigate();
   const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
@@ -23,6 +24,11 @@ export default function Homepage() {
   const [cardDataPost, setCardDataPost] = React.useState([]); // Store data
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [error, setError] = React.useState(null); // Handle errors
+
+  const scrollContainerRef1 = useRef(null); // Reference to the scrollable container
+  const scrollContainerRef2 = useRef(null);
+  const scrollContainerRef3 = useRef(null);
+  const scrollContainerRef4 = useRef(null);
 
   const sellingFishClick = () => {
     navigate("/sellingFish");
@@ -58,78 +64,156 @@ export default function Homepage() {
     // Fetch data from API when the component mounts
     fetchData();
   }, []);
-  const renderCards = (data) => {
+
+  function formatCurrency(value) {
+    // Ensure value is a number
+    const numValue = Number(value);
+
+    if (isNaN(numValue)) {
+      return "Invalid input";
+    }
+
+    if (numValue < 1e6) {
+      // Less than a million
+      return numValue.toLocaleString("vi-VN");
+    } else if (numValue >= 1e6 && numValue < 1e9) {
+      // Millions
+      return formatLargeNumber(numValue, 1e6, "triệu");
+    } else if (numValue >= 1e9) {
+      // Billions
+      return formatLargeNumber(numValue, 1e9, "tỷ");
+    } else {
+      // Default case (shouldn't normally be reached)
+      return numValue.toLocaleString("vi-VN");
+    }
+  }
+
+  function formatLargeNumber(value, unitValue, unitName) {
+    const wholePart = Math.floor(value / unitValue);
+    const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
+
+    let result = wholePart.toLocaleString("vi-VN") + " " + unitName;
+    if (fractionalPart > 0) {
+      result += " " + fractionalPart.toLocaleString("vi-VN");
+    }
+    return result;
+  }
+
+  // Function to scroll left by a specific amount
+  const scrollLeft = (containerRef) => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({
+        left: -300, // Adjust the scroll distance as needed
+        behavior: "smooth", // Smooth scroll
+      });
+    }
+  };
+
+  // Function to scroll right by a specific amount
+  const scrollRight = (containerRef) => {
+    if (containerRef.current) {
+      containerRef.current.scrollBy({
+        left: 300, // Adjust the scroll distance as needed
+        behavior: "smooth", // Smooth scroll
+      });
+    }
+  };
+
+  const scrollLeft1 = () => scrollLeft(scrollContainerRef1);
+  const scrollRight1 = () => scrollRight(scrollContainerRef1);
+  const scrollLeft2 = () => scrollLeft(scrollContainerRef2);
+  const scrollRight2 = () => scrollRight(scrollContainerRef2);
+  const scrollLeft3 = () => scrollLeft(scrollContainerRef3);
+  const scrollRight3 = () => scrollRight(scrollContainerRef3);
+
+  const renderKoi = (data) => {
     return data.map((item) => (
-      <div className="card-container">
+      <div className="card-container" key={item.listingId}>
         <div className="property-card">
-          <div className="featured-badge">
-            <span>Nổi bật</span>
-          </div>
+          {item.tierName === "Preminum" ? (
+            <div className="featured-badge">
+              <span>Nổi bật</span>
+            </div>
+          ) : (
+            <h1> </h1>
+          )}
+
           <img src={ex} alt="Card" className="property-image" />
           <div className="property-content">
-            <a href={`/property`} className="property-title-link">
-              {/* {item.element && item.element.length > 0 ? ( */}
-              <h1 className="property-title">
-                [{item.elementName}] <TruncatedText text={item.name} />
-              </h1>
-              {/* ) : (
-                <h1 className="property-title">{item.name}</h1>
-              )} */}
+            <a
+              href={`/KoiDetails/${item.listingId}`}
+              className="property-title-link"
+            >
+              <div className="property-title-wrapper">
+                <h1 className="property-title">
+                  [{item.elementName}]{" "}
+                  <TruncatedText text={item.title} maxLength={20} />
+                </h1>
+              </div>
             </a>
             <div className="property-price-container">
-              <h2 className="property-price-text">Giá tiền:</h2>{" "}
-              {/* Replace icon as needed */}
+              <h2 className="property-price-text" style={{ marginRight: 5 }}>
+                Giá tiền:
+              </h2>
               <span className="property-price-text" style={{ color: "red" }}>
-                {item.price}.000đ
+                {formatCurrency(item.price)}VNĐ
               </span>
             </div>
-            <div className="property-price-container">
+            <div className="property-user-container">
               <img
                 src={usericon}
-                alt="Banner"
-                className="property-price-icon"
-              />{" "}
-              {/* Replace icon as needed */}
-              <span className="property-price-text">{item.accountName}</span>
+                alt="User Icon"
+                className="property-user-icon"
+              />
+              <span className="property-user-text">{item.accountName}</span>
             </div>
           </div>
         </div>
       </div>
     ));
   };
-  const renderCardsDeconration = (data) => {
+
+  const renderDecoration = (data) => {
     return data.map((item) => (
       <div className="card-container">
         <div className="property-card">
-          <div className="featured-badge">
-            <span>Nổi bật</span>
-          </div>
+          {item.tierName == "Preminum" ? (
+            <div className="featured-badge">
+              <span>Nổi bật</span>
+            </div>
+          ) : (
+            <h1> </h1>
+          )}
+
           <img src={des} alt="Card" className="property-image" />
           <div className="property-content">
-            <a href={`/property`} className="property-title-link">
+            <a
+              href={`/Decoration/${item.listingId}`}
+              className="property-title-link"
+            >
               {/* {item.element && item.element.length > 0 ? ( */}
-              <h1 className="property-title">
-                [{item.elementName}] <TruncatedText text={item.name} />
-              </h1>
+              <div className="property-title-wrapper">
+                <h1 className="property-title">
+                  <TruncatedText text={item.title} maxLength={10} />
+                </h1>
+              </div>
               {/* ) : (
                 <h1 className="property-title">{item.name}</h1>
               )} */}
             </a>
             <div className="property-price-container">
-              <h2 className="property-price-text">Giá tiền:</h2>{" "}
+              <h2 className="property-price-text" style={{ marginRight: 5 }}>
+                Giá tiền:
+              </h2>{" "}
               {/* Replace icon as needed */}
               <span className="property-price-text" style={{ color: "red" }}>
-                {item.price}.000đ
+                {formatCurrency(item.price)}VNĐ
               </span>
             </div>
-            <div className="property-price-container">
-              <img
-                src={usericon}
-                alt="Banner"
-                className="property-price-icon"
-              />{" "}
+            <div className="property-user-container">
+              <img src={usericon} alt="Banner" className="property-user-icon" />{" "}
               {/* Replace icon as needed */}
-              <span className="property-price-text">{item.accountName}</span>
+              <span className="property-user-text">{item.accountName}</span>
             </div>
           </div>
         </div>
@@ -189,44 +273,97 @@ export default function Homepage() {
           </div>
         </div>
       </div>
-      <div class="white-box">
-        <div className="container-title">
-          <h2 className="container-title-title">Cá Koi Theo Bản Mệnh</h2>
-          <a href={`/fishProduct`} className="container-title-link">
-            <h2>Xem thêm {">"}</h2>
-          </a>
+      <div className="main-container">
+        <div className="content-wrapper">
+          <div className="render-koi-elemet">
+            <button onClick={scrollLeft1} className="arrow-button">
+              ←
+            </button>
+            <div class="white-box">
+              <div className="container-title">
+                <h2 className="container-title-title">Cá Koi Theo Bản Mệnh</h2>
+                <a href={`/fishProduct`} className="container-title-link">
+                  <h2>Xem thêm {">"}</h2>
+                </a>
+              </div>
+
+              <div
+                style={{ display: "flex", overflowX: "scroll", width: "100%" }}
+                ref={scrollContainerRef1}
+                className="scroll-container"
+              >
+                {/* Render Koi items here */}
+                {renderKoi(cardDataKoi)}
+              </div>
+            </div>
+            <button onClick={scrollRight1} className="arrow-button">
+              →
+            </button>
+          </div>
+          <div
+            className="render-koi-elemet"
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <button onClick={scrollLeft2} className="arrow-button">
+              ←
+            </button>
+            <div class="white-box">
+              <div className="container-title">
+                <h2 className="container-title-title">Bán Cá Koi</h2>
+                <a href={`/fishProduct`} className="container-title-link">
+                  <h2>Xem thêm {">"}</h2>
+                </a>
+              </div>
+              <div
+                style={{ display: "flex", overflowX: "scroll" }}
+                ref={scrollContainerRef2}
+                className="scroll-container"
+              >
+                {renderKoi(cardDataKoi)}
+              </div>
+            </div>
+            <button onClick={scrollRight2} className="arrow-button">
+              →
+            </button>
+          </div>
+          <div
+            className="render-koi-elemet"
+            style={{ display: "flex", alignItems: "center" }}
+          >
+            <button onClick={scrollLeft3} className="arrow-button">
+              ←
+            </button>
+            <div class="white-box">
+              <div className="container-title">
+                <h2 className="container-title-title">Phụ kiện hồ cá</h2>
+                <a href={`/fishProduct`} className="container-title-link">
+                  <h2>Xem thêm {">"}</h2>
+                </a>
+              </div>
+              <div
+                style={{ display: "flex", overflowX: "scroll" }}
+                ref={scrollContainerRef3}
+                className="scroll-container"
+              >
+                {renderDecoration(cardDataDecoration)}
+              </div>
+            </div>
+            <button onClick={scrollRight3} className="arrow-button">
+              →
+            </button>
+          </div>
+          <div class="white-box">
+            <div className="container-title">
+              <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
+              <a href={`/blog`} className="container-title-link">
+                <h2>Xem thêm {">"}</h2>
+              </a>
+            </div>
+            <div style={{ display: "flex" }}></div>
+          </div>
         </div>
-        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
       </div>
-      <div class="white-box">
-        <div className="container-title">
-          <h2 className="container-title-title">Bán Cá Koi</h2>
-          <a href={`/fishProduct`} className="container-title-link">
-            <h2>Xem thêm {">"}</h2>
-          </a>
-        </div>
-        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
-      </div>
-      <div class="white-box">
-        <div className="container-title">
-          <h2 className="container-title-title">Phụ kiện hồ cá</h2>
-          <a href={`/fishProduct`} className="container-title-link">
-            <h2>Xem thêm {">"}</h2>
-          </a>
-        </div>
-        <div style={{ display: "flex" }}>
-          {renderCardsDeconration(cardDataDecoration)}
-        </div>
-      </div>
-      <div class="white-box">
-        <div className="container-title">
-          <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
-          <a href={`/blog`} className="container-title-link">
-            <h2>Xem thêm {">"}</h2>
-          </a>
-        </div>
-        <div style={{ display: "flex" }}>{renderCards(cardDataPost)}</div>
-      </div>
+      <FAQDisplay />
       <FooterComponent />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -22,23 +22,52 @@ const AppHeader = () => {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [elementName, setElementName] = useState("");
   const [userRole, setUserRole] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const elementMapping = {
+    1: "Mộc",
+    2: "Hoả",
+    3: "Thổ",
+    4: "Kim",
+    5: "Thuỷ",
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    setIsLoggedIn(!!token);
-
-    if (token && user) {
-      setFullName(user.fullName);
-      setUserRole(user.roleId);
+    const updateUserData = (event) => {
+      const updatedUser = event.detail;
+      setUserData(updatedUser);
+      setFullName(updatedUser.fullName);
+      setUserRole(updatedUser.roleId);
+      const elementName = updatedUser.elementId
+        ? elementMapping[updatedUser.elementId]
+        : "Unknown";
+      setElementName(elementName);
       setAvatarUrl(
         `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-          user.fullName
+          updatedUser.fullName
         )}`
       );
+    };
+
+    // Add event listener
+    window.addEventListener("userProfileUpdated", updateUserData);
+
+    // Initial data load
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (token && user) {
+      updateUserData({ detail: user });
     }
+    setIsLoggedIn(!!token);
+
+    // Cleanup function to remove event listener
+    return () => {
+      window.removeEventListener("userProfileUpdated", updateUserData);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -73,9 +102,7 @@ const AppHeader = () => {
   const blogClick = () => {
     navigate("/blog");
   };
-  const faqClick = () => {
-    navigate("/faq");
-  };
+
 
   return (
     <AppBar sx={{ backgroundColor: "#231815" }}>
@@ -83,7 +110,7 @@ const AppHeader = () => {
         <Box
           component="img"
           src={Logo}
-          alt="UNINEST"
+          alt="KoiFengShui"
           sx={{
             height: "64px",
             mr: 4,
@@ -151,25 +178,33 @@ const AppHeader = () => {
               opacity: 0.8,
             },
           }}
-          onClick={faqClick}
+          
         >
-          FAQ
+     
         </Typography>
 
         <Box sx={{ flexGrow: 1 }} />
 
         {isLoggedIn ? (
           <>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              color="inherit"
-            >
-              <Avatar src={avatarUrl} alt={fullName} />
-            </IconButton>
+            <Box display="flex" alignItems="center">
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleMenu}
+                color="inherit"
+              >
+                <Avatar src={avatarUrl} alt={fullName} />
+              </IconButton>
+              <Box ml={1}>
+                <Typography variant="subtitle1">{user.fullName}</Typography>
+                <Typography variant="caption" color="inherit">
+                  Mệnh: {elementName || "No Element"}
+                </Typography>
+              </Box>
+            </Box>
             <Menu
               id="menu-appbar"
               anchorEl={anchorEl}
