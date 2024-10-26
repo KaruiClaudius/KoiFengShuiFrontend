@@ -118,3 +118,48 @@ header .ant-typography {
   color: #1890ff;
   margin-bottom: 20px;
 }
+
+/* Add these styles to your CSS file */
+.ant-descriptions-item-content {
+  white-space: pre-line;
+}
+
+.recommended-shape {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #f6ffed;
+  border: 1px solid #b7eb8f;
+  border-radius: 4px;
+}
+
+.not-recommended-shape {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+}
+
+.shape-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.shape-description {
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.danger-text {
+  color: #ff4d4f;
+}
+
+.recommendation-text .highlight {
+  color: #1890ff;
+  font-weight: bold;
+}
+
+/* Optional hover effect */
+.recommendation-text .highlight:hover {
+  text-decoration: underline;
+  cursor: default;
+}

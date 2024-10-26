@@ -34,6 +34,29 @@ const KoiCompatibilityForm = () => {
     setResults(null);
   }, [formType]);
 
+  // Add this function to parse and highlight text in parentheses
+  const HighlightedText = ({ text }) => {
+    // Split the text by parentheses and highlight the content inside
+    const parts = text.split(/(\([^)]+\))/);
+
+    return (
+      <span>
+        {parts.map((part, index) => {
+          if (part.startsWith("(") && part.endsWith(")")) {
+            // Remove parentheses and highlight the content
+            const highlightedContent = part.slice(1, -1);
+            return (
+              <Text key={index} strong style={{ color: "#1890ff" }}>
+                ({highlightedContent})
+              </Text>
+            );
+          }
+          return <span key={index}>{part}</span>;
+        })}
+      </span>
+    );
+  };
+
   const onFinish = async (values) => {
     setLoading(true);
     try {
@@ -41,6 +64,7 @@ const KoiCompatibilityForm = () => {
       if (formType === "compatibility") {
         response = await assessCompatibility({
           dateOfBirth: parseInt(values.birthYear),
+          isMale: values.isMale, // Add this
           direction: values.pondDirection,
           pondShape: values.pondShape,
           fishColors: values.koiColors,
@@ -49,6 +73,7 @@ const KoiCompatibilityForm = () => {
       } else {
         response = await getFengShuiConsultation({
           yearOfBirth: parseInt(values.birthYear),
+          isMale: values.isMale, // Add this
         });
       }
       setResults(response.data);
@@ -84,6 +109,17 @@ const KoiCompatibilityForm = () => {
         ]}
       >
         <Input placeholder="2003" />
+      </Form.Item>
+
+      <Form.Item
+        label="Giới tính"
+        name="isMale"
+        rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+      >
+        <Select placeholder="Chọn giới tính">
+          <Option value={true}>Nam</Option>
+          <Option value={false}>Nữ</Option>
+        </Select>
       </Form.Item>
 
       <Form.Item
@@ -188,6 +224,17 @@ const KoiCompatibilityForm = () => {
         <Input placeholder="2003" />
       </Form.Item>
 
+      <Form.Item
+        label="Giới tính"
+        name="isMale"
+        rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+      >
+        <Select placeholder="Chọn giới tính">
+          <Option value={true}>Nam</Option>
+          <Option value={false}>Nữ</Option>
+        </Select>
+      </Form.Item>
+
       <Form.Item>
         <Button
           type="primary"
@@ -260,7 +307,9 @@ const KoiCompatibilityForm = () => {
           </Text>
           <div style={{ fontSize: "16px", textAlign: "left" }}>
             {results.recommendations.map((recommendation, index) => (
-              <Paragraph key={index}>• {recommendation}</Paragraph>
+              <Paragraph key={index}>
+                • <HighlightedText text={recommendation} />
+              </Paragraph>
             ))}
           </div>
         </div>
@@ -283,6 +332,7 @@ const KoiCompatibilityForm = () => {
         <Descriptions.Item label="Ngũ hành">
           {results.element}
         </Descriptions.Item>
+        <Descriptions.Item label="Cung">{results.cung}</Descriptions.Item>
         <Descriptions.Item label="Con số may mắn">
           {results.luckyNumbers.join(", ")}
         </Descriptions.Item>
@@ -292,9 +342,39 @@ const KoiCompatibilityForm = () => {
         <Descriptions.Item label="Màu cá phù hợp">
           {results.fishColors.join(", ")}
         </Descriptions.Item>
+
+        {/* Render recommended pond shapes */}
         <Descriptions.Item label="Hình dạng hồ phù hợp">
-          {results.suggestedPonds.join(", ")}
+          <div>
+            {results.suggestedPonds
+              .filter((pond) => pond.isRecommended)
+              .map((pond, index) => (
+                <div key={index} style={{ marginBottom: "10px" }}>
+                  <Text strong>{pond.shapeName}</Text>
+                  <br />
+                  <Text type="secondary">{pond.description}</Text>
+                </div>
+              ))}
+          </div>
         </Descriptions.Item>
+
+        {/* Render not recommended pond shapes */}
+        <Descriptions.Item label="Hình dạng hồ không phù hợp">
+          <div>
+            {results.suggestedPonds
+              .filter((pond) => !pond.isRecommended)
+              .map((pond, index) => (
+                <div key={index} style={{ marginBottom: "10px" }}>
+                  <Text strong type="danger">
+                    {pond.shapeName}
+                  </Text>
+                  <br />
+                  <Text type="danger">{pond.description}</Text>
+                </div>
+              ))}
+          </div>
+        </Descriptions.Item>
+
         <Descriptions.Item label="Hướng hồ phù hợp">
           {results.suggestedDirections.join(", ")}
         </Descriptions.Item>
