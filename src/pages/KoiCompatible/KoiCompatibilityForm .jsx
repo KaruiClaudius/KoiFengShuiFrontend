@@ -178,12 +178,12 @@ const KoiCompatibilityForm = () => {
       >
         <Select placeholder="Chọn hình dạng hồ">
           {[
-            "Vuông",
             "Tròn",
+            "Nghiên mực",
+            "Bán nguyệt",
             "Chữ nhật",
-            "Hình bầu dục",
-            "Tam giác",
-            "Không đều đặn",
+            "Vuông",
+            "Các góc nhọn",
           ].map((shape) => (
             <Option key={shape} value={shape}>
               {shape}
