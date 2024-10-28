@@ -350,9 +350,9 @@ const KoiCompatibilityForm = () => {
               .filter((pond) => pond.isRecommended)
               .map((pond, index) => (
                 <div key={index} style={{ marginBottom: "10px" }}>
-                  <Text strong>{pond.shapeName}</Text>
-                  <br />
-                  <Text type="secondary">{pond.description}</Text>
+                  <Text strong>{pond.shapeName}: </Text>
+
+                  <Text color="blue">{pond.description}</Text>
                 </div>
               ))}
           </div>
@@ -366,9 +366,9 @@ const KoiCompatibilityForm = () => {
               .map((pond, index) => (
                 <div key={index} style={{ marginBottom: "10px" }}>
                   <Text strong type="danger">
-                    {pond.shapeName}
+                    {pond.shapeName}:{" "}
                   </Text>
-                  <br />
+
                   <Text type="danger">{pond.description}</Text>
                 </div>
               ))}
