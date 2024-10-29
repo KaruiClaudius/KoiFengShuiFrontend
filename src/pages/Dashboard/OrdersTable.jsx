@@ -27,10 +27,10 @@ const headCells = [
     label: "Transaction ID",
   },
   {
-    id: "tierName",
+    id: "transactionDate",
     align: "left",
     disablePadding: true,
-    label: "Loại",
+    label: "Thời gian giao dịch",
   },
   {
     id: "accountFullName",
@@ -52,6 +52,22 @@ const headCells = [
   },
 ];
 
+// Add this date formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+
+  // Format: DD/MM/YYYY HH:mm
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+};
 function OrderTableHead({ order, orderBy }) {
   return (
     <TableHead>
@@ -177,7 +193,7 @@ export default function OrderTable() {
                 <TableCell component="th" scope="row">
                   {row.transactionId}
                 </TableCell>
-                <TableCell>{row.tierName}</TableCell>
+                <TableCell>{formatDate(row.transactionDate)}</TableCell>
                 <TableCell>{row.accountFullName}</TableCell>
                 <TableCell>
                   <OrderStatus status={row.status} />

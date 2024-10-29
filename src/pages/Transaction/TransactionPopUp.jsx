@@ -109,10 +109,10 @@ const TopUpForm = ({ visible, onSuccess, onClose, initialAmount = 0 }) => {
           }
         }, 5000);
 
-        // Set a timeout to stop checking after 5 minutes
+        // Set a timeout to stop checking after 15 minutes
         setTimeout(() => {
           clearInterval(checkInterval);
-        }, 5 * 60 * 1000);
+        }, 15 * 60 * 1000);
       } else {
         throw new Error(
           response.data.message || "Failed to create payment link"
