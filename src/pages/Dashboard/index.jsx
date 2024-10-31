@@ -141,7 +141,7 @@ export default function DashboardDefault() {
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
-                title="Tổng giao dịch"
+                title="Tổng giao dịch thành công"
                 count={totalTransactionCount.toLocaleString()}
               />
             </Grid>

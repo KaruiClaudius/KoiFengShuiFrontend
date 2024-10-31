@@ -18,6 +18,7 @@ import {
   assessCompatibility,
   getFengShuiConsultation,
 } from "../../config/axios";
+import "./KoiCompatibility.css";
 
 const { Option } = Select;
 const { Title, Text, Paragraph } = Typography;
