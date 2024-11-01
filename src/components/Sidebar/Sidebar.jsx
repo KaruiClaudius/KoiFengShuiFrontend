@@ -27,9 +27,9 @@ const DashboardSidebar = () => {
       path: "/dashboard/approve-posts",
     },
     {
-      text: "Manage FAQs", 
-      icon: <HelpIcon />, 
-      path: "/FAQManager", 
+      text: "Manage FAQs",
+      icon: <HelpIcon />,
+      path: "/FAQManager",
     },
     {
       text: "Admin Posts", 
@@ -39,8 +39,7 @@ const DashboardSidebar = () => {
   ];
 
   return (
-    <Box sx={{ display: "sticky", flexGrow: 1, paddingBottom: 50 }}>
-      <AppHeader />
+    <Box sx={{ flexGrow: 1, paddingBottom: 50, position: "sticky" }}>
       <Box
         component="main"
         sx={{
@@ -48,6 +47,7 @@ const DashboardSidebar = () => {
           p: 3,
         }}
       ></Box>
+
       <Drawer
         variant="permanent"
         sx={{
@@ -58,7 +58,7 @@ const DashboardSidebar = () => {
             boxSizing: "border-box",
             top: "64px",
             bottom: "60px", // Adjust this value based on your AppHeader height
-            height: "calc(100% - 64px - 64px)", // Adjust this value based on your AppHeader height
+            height: "calc(100% - 30px - 30px)", // Adjust this value based on your AppHeader height
           },
         }}
       >

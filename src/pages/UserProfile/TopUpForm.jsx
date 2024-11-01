@@ -62,7 +62,9 @@ const TopUpForm = ({ visible, onSuccess, onClose, initialAmount = 0 }) => {
       if (response.data.error === 0) {
         if (response.data.data.paymentInfo.status === "PAID") {
           // Update the user's wallet balance in your application state
-          onSuccess(`Giao dịch thành công.`);
+          onSuccess(
+            `Nạp tiền thành công. Số dư mới: ${response.data.data.userInfo.wallet}`
+          );
           return true; // Indicate successful payment
         } else if (response.data.data.paymentInfo.status === "CANCELLED") {
           message.error("Giao dịch đã bị hủy");
@@ -88,6 +90,7 @@ const TopUpForm = ({ visible, onSuccess, onClose, initialAmount = 0 }) => {
         cancelUrl: window.location.origin,
         price: parseInt(amount),
         buyerName: "",
+        buyerEmail: "",
       });
 
       if (response.data.error === 0) {
@@ -109,10 +112,10 @@ const TopUpForm = ({ visible, onSuccess, onClose, initialAmount = 0 }) => {
           }
         }, 5000);
 
-        // Set a timeout to stop checking after 15 minutes
+        // Set a timeout to stop checking after 30 minutes
         setTimeout(() => {
           clearInterval(checkInterval);
-        }, 15 * 60 * 1000);
+        }, 30 * 60 * 1000);
       } else {
         throw new Error(
           response.data.message || "Failed to create payment link"
@@ -140,7 +143,7 @@ const TopUpForm = ({ visible, onSuccess, onClose, initialAmount = 0 }) => {
   return (
     <Modal
       visible={visible}
-      title="Thanh toán giao dịch"
+      title="Nạp tiền vào ví"
       onCancel={handleCancel}
       footer={null}
       width={600}
@@ -169,7 +172,7 @@ const TopUpForm = ({ visible, onSuccess, onClose, initialAmount = 0 }) => {
               onClick={handleGetPaymentLink}
               disabled={!amount}
             >
-              Xác nhận thanh toán
+              Xác nhận nạp tiền
             </Button>
           )}
           <Button onClick={handleCancel}>Hủy</Button>

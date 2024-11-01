@@ -32,13 +32,19 @@ export const getFengShuiConsultation = (data) => {
   return api.post("/api/Consultation/fengshui", data);
 };
 
-export const getFengShuiKoiFishPost = () => {
-  return api.get("/api/Post/GetAllByPostType/1?page=1&pageSize=5") 
+export const getFengShuiKoiFishPost = (page = 1, pageSize = 10) => {
+  return api
+    .get(
+      `/api/MarketplaceListings/GetAllByCategoryType/1?page=${page}&pageSize=${pageSize}`
+    )
     .then((response) => response.data);
 };
 
-export const getFengShuiKoiDecorationPost = () => {
-  return api.get("/api/Post/GetAllByPostType/2?page=1&pageSize=5") 
+export const getFengShuiKoiDecorationPost = (page = 1, pageSize = 5) => {
+  return api
+    .get(
+      `/api/MarketplaceListings/GetAllByCategoryType/2?page=${page}&pageSize=${pageSize}`
+    )
     .then((response) => response.data);
 };
 // New dashboard API calls
@@ -74,7 +80,6 @@ export const getAllFAQs = () => {
   return api.get("/api/FAQ/GetAll");
 };
 
-
 export const createFAQ = (data) => {
   return api.post("/api/FAQ/Create", data);
 };
@@ -87,7 +92,6 @@ export const deleteFAQ = (faqId) => {
 };
 //Admin post
 
-
 export const getAllPosts = () => {
   return api.get("/api/AdminPost/GetAllPosts");
 };
@@ -95,21 +99,25 @@ export const getAllPosts = () => {
 export const createPost = (data) => {
   return api.post("/api/AdminPost/CreatePostWithImages", data, {
     headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+      "Content-Type": "multipart/form-data",
+    },
   });
 };
 
 export const updatePost = (postId, data) => {
   return api.put(`/api/AdminPost/UpdatePost/${postId}`, data, {
     headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+      "Content-Type": "multipart/form-data",
+    },
   });
 };
 
 export const deletePost = (postId) => {
   return api.delete(`/api/AdminPost/DeletePostWithAllRelated/${postId}`);
+};
+
+export const getTotalTransactionCount = () => {
+  return api.get("/api/Dashboard/transactions/count");
 };
 
 export default api;

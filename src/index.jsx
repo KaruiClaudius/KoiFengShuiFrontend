@@ -5,12 +5,11 @@ import { StyledEngineProvider } from "@mui/joy/styles";
 // Import page here
 import AuthPage from "./pages/Login/AuthPage";
 import DashboardDefault from "./pages/Dashboard";
-import HomePage from "./pages/Homepage/Homepage";
 import KoiCompatibilityForm from "./pages/KoiCompatible/KoiCompatibilityForm ";
 import UserProfile from "./pages/UserProfile/UserProfile";
 import ProtectedRoute from "./config/ProtectedRoute";
 // import PaymentMethod from "./pages/Payment/Payment";
-import AdminFAQ from "./pages/FAQ/FAQManager.jsx"
+import AdminFAQ from "./pages/FAQ/FAQManager.jsx";
 import AdminPost from "./pages/AdminPost/AdminPost";
 import BlogPage from "./pages/AdminPost/BlogPage";
 import "./index.css";
@@ -19,8 +18,9 @@ import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 //import Homepage, Detail Page
- import KoiDetailPage from "./pages/KoiDetailPage/KoiDetailPage";
- //import DecorationPage from "./pages/DecorationPage/DecorationPage";
+import HomePage from "./pages/Homepage/Homepage";
+import KoiDetailPage from "./pages/KoiDetailPage/KoiDetailPage";
+import DecorationPage from "./pages/DecorationPage/DecorationPage";
 
 const App = () => {
   return (
@@ -39,8 +39,9 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/KoiDetail/:id" element={<KoiDetailPage />} />
-          {/* <Route path="/Decoration/:id" element={<DecorationPage />} /> */}         
+          <Route path="/KoiDetails/:id" element={<KoiDetailPage />} />
+          <Route path="/Decoration/:id" element={<DecorationPage />} />
+          {/* <Route path="/Decoration/:id" element={<DecorationPage />} /> */}
           <Route
             path="/FAQManager"
             element={
@@ -49,7 +50,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-           <Route
+          <Route
             path="/AdminPost"
             element={
               <ProtectedRoute requiredRole={1}>

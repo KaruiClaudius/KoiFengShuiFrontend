@@ -3,12 +3,12 @@ import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
 import ex from "../../assets/koio_ex.png";
+import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
-import "./KoiDetailPage.css";
-import TruncatedText from "../../utils/TruncatedText";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CardContent } from "@mui/material";
+import TruncatedText from "../../utils/TruncatedText";
 import {
   Row,
   Col,
@@ -23,218 +23,65 @@ import {
   Space,
   Layout,
 } from "antd";
-import api, {
-  getFengShuiKoiDetail,
-  getFengShuiKoiFishPost,
-} from "../../config/axios";
+import api, { getFengShuiKoiDetail } from "../../config/axios";
 import {
   PhoneOutlined,
   StarOutlined,
   MessageOutlined,
 } from "@ant-design/icons";
-
 const ImageGallery = ({ images }) => {
-  //const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl || "");
+  //const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl);
 
   return (
-    <Row gutter={[16, 16]} style={{ height: "100%" }}>
-      {/* Left column for sub-images */}
-      <Col xs={24} sm={8} md={6} lg={5}>
-        <div
-          style={{
-            overflowY: "auto",
-            maxHeight: "80vh",
-          }}
-        >
-          {/* {images.map((image, index) => ( */}
-          <Image
-            // key={index}
-            src={ex}
-            //alt={`Property Image ${index + 1}`}
-            style={{
-              height: "120px",
-              objectFit: "cover",
-              marginBottom: "8px",
-              cursor: "pointer",
-            }}
-            onClick={() => setMainImage(ex)}
-            preview={false}
-          />
-          {/* ))} */}
-        </div>
-      </Col>
-
-      {/* Right column for main image */}
-      <Col xs={24} sm={16} md={18} lg={19}>
+    <Row gutter={[16, 16]}>
+      <Col span={24}>
         <Image
-          src={ex}
+          src={des}
           alt="Main Property Image"
           style={{
-            height: "68vh",
-            objectFit: "contain",
-            border: "4px solid black", // Add border here
-            borderRadius: "8px", // Optional: add border radius for rounded corners
+            width: "40vw",
+            height: "40vh",
+            maxHeight: "100vh",
+            maxWidth: "100vw",
           }}
         />
+      </Col>
+      <Col span={24}>
+        <Row
+          gutter={[8, 8]}
+          style={{ overflowX: "auto", whiteSpace: "nowrap" }}
+        >
+          {/* {images.map((image, index) => (  ))}*/}
+          <Col style={{ display: "inline-block" }}>
+            <Image
+              src={des}
+              alt={`Property Image`}
+              style={{
+                width: "120px",
+                height: "120px",
+                objectFit: "cover",
+                cursor: "pointer",
+              }}
+              onClick={() => setMainImage(ex)}
+              preview={false}
+            />
+          </Col>
+        </Row>
       </Col>
     </Row>
   );
 };
-const KoiDetailPage = () => {
+
+const DecorationPage = () => {
   const { id } = useParams();
   const [loading, setLoading] = React.useState(true); // Handle loading state
-  const [koiDetails, setDataKoi] = React.useState(null);
+  const [koiDetails, setDataDecoration] = React.useState(null);
   const [error, setError] = React.useState(null); // Handle errors
   const { Title, Text } = Typography;
   const scrollContainerRef1 = useRef(null);
-  const scrollContainerRef2 = useRef(null);
-  const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
+  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
   const [cardDataKoiBaseOnAccount, setCardDataKoiBaseOnAccount] =
     React.useState([]); // Store data
-  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-
-  const fetchData = async () => {
-    try {
-      const response = await getFengShuiKoiDetail(id);
-      setDataKoi(response.data[0]); // Access the first item in the data array
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const fetchKoiData = useCallback(
-    async (
-      koiElement = koiDetails.elementId,
-      koiAccount = koiDetails.accountId,
-      page = 1,
-      pageSize = 10,
-      categoryId = 1
-    ) => {
-      try {
-        const responseKoi = await api
-          .get(
-            `/api/MarketplaceListings/GetAllByElementId/${koiElement}/Category/${categoryId}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
-          )
-          .then((response) => response.data);
-        const responseKoiBaseOnAccount = await api
-          .get(
-            `/api/MarketplaceListings/GetAllByAccount/${koiAccount}/Category/${categoryId}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
-          )
-          .then((response) => response.data);
-
-        setCardDataKoi(responseKoi.data);
-        setCardDataKoiBaseOnAccount(responseKoiBaseOnAccount.data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false); // Set loading to false after data is fetched
-      }
-    }
-  );
-  const renderKoi = (data) => {
-    return data.map((item) => (
-      <div className="card-container" key={item.listingId}>
-        <div className="property-card">
-          {item.tierName === "Preminum" ? (
-            <div className="featured-badge">
-              <span>Nổi bật</span>
-            </div>
-          ) : (
-            <h1> </h1>
-          )}
-
-          <img src={ex} alt="Card" className="property-image" />
-          <div className="property-content">
-            <a
-              href={`/KoiDetails/${item.listingId}`}
-              className="property-title-link"
-            >
-              <div className="property-title-wrapper">
-                <h1 className="property-title">
-                  [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />
-                </h1>
-              </div>
-            </a>
-            <div className="property-price-container">
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>
-              <span className="property-price-text" style={{ color: "red" }}>
-                {formatCurrency(item.price)}VNĐ
-              </span>
-            </div>
-            <div className="property-user-container">
-              <img
-                src={usericon}
-                alt="User Icon"
-                className="property-user-icon"
-              />
-              <span className="property-user-text">{item.accountName}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ));
-  };
-
-  const renderKoiBseOnAccount = (data) => {
-    return data.map((item) => (
-      <div className="card-container" key={item.listingId}>
-        <div className="property-card">
-          {item.tierName === "Preminum" ? (
-            <div className="featured-badge">
-              <span>Nổi bật</span>
-            </div>
-          ) : (
-            <h1> </h1>
-          )}
-
-          <img src={ex} alt="Card" className="property-image" />
-          <div className="property-content">
-            <a
-              href={`/KoiDetails/${item.listingId}`}
-              className="property-title-link"
-            >
-              <div className="property-title-wrapper">
-                <h1 className="property-title">
-                  [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />
-                </h1>
-              </div>
-            </a>
-            <div className="property-price-container">
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>
-              <span className="property-price-text" style={{ color: "red" }}>
-                {formatCurrency(item.price)}VNĐ
-              </span>
-            </div>
-            <div className="property-user-container">
-              <img
-                src={usericon}
-                alt="User Icon"
-                className="property-user-icon"
-              />
-              <span className="property-user-text">{item.accountName}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ));
-  };
-
-  React.useEffect(() => {
-    fetchData();
-    fetchKoiData();
-  }, [fetchData, fetchKoiData]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   function formatCurrency(value) {
     // Ensure value is a number
     const numValue = Number(value);
@@ -258,6 +105,54 @@ const KoiDetailPage = () => {
     }
   }
 
+  const renderDecoration = (data) => {
+    return data.map((item) => (
+      <div className="card-container">
+        <div className="property-card">
+          {item.tierName == "Preminum" ? (
+            <div className="featured-badge">
+              <span>Nổi bật</span>
+            </div>
+          ) : (
+            <h1> </h1>
+          )}
+
+          <img src={des} alt="Card" className="property-image" />
+          <div className="property-content">
+            <a
+              href={`/Decoration/${item.listingId}`}
+              className="property-title-link"
+            >
+              {/* {item.element && item.element.length > 0 ? ( */}
+              <div className="property-title-wrapper">
+                <h1 className="property-title">
+                  <TruncatedText text={item.title} maxLength={10} />
+                </h1>
+              </div>
+              {/* ) : (
+                <h1 className="property-title">{item.name}</h1>
+              )} */}
+            </a>
+            <div className="property-price-container">
+              <h2 className="property-price-text" style={{ marginRight: 5 }}>
+                Giá tiền:
+              </h2>{" "}
+              {/* Replace icon as needed */}
+              <span className="property-price-text" style={{ color: "red" }}>
+                {formatCurrency(item.price)}VNĐ
+              </span>
+            </div>
+            <div className="property-user-container">
+              <img src={usericon} alt="Banner" className="property-user-icon" />{" "}
+              {/* Replace icon as needed */}
+              <span className="property-user-text">{item.accountName}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  };
+
   function formatLargeNumber(value, unitValue, unitName) {
     const wholePart = Math.floor(value / unitValue);
     const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
@@ -268,6 +163,52 @@ const KoiDetailPage = () => {
     }
     return result;
   }
+  const fetchData = async () => {
+    try {
+      const response = await getFengShuiKoiDetail(id);
+      setDataDecoration(response.data[0]); // Access the first item in the data array
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchKoiData = useCallback(
+    async (
+      koiAccount = koiDetails.accountId,
+      page = 1,
+      pageSize = 10,
+      categoryId = 2
+    ) => {
+      try {
+        // const responseKoi = await api
+        //   .get(
+        //     `/api/MarketplaceListings/GetAllByElementId/${koiDetail}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
+        //   )
+        //   .then((response) => response.data);
+        const responseKoiBaseOnAccount = await api
+          .get(
+            `/api/MarketplaceListings/GetAllByAccount/${koiAccount}/Category/${categoryId}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
+          )
+          .then((response) => response.data);
+
+        //setCardDataKoi(responseKoi.data);
+        setCardDataKoiBaseOnAccount(responseKoiBaseOnAccount.data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false); // Set loading to false after data is fetched
+      }
+    }
+  );
+  React.useEffect(() => {
+    fetchData();
+    fetchKoiData();
+  }, [fetchData, fetchKoiData]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!koiDetails) return <div>No property details found</div>;
@@ -293,11 +234,10 @@ const KoiDetailPage = () => {
   };
   const scrollLeft1 = () => scrollLeft(scrollContainerRef1);
   const scrollRight1 = () => scrollRight(scrollContainerRef1);
-  const scrollLeft2 = () => scrollLeft(scrollContainerRef2);
-  const scrollRight2 = () => scrollRight(scrollContainerRef2);
   const handleButtonClick = () => {
     setShowPhoneNumber(!showPhoneNumber);
   };
+
   return (
     <div
       style={{
@@ -332,7 +272,7 @@ const KoiDetailPage = () => {
                   color: "black",
                 }}
               >
-                Cá Koi
+                Đồ Trang trí
               </Link>
               <div style={{ padding: "0 3px" }}>&gt;</div>
               <div style={{ color: "orange", fontWeight: "bold" }}>
@@ -353,7 +293,8 @@ const KoiDetailPage = () => {
                   marginBottom: "20px",
                 }}
               >
-                [{koiDetails.elementName}] {koiDetails.title}
+                {koiDetails.elementName && `[${koiDetails.elementName}] `}{" "}
+                {koiDetails.title}
               </Typography>
               <ImageGallery images={ex} />
             </Col>
@@ -393,9 +334,11 @@ const KoiDetailPage = () => {
                       <Descriptions.Item label="Màu sắc">
                         {koiDetails.color}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Bản mệnh">
-                        {koiDetails.elementName}
-                      </Descriptions.Item>
+                      {koiDetails.elementName && (
+                        <Descriptions.Item label="Bản mệnh">
+                          {koiDetails.elementName}
+                        </Descriptions.Item>
+                      )}
                     </Descriptions>
                   </Col>
 
@@ -438,45 +381,6 @@ const KoiDetailPage = () => {
             </Card>
           </Col>
         </Row>
-        <Row style={{ marginTop: 20, width: "100%" }}>
-          <Col xs={24} lg={24}>
-            <div
-              style={{ display: "flex", alignItems: "center", width: "100%" }}
-            >
-              <button onClick={scrollLeft2} className="arrow-button">
-                ←
-              </button>
-              <div class="white-box" style={{ width: "100%" }}>
-                <div
-                  className="container-title"
-                  style={{ justifyContent: "space-between", width: "100%" }}
-                >
-                  <h2>Cá Koi Cùng Bản Mệnh</h2>
-                  <a
-                    href={`/fishProduct`}
-                    style={{ textDecoration: "none", color: "black" }}
-                  >
-                    <h2>Xem thêm {">"}</h2>
-                  </a>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    overflow: "hidden",
-                    width: "50%",
-                  }}
-                  ref={scrollContainerRef2}
-                  className="scroll-container"
-                >
-                  {renderKoi(cardDataKoi)}
-                </div>
-              </div>
-              <button onClick={scrollRight2} className="arrow-button">
-                →
-              </button>
-            </div>
-          </Col>
-        </Row>
         <Row style={{ marginTop: 20, width: "100%", paddingBottom: 50 }}>
           <Col xs={24} lg={24}>
             <div
@@ -490,9 +394,9 @@ const KoiDetailPage = () => {
                   className="container-title"
                   style={{ justifyContent: "space-between", width: "100%" }}
                 >
-                  <h2>Cá Koi Liên Quan</h2>
+                  <h2>Đồ Trang Trí Liên Quan</h2>
                   <a
-                    href={`/fishProduct`}
+                    href={`/`}
                     style={{ textDecoration: "none", color: "black" }}
                   >
                     <h2>Xem thêm {">"}</h2>
@@ -507,7 +411,7 @@ const KoiDetailPage = () => {
                   ref={scrollContainerRef1}
                   className="scroll-container"
                 >
-                  {renderKoiBseOnAccount(cardDataKoiBaseOnAccount)}
+                  {renderDecoration(cardDataKoiBaseOnAccount)}
                 </div>
               </div>
               <button onClick={scrollRight1} className="arrow-button">
@@ -521,4 +425,4 @@ const KoiDetailPage = () => {
     </div>
   );
 };
-export default KoiDetailPage;
+export default DecorationPage;

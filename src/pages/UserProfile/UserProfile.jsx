@@ -11,12 +11,14 @@ import {
   Col,
   message,
   Breadcrumb,
+  Card,
 } from "antd";
 import moment from "moment";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import api from "../../config/axios";
 import "./UserProfile.css";
+import TopUpForm from "./TopUpForm"; // Make sure this path is correct
 
 const { Header, Content, Sider } = Layout;
 const { Option } = Select;
@@ -26,6 +28,8 @@ const UserProfile = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState("1");
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [isTopUpModalVisible, setIsTopUpModalVisible] = useState(false);
   const elementMapping = {
     1: "Mộc",
     2: "Hoả",
@@ -36,6 +40,20 @@ const UserProfile = () => {
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  const showTopUpModal = () => {
+    setIsTopUpModalVisible(true);
+  };
+
+  const handleTopUpSuccess = (successMessage) => {
+    message.success(successMessage);
+    fetchUserData(); // Refresh user data to update wallet balance
+    setIsTopUpModalVisible(false);
+  };
+
+  const handleTopUpCancel = () => {
+    setIsTopUpModalVisible(false);
+  };
 
   const fetchUserData = async () => {
     setLoading(true);
@@ -50,6 +68,7 @@ const UserProfile = () => {
         ? elementMapping[user.elementId]
         : "Không xác định";
       setUserData(user);
+      setWalletBalance(user.wallet || 0); // Set the wallet balance
       form.setFieldsValue({
         ...user,
         dob: user.dob ? moment(user.dob) : null,
@@ -177,103 +196,120 @@ const UserProfile = () => {
     switch (selectedMenuItem) {
       case "1":
         return (
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            initialValues={
-              userData
-                ? {
-                    ...userData,
-                    dob: userData.dob ? moment(userData.dob) : null,
-                  }
-                : {}
-            }
-          >
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="fullName"
-                  label="Họ và tên"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập họ và tên" },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="phone"
-                  label="Số điện thoại"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập số điện thoại" },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                {
-                  required: true,
-                  type: "email",
-                  message: "Vui lòng nhập email hợp lệ",
-                },
-              ]}
+          <>
+            <Card className="wallet-card" style={{ marginBottom: 16 }}>
+              <Row justify="space-between" align="middle">
+                <Col>
+                  <h3>Số dư ví: {walletBalance.toLocaleString()} VND</h3>
+                </Col>
+                <Col>
+                  <Button type="primary" onClick={showTopUpModal}>
+                    Nạp tiền
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={onFinish}
+              initialValues={
+                userData
+                  ? {
+                      ...userData,
+                      dob: userData.dob ? moment(userData.dob) : null,
+                    }
+                  : {}
+              }
             >
-              <Input
-                disabled
-                className="custom-disabled-input"
-                style={{ color: "rgba(0, 0, 0, 0.85)" }}
-              />
-            </Form.Item>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="gender"
-                  label="Giới tính"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn giới tính" },
-                  ]}
-                >
-                  <Select>
-                    <Option value="male">Nam</Option>
-                    <Option value="female">Nữ</Option>
-                    <Option value="other">Khác</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="dob"
-                  label="Ngày, tháng, năm sinh"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn ngày sinh" },
-                  ]}
-                >
-                  <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="elementName" label="Mệnh">
-                  <Input disabled style={{ color: "rgba(0, 0, 0, 0.85)" }} />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="user-profile-form-button"
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="fullName"
+                    label="Họ và tên"
+                    rules={[
+                      { required: true, message: "Vui lòng nhập họ và tên" },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="phone"
+                    label="Số điện thoại"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Vui lòng nhập số điện thoại",
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  {
+                    required: true,
+                    type: "email",
+                    message: "Vui lòng nhập email hợp lệ",
+                  },
+                ]}
               >
-                Lưu thay đổi
-              </Button>
-            </Form.Item>
-          </Form>
+                <Input
+                  disabled
+                  className="custom-disabled-input"
+                  style={{ color: "rgba(0, 0, 0, 0.85)" }}
+                />
+              </Form.Item>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="gender"
+                    label="Giới tính"
+                    rules={[
+                      { required: true, message: "Vui lòng chọn giới tính" },
+                    ]}
+                  >
+                    <Select>
+                      <Option value="male">Nam</Option>
+                      <Option value="female">Nữ</Option>
+                      <Option value="other">Khác</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="dob"
+                    label="Ngày, tháng, năm sinh"
+                    rules={[
+                      { required: true, message: "Vui lòng chọn ngày sinh" },
+                    ]}
+                  >
+                    <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="elementName" label="Mệnh">
+                    <Input disabled style={{ color: "rgba(0, 0, 0, 0.85)" }} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="user-profile-form-button"
+                >
+                  Lưu thay đổi
+                </Button>
+              </Form.Item>
+            </Form>
+          </>
         );
       case "2":
         return (
@@ -379,6 +415,11 @@ const UserProfile = () => {
           </Layout>
         </Col>
       </Row>
+      <TopUpForm
+        visible={isTopUpModalVisible}
+        onSuccess={handleTopUpSuccess}
+        onClose={handleTopUpCancel}
+      />
       <FooterComponent />
     </Layout>
   );

@@ -6,8 +6,6 @@
   margin-top: 40px;
 }
 
-
-
 .image-container {
   width: 100%;
   display: flex;
@@ -112,31 +110,41 @@
   backdrop-filter: blur(15px); /* More intense blur on hover */
 }
 
+/*Render Koi*/
 .card-container{
   text-align: center;
   width: 20%;
   margin: 5px;
+  min-width: 20%;
+  min-height: 50%;
+  max-height: 50%;
 }
 
 .property-card {
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   margin: 10px auto;
   border-radius: 5px;
-  overflow: hidden; /* To handle rounded corners */
-  border: 1px solid #e0e0e0;  /*You can add a border if needed */
-  width: fit-content;
-  text-align: center;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  width: 100%;
+  height: max-content;  /* Fixed height for uniformity */
+  position: relative;
+  
 }
 
 .featured-badge {
   position: absolute;
+  top: auto;
+  left: auto;
   background-color: red;
   color: white;
-  padding: 3px 3px;
+  padding: 3px 6px;
   font-weight: bold;
   border-radius: 5px;
   z-index: 1;
-  
+  font-size: 12px;
 }
 
 .property-image {
@@ -144,6 +152,8 @@
   height:  10%;
   object-fit: contain; /* To maintain image aspect ratio */
   width: fit-content;
+  min-width: 5%;
+  min-height: 5%;
 }
 
 .property-content {
@@ -153,6 +163,13 @@
   justify-content: center;
 }
 
+.property-title-wrapper {
+  height: 48px; /* Adjust this value based on your desired title height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 
 
 .property-title-link {
@@ -169,6 +186,8 @@
   margin: 0;
   width: 100%;
   text-align: center;
+  display: block;
+  justify-content: center;
 }
 
 .property-price-container {
@@ -178,26 +197,37 @@
   flex-direction: column;
 }
 
-.property-price-icon {
-  width: 30%;
-  height: 30%;
-  margin-right: 8px; /* Spacing between icon and text */
+.property-price-text {
+  color: #757575; /* 'text.secondary' equivalent */
+  font-size: 12px;
+  text-align: center;
 }
 
-.property-price-text {
+.property-user-container {
+  display: flex;
+  margin-top: 8px; /* Spacing similar to Material-UI's marginTop 1 */
+  width: 100%;
+  justify-content: space-between;
+  font-weight: bold;
+}
+
+.property-user-icon {
+  width: 30%;
+  height: 30%;
+}
+
+.property-user-text {
   width: 70%;
   color: #757575; /* 'text.secondary' equivalent */
   font-size: 12px;
   text-align: center;
-  margin-left: 3px;
-  margin-right: 3px;
 }
-
+/*Render*/
 .white-box {
   background-color: #ffffff;
   padding: 15px;
   width: 50%;
-  margin: 20px auto;
+  margin: 20px 0;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;

@@ -12,6 +12,7 @@ const FooterComponent = () => {
         color: "#d3b58d",
         padding: "20px 50px",
         textAlign: "left",
+        position: "relative",
       }}
     >
       <Row justify="space-between" align="top">
@@ -57,6 +58,7 @@ const FooterComponent = () => {
           textAlign: "center",
           padding: "5px 0",
           marginTop: "20px",
+          width: "100%",
         }}
       >
         @ Copy right 2024

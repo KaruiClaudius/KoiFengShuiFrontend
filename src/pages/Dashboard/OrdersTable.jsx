@@ -27,19 +27,19 @@ const headCells = [
     label: "Transaction ID",
   },
   {
-    id: "type",
+    id: "transactionDate",
     align: "left",
     disablePadding: true,
-    label: "Loại",
+    label: "Thời gian giao dịch",
   },
   {
-    id: "title",
+    id: "accountFullName",
     align: "left",
     disablePadding: true,
     label: "Tên",
   },
   {
-    id: "isActive",
+    id: "status",
     align: "left",
     disablePadding: false,
     label: "Trạng thái",
@@ -52,6 +52,22 @@ const headCells = [
   },
 ];
 
+// Add this date formatting function
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+
+  // Format: DD/MM/YYYY HH:mm
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+};
 function OrderTableHead({ order, orderBy }) {
   return (
     <TableHead>
@@ -71,17 +87,36 @@ function OrderTableHead({ order, orderBy }) {
   );
 }
 
-function OrderStatus({ isActive }) {
-  const color = isActive ? "success" : "error";
-  const title = isActive ? "Đang hoạt động" : "Không hoạt động";
+const getStatusColor = (status) => {
+  switch (status.toLowerCase()) {
+    case "pending":
+      return "warning";
+    case "paid":
+      return "success";
+    case "cancel":
+      return "error";
+    default:
+      return "default";
+  }
+};
+
+function OrderStatus({ status }) {
+  const color = getStatusColor(status);
 
   return (
     <Stack direction="row" spacing={1} alignItems="center">
       <Dot color={color} />
-      <Typography>{title}</Typography>
+      <Typography>{status}</Typography>
     </Stack>
   );
 }
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+};
 
 export default function OrderTable() {
   const [order, setOrder] = useState("desc");
@@ -158,12 +193,12 @@ export default function OrderTable() {
                 <TableCell component="th" scope="row">
                   {row.transactionId}
                 </TableCell>
-                <TableCell>{row.type}</TableCell>
-                <TableCell>{row.title}</TableCell>
+                <TableCell>{formatDate(row.transactionDate)}</TableCell>
+                <TableCell>{row.accountFullName}</TableCell>
                 <TableCell>
-                  <OrderStatus isActive={row.isActive} />
+                  <OrderStatus status={row.status} />
                 </TableCell>
-                <TableCell>{row.amount}</TableCell>
+                <TableCell>{formatCurrency(row.amount)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -177,4 +212,7 @@ OrderTableHead.propTypes = {
   order: PropTypes.string,
   orderBy: PropTypes.string,
 };
-OrderStatus.propTypes = { isActive: PropTypes.bool };
+
+OrderStatus.propTypes = {
+  status: PropTypes.string.isRequired,
+};
