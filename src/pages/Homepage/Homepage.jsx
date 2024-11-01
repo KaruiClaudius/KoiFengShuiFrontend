@@ -7,7 +7,7 @@ import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // import { CardContent } from "@mui/material";
 // import { Typography } from "antd";
 import TruncatedText from "../../utils/TruncatedText";
@@ -15,12 +15,15 @@ import {
   getFengShuiKoiFishPost,
   getFengShuiKoiDecorationPost,
   getFengShuiKoiPost,
+  getKoiElement,
 } from "../../config/axios";
 import FAQDisplay from "../FAQ/FAQDisplay";
 export default function Homepage() {
   const navigate = useNavigate();
   const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
+  const [cardDataKoiElement, setCardDataKoiElement] = React.useState([]); // Store data
   const [cardDataDecoration, setCardDataDecoration] = React.useState([]); // Store data
+  const [existElementData, setExistElementData] = React.useState([]); // Store data
   const [cardDataPost, setCardDataPost] = React.useState([]); // Store data
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [error, setError] = React.useState(null); // Handle errors
@@ -29,7 +32,9 @@ export default function Homepage() {
   const scrollContainerRef2 = useRef(null);
   const scrollContainerRef3 = useRef(null);
   const scrollContainerRef4 = useRef(null);
-
+  const [elementName, setElementName] = useState("");
+  const [elementId, setElementId] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
   const sellingFishClick = () => {
     navigate("/sellingFish");
   };
@@ -47,23 +52,60 @@ export default function Homepage() {
   };
 
   React.useEffect(() => {
+    // const updateUserData = (event) => {
+    //   const updatedUser = event.detail;
+    //   const elementName = elementMapping[updatedUser.elementId];
+    //   setElementName(elementName);
+    //   setElementId(updatedUser.elementId);
+    // };
+
+    // // Initial data load
+    // const token = localStorage.getItem("token");
+    // const user = JSON.parse(localStorage.getItem("user"));
+    // if (token && user) {
+    //   updateUserData({ detail: user });
+    // }
     const fetchData = async () => {
       try {
         const responseKoi = await getFengShuiKoiFishPost(); // Adjust endpoint
         const responseDecoration = await getFengShuiKoiDecorationPost();
         const responsePost = await getFengShuiKoiPost();
-        setCardDataKoi(responseKoi.data); // Store the data
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
+        setCardDataKoi(responseKoi.data);
+        if (user != null) {
+          if (user.elementId) {
+            const responseKoiElement = await getKoiElement(
+              user.elementId,
+              1,
+              10
+            ); // Store the data
+            setCardDataKoiElement(responseKoiElement.data);
+          }
+        } else {
+          setCardDataKoiElement(null);
+        }
       } catch (error) {
         setError(error.message); // Handle error
       } finally {
         setLoading(false); // Stop loading
       }
     };
+
+    //window.addEventListener("userProfileUpdated", updateUserData);
+
     // Fetch data from API when the component mounts
     fetchData();
+    // if (elementId != null) {
+    //   fetchDataElement(elementId);
+    // }
+    // Cleanup function to remove event listener
+    // return () => {
+    //   window.removeEventListener("userProfileUpdated", updateUserData);
+    // };
   }, []);
+
+  // Add event listener
 
   function formatCurrency(value) {
     // Ensure value is a number
@@ -130,38 +172,58 @@ export default function Homepage() {
     return data.map((item) => (
       <div className="card-container" key={item.listingId}>
         <div className="property-card">
-          {item.tierName === "Preminum" ? (
+          {item.tierName === "Preminum" && (
             <div className="featured-badge">
               <span>Nổi bật</span>
             </div>
-          ) : (
-            <h1> </h1>
           )}
 
-          <img src={ex} alt="Card" className="property-image" />
+          <Link
+            to={`/KoiDetails/${item.listingId}`}
+            style={{ justifyContent: "center" }}
+          >
+            <img
+              src={item.listingImages?.[0]?.image?.imageUrl || defaultImage}
+              alt={item.title}
+              className="property-koi-image"
+              onError={(e) => {
+                e.target.src = defaultImage;
+              }}
+            />
+          </Link>
+
           <div className="property-content">
-            <a
-              href={`/KoiDetails/${item.listingId}`}
-              className="property-title-link"
-            >
-              <div className="property-title-wrapper">
-                <h1 className="property-title">
+            <div className="property-title-wrapper">
+              <h1 className="property-title">
+                <a
+                  href={`/KoiDetails/${item.listingId}`}
+                  className="property-title-link"
+                >
                   [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />
-                </h1>
-              </div>
-            </a>
+                  <TruncatedText text={item.title} maxLength={20} />{" "}
+                </a>
+              </h1>
+            </div>
+
             <div className="property-price-container">
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>
-              <span className="property-price-text" style={{ color: "red" }}>
+              <span className="property-price-text">Giá tiền: </span>
+              <span
+                className="property-price-price"
+                style={{ color: "red", marginLeft: "4px" }}
+              >
                 {formatCurrency(item.price)}VNĐ
               </span>
             </div>
+
             <div className="property-user-container">
               <img
-                src={usericon}
+                src={
+                  item.accountName
+                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                        item.accountName
+                      )}`
+                    : usericon
+                }
                 alt="User Icon"
                 className="property-user-icon"
               />
@@ -184,8 +246,17 @@ export default function Homepage() {
           ) : (
             <h1> </h1>
           )}
-
-          <img src={des} alt="Card" className="property-image" />
+          <Link
+            key={item.homeId}
+            to={`/Decoration/${item.listingId}`}
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+            }}
+          >
+            <img src={des} alt="Card" className="property-image" />
+          </Link>
           <div className="property-content">
             <a
               href={`/Decoration/${item.listingId}`}
@@ -206,12 +277,22 @@ export default function Homepage() {
                 Giá tiền:
               </h2>{" "}
               {/* Replace icon as needed */}
-              <span className="property-price-text" style={{ color: "red" }}>
+              <span className="property-price-price" style={{ color: "red" }}>
                 {formatCurrency(item.price)}VNĐ
               </span>
             </div>
             <div className="property-user-container">
-              <img src={usericon} alt="Banner" className="property-user-icon" />{" "}
+              <img
+                src={
+                  item.accountName
+                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                        item.accountName
+                      )}`
+                    : usericon
+                }
+                alt="Banner"
+                className="property-user-icon"
+              />{" "}
               {/* Replace icon as needed */}
               <span className="property-user-text">{item.accountName}</span>
             </div>
@@ -243,11 +324,11 @@ export default function Homepage() {
             Cân Bằng Phong Thủy, Koi Vượng Tài Lộc
           </p>
           <div className="search-bar-container">
-            <input
+            {/* <input
               type="text"
               placeholder="Tìm kiếm..."
               className="search-bar"
-            />
+            /> */}
             <button className="search-icon-button">
               <img
                 src={searchIcon}
@@ -275,31 +356,39 @@ export default function Homepage() {
       </div>
       <div className="main-container">
         <div className="content-wrapper">
-          <div className="render-koi-elemet">
-            <button onClick={scrollLeft1} className="arrow-button">
-              ←
-            </button>
-            <div class="white-box">
-              <div className="container-title">
-                <h2 className="container-title-title">Cá Koi Theo Bản Mệnh</h2>
-                <a href={`/fishProduct`} className="container-title-link">
-                  <h2>Xem thêm {">"}</h2>
-                </a>
-              </div>
+          {cardDataKoiElement != null ? (
+            <div className="render-koi-elemet">
+              <button onClick={scrollLeft1} className="arrow-button">
+                ←
+              </button>
+              <div class="white-box">
+                <div className="container-title">
+                  <h2 className="container-title-title">
+                    Cá Koi Theo Bản Mệnh
+                  </h2>
+                  <a href={`/fishProduct`} className="container-title-link">
+                    <h2>Xem thêm {">"}</h2>
+                  </a>
+                </div>
 
-              <div
-                style={{ display: "flex", overflowX: "scroll", width: "100%" }}
-                ref={scrollContainerRef1}
-                className="scroll-container"
-              >
-                {/* Render Koi items here */}
-                {renderKoi(cardDataKoi)}
+                <div
+                  style={{
+                    display: "flex",
+                    overflowX: "scroll",
+                    width: "100%",
+                  }}
+                  ref={scrollContainerRef1}
+                  className="scroll-container"
+                >
+                  {/* Render Koi items here */}
+                  {renderKoi(cardDataKoiElement)}
+                </div>
               </div>
+              <button onClick={scrollRight1} className="arrow-button">
+                →
+              </button>
             </div>
-            <button onClick={scrollRight1} className="arrow-button">
-              →
-            </button>
-          </div>
+          ) : null}
           <div
             className="render-koi-elemet"
             style={{ display: "flex", alignItems: "center" }}

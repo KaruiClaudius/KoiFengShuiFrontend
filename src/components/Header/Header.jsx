@@ -103,7 +103,6 @@ const AppHeader = () => {
     navigate("/blog");
   };
 
-
   return (
     <AppBar sx={{ backgroundColor: "#231815" }}>
       <Toolbar>
@@ -178,10 +177,7 @@ const AppHeader = () => {
               opacity: 0.8,
             },
           }}
-          
-        >
-     
-        </Typography>
+        ></Typography>
 
         <Box sx={{ flexGrow: 1 }} />
 
@@ -248,7 +244,7 @@ const AppHeader = () => {
               backgroundColor: "#ff4d4f",
               "&:hover": { backgroundColor: "#ff7875" },
             }}
-            onClick={() => navigate("/upPost")}
+            onClick={() => navigate("/ListingPost")}
           >
             Đăng tin
           </Button>

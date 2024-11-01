@@ -138,7 +138,7 @@ const DecorationPage = () => {
                 Giá tiền:
               </h2>{" "}
               {/* Replace icon as needed */}
-              <span className="property-price-text" style={{ color: "red" }}>
+              <span className="property-price-price" style={{ color: "red" }}>
                 {formatCurrency(item.price)}VNĐ
               </span>
             </div>
