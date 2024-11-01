@@ -147,9 +147,10 @@
 }
 
 .property-content {
-  padding: 6px; 
-  width: fit-content;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 
@@ -172,10 +173,9 @@
 
 .property-price-container {
   display: flex;
-  align-items: center;
-  margin-top: 8px; /* Spacing similar to Material-UI's marginTop 1 */
-  width: 100%;
   justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .property-price-icon {
@@ -221,4 +221,72 @@
   color: inherit;
   width: 35%;
   text-align: right;
+}
+
+.carousel-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.carousel-content {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  transition: transform 0.5s ease;
+  justify-content: space-between; 
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 2px solid #ccc; 
+  border-radius: 50%; 
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  cursor: pointer;
+  z-index: 1;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.carousel-button:hover {
+  background-color: #f0f0f0;
+  border-color: #bbb; 
+}
+
+.carousel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.carousel-button:first-of-type {
+  left: -55px; 
+}
+
+.carousel-button:last-of-type {
+  right: -55px; 
+}
+
+.property-price-text-red {
+  color: red;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.property-price-text-black {
+  color: black;
+  font-size: 0.5em;
+  text-align: center;
+}
+
+.card-container {
+  flex: 1; 
+  margin: 5px;
+  max-width: 25%;
 }

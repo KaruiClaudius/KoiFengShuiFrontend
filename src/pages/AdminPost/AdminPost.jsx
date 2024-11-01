@@ -6,20 +6,20 @@ import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import DashboardSidebar from "../../components/Sidebar/Sidebar";
 import Box from "@mui/material/Box";
+import './Blog.css'; 
 
 const { Option } = Select;
 
 const AdminPost = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [isCRUDModalOpen, setIsCRUDModalOpen] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [currentPost, setCurrentPost] = useState({});
-  const [currentAccountId, setCurrentAccountId] = useState(null);
-  const [fileList, setFileList] = useState([]);
-  const [filterCategory, setFilterCategory] = useState(null);
-  const [filterElement, setFilterElement] = useState(null);
+  const [posts, setPosts] = useState([]);// Stores list of posts
+  const [loading, setLoading] = useState(false);// Indicates loading state
+  const [error, setError] = useState(null);// Stores error messages
+  const [isCRUDModalOpen, setIsCRUDModalOpen] = useState(false);// Controls CRUD modal visibility
+  const [isEdit, setIsEdit] = useState(false);// Indicates if editing a post
+  const [currentPost, setCurrentPost] = useState({});// Stores the post being edited
+  const [currentAccountId, setCurrentAccountId] = useState(null);// Stores current account ID
+  const [fileList, setFileList] = useState([]);// Stores list of files for upload
+  const [filterStatus, setFilterStatus] = useState(null);// Stores filter status
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -27,12 +27,7 @@ const AdminPost = () => {
       setError(null);
       try {
         const response = await getAllPosts();
-        const filteredPosts = response.data.filter(post => {
-          return (
-            (filterCategory === null || post.id === filterCategory) &&
-            (filterElement === null || post.elementId === filterElement)
-          );
-        });
+        const filteredPosts = response.data.filter(post => post.id === 3 && (filterStatus === null || post.status === filterStatus));
         setPosts(filteredPosts);
       } catch (err) {
         setError("An error occurred while fetching Posts");
@@ -52,7 +47,7 @@ const AdminPost = () => {
         setError("An error occurred while getting user information");
       }
     }
-  }, [filterCategory, filterElement]);
+  }, [filterStatus]);
 
   const handleDelete = async (postId) => {
     setLoading(true);
@@ -67,7 +62,12 @@ const AdminPost = () => {
   };
 
   const showCRUDModal = (post = {}) => {
-    setCurrentPost(post);
+    if (post.postId) {
+      setCurrentPost(post);
+    } else {
+      setCurrentPost({ id: 3, name: '', description: '', status: 'inactive' });
+    }
+    setFileList([]);
     setIsEdit(!!post.postId);
     setIsCRUDModalOpen(true);
   };
@@ -76,18 +76,33 @@ const AdminPost = () => {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('name', currentPost.name || "");
-      formData.append('description', currentPost.description || "");
+
+      if (currentPost.name !== undefined) {
+        formData.append('name', currentPost.name);
+      }
+
+      if (currentPost.description !== undefined) {
+        formData.append('description', currentPost.description);
+      }
+
+      if (currentPost.status !== undefined) {
+        formData.append('status', currentPost.status);
+      }
+
       formData.append('accountId', currentAccountId);
       formData.append('id', currentPost.id);
-      formData.append('elementId', currentPost.elementId);
-      formData.append('status', currentPost.status || "inactive");
+      formData.append('elementId', 6);
 
       fileList.forEach((file) => {
         formData.append('images', file.originFileObj);
       });
 
-      const response = await createPost(formData);
+      let response;
+      if (isEdit) {
+        response = await updatePost(currentPost.postId, formData);
+      } else {
+        response = await createPost(formData);
+      }
 
       setPosts(prevPosts => isEdit 
         ? prevPosts.map(post => post.postId === currentPost.postId ? response.data : post)
@@ -118,54 +133,28 @@ const AdminPost = () => {
     const { name, value } = e.target;
     setCurrentPost({
       ...currentPost,
-      [name]: name === 'id' || name === 'elementId' ? parseInt(value, 10) : value
+      [name]: value
     });
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#1E3A5F" }}>
+    <Box className="admin-post-container">
       <AppHeader />
       <Box sx={{ display: "flex", flexGrow: 1 }}>
         <DashboardSidebar />
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: "500px",
-            maxWidth: "800px",
-            paddingTop: "70px",
-          }}
-        >
-          <h2 style={{ color: "white" }}>Manage Posts</h2>
+        <Box className="admin-post-main">
+          <h2 className="admin-post-header">Manage Posts</h2>
           {error && <Alert message={error} type="error" showIcon />}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+          <div className="admin-post-select">
             <Select
-              placeholder="Select Category"
-              style={{ width: 200, marginRight: 10 }}
-              onChange={value => setFilterCategory(value)}
-              allowClear
-            >
-              <Option value={null}>All</Option>
-              <Option value={1}>Koi</Option>
-              <Option value={2}>Decoration</Option>
-            </Select>
-            <Select
-              placeholder="Select Element"
+              placeholder="Select Status"
               style={{ width: 200 }}
-              onChange={value => setFilterElement(value)}
+              onChange={value => setFilterStatus(value)}
               allowClear
             >
               <Option value={null}>All</Option>
-              <Option value={1}>Mộc</Option>
-              <Option value={2}>Hỏa</Option>
-              <Option value={3}>Thổ</Option>
-              <Option value={4}>Kim</Option>
-              <Option value={5}>Thủy</Option>
+              <Option value="active">Active</Option>
+              <Option value="inactive">Inactive</Option>
             </Select>
           </div>
           {loading ? (
@@ -177,42 +166,32 @@ const AdminPost = () => {
               </Button>
               <div style={{ margin: '20px 0' }}>
                 {posts.map((post) => (
-                  <div key={post.postId} className="post-item" style={{ 
-                    margin: '10px 0', 
-                    backgroundColor: "#ffffff", 
-                    padding: '10px', 
-                    borderRadius: '5px',
-                    textAlign: 'left',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}>
-                    <div style={{ display: 'flex', marginTop: '10px' }}>
-                      <div style={{ flex: 2 }}>
-                        <h3 style={{ color: "black" }}>Name: {post.name}</h3>
-                        <hr style={{ border: '1px solid #ccc', margin: '10px 0' }} />
-                        <p style={{ 
-                          color: "black", 
-                          wordBreak: "break-word", 
-                          overflowWrap: "break-word", 
-                          whiteSpace: "normal"
-                        }}>
-                          Description: {post.description}
-                        </p>
+                  <div key={post.postId} className="admin-post-item">
+                    {post.imageUrls && post.imageUrls.length > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+                        {post.imageUrls.map((url, index) => (
+                          <img key={index} src={url} alt={`Post ${post.postId}`} className="admin-post-image" />
+                        ))}
                       </div>
-                      <div style={{ width: '1px', backgroundColor: '#ccc', margin: '0 10px' }}></div> {/* Thanh dọc */}
+                    )}
+                    <div className="admin-post-divider"></div>
+                    <div className="admin-post-content">
+                      <div style={{ flex: 2 }}>
+                        <h3 className="admin-post-name">Name: {post.name}</h3>
+                        <hr style={{ border: '1px solid #ccc', margin: '10px 0' }} />
+                        <p className="admin-post-description">Description: {post.description}</p>
+                      </div>
+                      <div style={{ width: '1px', backgroundColor: '#ccc', margin: '0 10px' }}></div>
                       <div style={{ flex: 1 }}>
-                        <p style={{ color: "black" }}>Status: {post.status}</p>
-                        <p style={{ color: "black" }}>
-                          Type: {post.id === 1 ? 'Koi' : post.id === 2 ? 'Decoration' : 'Uncategorized'}
-                        </p>
-                        <p style={{ color: "black" }}>
-                          Element: {post.elementId === 1 ? 'Mộc' : post.elementId === 2 ? 'Hỏa' : post.elementId === 3 ? 'Thổ' : post.elementId === 4 ? 'Kim' : 'Thủy'}
+                        <p className="admin-post-status">Status: {post.status}</p>
+                        <p className="admin-post-status">
+                          Type: {post.id === 1 ? 'Koi' : post.id === 2 ? 'Decoration' : post.id === 3 ? 'Blog' : 'Uncategorized'}
                         </p>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                      <Button style={{ color: "black" }} onClick={() => showCRUDModal(post)}>Edit</Button>
-                      <Button danger style={{ color: "red" }} onClick={() => handleDelete(post.postId)}>
+                    <div className="admin-post-buttons">
+                      <Button className="admin-post-button" onClick={() => showCRUDModal(post)}>Edit</Button>
+                      <Button className="admin-post-button-danger" onClick={() => handleDelete(post.postId)}>
                         Delete
                       </Button>
                     </div>
@@ -251,37 +230,6 @@ const AdminPost = () => {
                 />
               </Form.Item>
               <Form.Item 
-                label="Category"
-                name="id"
-                rules={[{ required: true, message: 'Please select a category!' }]}
-              >
-                <Radio.Group
-                  name="id"
-                  value={currentPost.id || ""}
-                  onChange={handleChange}
-                >
-                  <Radio value={1}>Koi</Radio>
-                  <Radio value={2}>Decoration</Radio>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item 
-                label="Element"
-                name="elementId"
-                rules={[{ required: true, message: 'Please select an element!' }]}
-              >
-                <Radio.Group
-                  name="elementId"
-                  value={currentPost.elementId || ""}
-                  onChange={handleChange}
-                >
-                  <Radio value={1}>Mộc</Radio>
-                  <Radio value={2}>Hỏa</Radio>
-                  <Radio value={3}>Thổ</Radio>
-                  <Radio value={4}>Kim</Radio>
-                  <Radio value={5}>Thủy</Radio>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item 
                 label="Status"
                 name="status"
                 rules={[{ required: true, message: 'Please select the status!' }]}
@@ -300,7 +248,7 @@ const AdminPost = () => {
                   listType="picture-card"
                   fileList={fileList}
                   onChange={handleUploadChange}
-                  beforeUpload={() => false} // Prevent auto upload
+                  beforeUpload={() => false} 
                 >
                   <div>
                     <PlusOutlined />
@@ -318,3 +266,4 @@ const AdminPost = () => {
 };
 
 export default AdminPost;
+

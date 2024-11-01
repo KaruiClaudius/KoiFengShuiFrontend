@@ -12,6 +12,7 @@ import ProtectedRoute from "./config/ProtectedRoute";
 // import PaymentMethod from "./pages/Payment/Payment";
 import AdminFAQ from "./pages/FAQ/FAQManager.jsx"
 import AdminPost from "./pages/AdminPost/AdminPost";
+import BlogPage from "./pages/AdminPost/BlogPage";
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
@@ -65,6 +66,7 @@ const App = () => {
             }
           />
           {/* <Route path="/payment" element={<PaymentMethod />} /> */}
+          <Route path="/blog" element={<BlogPage />} />
         </Routes>
       </Router>
     </StyledEngineProvider>

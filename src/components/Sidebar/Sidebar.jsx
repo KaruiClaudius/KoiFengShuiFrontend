@@ -10,7 +10,8 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ApprovalIcon from "@mui/icons-material/Approval";
-import HelpIcon from "@mui/icons-material/Help"; 
+import HelpIcon from "@mui/icons-material/Help";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import AppHeader from "../Header/Header";
 
 const drawerWidth = 240;
@@ -32,7 +33,7 @@ const DashboardSidebar = () => {
     },
     {
       text: "Admin Posts", 
-      icon: <HelpIcon />, 
+      icon: <AdminPanelSettingsIcon />,
       path: "/AdminPost", 
     },
   ];

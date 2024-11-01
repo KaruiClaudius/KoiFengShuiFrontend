@@ -41,12 +41,6 @@ export const getFengShuiKoiDecorationPost = () => {
   return api.get("/api/Post/GetAllByPostType/2?page=1&pageSize=5") 
     .then((response) => response.data);
 };
-
-export const getFengShuiKoiPost = () => {
-  return api.get("/api/Post/GetAllByPostType/3?page=1&pageSize=5")
-    .then((response) => response.data);
-};
-
 // New dashboard API calls
 export const getNewUsersCount = (days = 30) => {
   return api.get("/api/Dashboard/new-users-count", { params: { days } });
