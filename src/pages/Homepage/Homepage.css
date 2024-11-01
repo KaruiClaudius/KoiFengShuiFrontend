@@ -170,13 +170,14 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+
 }
 
 
 .property-title-link {
   text-decoration: none;
   color: inherit;
-  width: 25%;
+  width: 100%;
   text-align: center;
   justify-items: center;
   margin: auto;
@@ -287,6 +288,11 @@
   border-radius: 5px; /* Add rounded corners */
   transition: background-color 0.3s; /* Smooth transition for hover */
 }
+.arrow-button:hover {
+  color: black;
+  background-color: orange;
+}
+
 .carousel-wrapper {
   display: flex;
   align-items: center;

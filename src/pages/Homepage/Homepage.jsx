@@ -42,7 +42,7 @@ export default function Homepage() {
   const [elementId, setElementId] = useState("");
   const user = JSON.parse(localStorage.getItem("user"));
   const sellingFishClick = () => {
-    navigate("/sellingFish");
+    navigate("/KoiListings");
   };
 
   const fishProductClick = () => {
@@ -89,7 +89,6 @@ export default function Homepage() {
         setCardDataKoi(responseKoi.data); // Store the data
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
-        setCardDataKoi(responseKoi.data);
         if (user != null) {
           if (user.elementId) {
             const responseKoiElement = await getKoiElement(
@@ -269,7 +268,11 @@ export default function Homepage() {
               display: "flex",
             }}
           >
-            <img src={des} alt="Card" className="property-image" />
+            <img
+              src={item.listingImages?.[0]?.image?.imageUrl}
+              alt={item.title}
+              className="property-image"
+            />
           </Link>
           <div className="property-content">
             <a
@@ -420,7 +423,7 @@ export default function Homepage() {
                 <div
                   style={{
                     display: "flex",
-                    overflowX: "scroll",
+                    overflowX: "hidden",
                     width: "100%",
                   }}
                   ref={scrollContainerRef1}
@@ -450,7 +453,7 @@ export default function Homepage() {
                 </a>
               </div>
               <div
-                style={{ display: "flex", overflowX: "scroll" }}
+                style={{ display: "flex", overflowX: "hidden" }}
                 ref={scrollContainerRef2}
                 className="scroll-container"
               >
@@ -476,7 +479,7 @@ export default function Homepage() {
                 </a>
               </div>
               <div
-                style={{ display: "flex", overflowX: "scroll" }}
+                style={{ display: "flex", overflowX: "hidden" }}
                 ref={scrollContainerRef3}
                 className="scroll-container"
               >

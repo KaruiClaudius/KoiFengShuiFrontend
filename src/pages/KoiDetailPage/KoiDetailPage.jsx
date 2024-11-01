@@ -22,6 +22,7 @@ import {
   Descriptions,
   Space,
   Layout,
+  message,
 } from "antd";
 import api, {
   getFengShuiKoiDetail,
@@ -94,6 +95,7 @@ const KoiDetailPage = () => {
     React.useState([]); // Store data
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -206,6 +208,12 @@ const KoiDetailPage = () => {
   React.useEffect(() => {
     fetchData();
     fetchKoiData();
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    // if (token && user) {
+    //   updateUserData({ detail: user });
+    // }
+    setIsLoggedIn(!!token);
   }, [fetchData, fetchKoiData]);
 
   if (loading) {
@@ -273,7 +281,11 @@ const KoiDetailPage = () => {
   const scrollLeft2 = () => scrollLeft(scrollContainerRef2);
   const scrollRight2 = () => scrollRight(scrollContainerRef2);
   const handleButtonClick = () => {
-    setShowPhoneNumber(!showPhoneNumber);
+    if (isLoggedIn) {
+      setShowPhoneNumber(!showPhoneNumber);
+    } else {
+      message.error("Đăng nhập để thấy số điện thoại người đăng");
+    }
   };
   return (
     <div
@@ -395,9 +407,9 @@ const KoiDetailPage = () => {
                         style={{ width: "100%" }}
                         onClick={handleButtonClick}
                       >
-                        {showPhoneNumber
+                        {showPhoneNumber && isLoggedIn
                           ? koiDetails.accountPhoneNumber
-                          : "Call Now"}
+                          : "Gọi ngay"}
                       </Button>
                     </Space>
                   </Col>

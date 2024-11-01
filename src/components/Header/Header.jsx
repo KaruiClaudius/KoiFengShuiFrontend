@@ -26,6 +26,7 @@ const AppHeader = () => {
   const [userRole, setUserRole] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [userData, setUserData] = useState(null);
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   const elementMapping = {
@@ -94,7 +95,7 @@ const AppHeader = () => {
   };
 
   const sellingFishClick = () => {
-    navigate("/sellingFish");
+    navigate("/KoiListings");
   };
   const koiCompatible = () => {
     navigate("/KoiCompatible");

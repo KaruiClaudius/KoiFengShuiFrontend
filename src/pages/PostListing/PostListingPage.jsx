@@ -14,6 +14,7 @@ import {
   InputNumber,
   Checkbox,
   Card,
+  Collapse,
   DatePicker,
 } from "antd";
 import { Link } from "react-router-dom";
@@ -27,7 +28,7 @@ import "../PostListing/PostListingPage.css";
 import PostListingPreview from "./PostListingPreview";
 
 const { Option } = Select;
-
+const { Panel } = Collapse;
 const PostProperty = () => {
   const [form] = Form.useForm();
   const [fileLists, setFileList] = useState([]);
