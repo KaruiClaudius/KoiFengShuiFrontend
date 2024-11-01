@@ -11,7 +11,8 @@ import { Link, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ApprovalIcon from "@mui/icons-material/Approval";
 import HelpIcon from "@mui/icons-material/Help";
-// import AppHeader from "../Header/Header";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import AppHeader from "../Header/Header";
 
 const drawerWidth = 240;
 
@@ -31,9 +32,9 @@ const DashboardSidebar = () => {
       path: "/FAQManager",
     },
     {
-      text: "Admin Posts",
-      icon: <HelpIcon />,
-      path: "/AdminPost",
+      text: "Admin Posts", 
+      icon: <AdminPanelSettingsIcon />,
+      path: "/AdminPost", 
     },
   ];
 

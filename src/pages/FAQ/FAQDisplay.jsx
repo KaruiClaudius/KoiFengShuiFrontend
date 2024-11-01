@@ -4,9 +4,9 @@ import { Box, Typography, Accordion, AccordionSummary, AccordionDetails } from "
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const FAQDisplay = () => {
-  const [faqs, setFaqs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [faqs, setFaqs] = useState([]);// Stores list of FAQ
+  const [loading, setLoading] = useState(false);// Indicates loading state
+  const [error, setError] = useState(null);// Stores error messages
 
   useEffect(() => {
     const fetchFAQs = async () => {
@@ -14,7 +14,7 @@ const FAQDisplay = () => {
       setError(null);
       try {
         const response = await getAllFAQs();
-        setFaqs(response.data);
+        setFaqs(response.data);// Store fetched FAQ
       } catch (err) {
         console.error("Error fetching FAQs", err);
         setError("An error occurred while fetching FAQs");
@@ -28,9 +28,6 @@ const FAQDisplay = () => {
 
   return (
     <Box sx={{ padding: 2, backgroundColor: "#f9f9f9" }}>
-      <Typography variant="h4" gutterBottom>
-        FAQ
-      </Typography>
       {loading && <p>Loading FAQs...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
       {faqs.map((faq) => (

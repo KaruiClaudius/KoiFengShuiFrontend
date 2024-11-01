@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Modal } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
@@ -8,6 +9,7 @@ import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { Link, useNavigate } from "react-router-dom";
+import { getAllPosts } from "../../config/axios";
 // import { CardContent } from "@mui/material";
 // import { Typography } from "antd";
 import TruncatedText from "../../utils/TruncatedText";
@@ -27,6 +29,10 @@ export default function Homepage() {
   const [cardDataPost, setCardDataPost] = React.useState([]); // Store data
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [error, setError] = React.useState(null); // Handle errors
+  const [currentIndex, setCurrentIndex] = useState(0); // Carousel index
+  const maxPosts = 7; // Maximum number of blog can  display on Kinh Nghiệm Hay
+  const [isModalVisible, setIsModalVisible] = useState(false); // Manages the modal's visibility state; starts as false (hidden)
+  const [selectedPost, setSelectedPost] = useState(null); // Stores the currently selected post; initially set to null (no post selected)
 
   const scrollContainerRef1 = useRef(null); // Reference to the scrollable container
   const scrollContainerRef2 = useRef(null);
@@ -51,6 +57,16 @@ export default function Homepage() {
     navigate("/blog");
   };
 
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) =>
+      Math.min(prevIndex + 1, Math.min(cardDataPost.length - 4, maxPosts - 4))
+    );
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
   React.useEffect(() => {
     // const updateUserData = (event) => {
     //   const updatedUser = event.detail;
@@ -69,7 +85,8 @@ export default function Homepage() {
       try {
         const responseKoi = await getFengShuiKoiFishPost(); // Adjust endpoint
         const responseDecoration = await getFengShuiKoiDecorationPost();
-        const responsePost = await getFengShuiKoiPost();
+        const responsePost = await getAllPosts();
+        setCardDataKoi(responseKoi.data); // Store the data
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
         setCardDataKoi(responseKoi.data);
@@ -301,6 +318,38 @@ export default function Homepage() {
       </div>
     ));
   };
+  const renderCardsPost = (data) => {
+    const visiblePosts = data.slice(currentIndex, currentIndex + 4); // Extracts a subset of 4 posts
+    return visiblePosts.map((item, index) => (
+      <div
+        className="card-container"
+        key={`${item.id}-${index}`}
+        onClick={() => showModal(item)}
+      >
+        <div className="property-card">
+          <img src={item.imageUrls[0]} alt="Card" className="property-image" />
+          <div className="property-content">
+            <a href={`/property`} className="property-title-link"></a>
+            <div className="property-price-container">
+              <span className="property-price-text-red">{item.name}</span>
+              <span className="property-price-text-black">
+                {item.description}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  };
+  const showModal = (post) => {
+    setSelectedPost(post);
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
   if (loading) return <p>Loading...</p>; // Display loading message
   if (error) return <p>Error: {error}</p>;
   return (
@@ -451,9 +500,75 @@ export default function Homepage() {
             <div style={{ display: "flex" }}></div>
           </div>
         </div>
+        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
+      </div>
+      <div className="white-box">
+        <div className="container-title">
+          <h2 className="container-title-title">Bán Cá Koi</h2>
+          <a href={`/fishProduct`} className="container-title-link">
+            <h2>Xem thêm {">"}</h2>
+          </a>
+        </div>
+        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
+      </div>
+      <div className="white-box">
+        <div className="container-title">
+          <h2 className="container-title-title">Phụ kiện hồ cá</h2>
+          <a href={`/fishProduct`} className="container-title-link">
+            <h2>Xem thêm {">"}</h2>
+          </a>
+        </div>
+        <div style={{ display: "flex" }}>
+          {renderCardsDeconration(cardDataDecoration)}
+        </div>
+      </div>
+      <div className="white-box">
+        <div className="container-title">
+          <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
+          <a href={`/blog`} className="container-title-link">
+            <h2>Xem thêm {">"}</h2>
+          </a>
+        </div>
+        <div className="carousel-wrapper">
+          <button
+            className="carousel-button"
+            onClick={handlePrev}
+            disabled={currentIndex === 0}
+          >
+            &lt;
+          </button>
+          <div className="carousel-content">
+            {renderCardsPost(cardDataPost.slice(0, maxPosts))}
+          </div>
+          <button
+            className="carousel-button"
+            onClick={handleNext}
+            disabled={
+              currentIndex + 4 >= Math.min(cardDataPost.length, maxPosts)
+            }
+          >
+            &gt;
+          </button>
+        </div>
       </div>
       <FAQDisplay />
       <FooterComponent />
+      <Modal
+        title={null}
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <img
+          src={selectedPost?.imageUrls[0]}
+          alt="Card"
+          style={{ width: "100%" }}
+        />
+        <h2 style={{ textAlign: "center", marginTop: "10px" }}>
+          {selectedPost?.name}
+        </h2>
+        <p>{selectedPost?.description}</p>
+      </Modal>
     </div>
   );
 }
