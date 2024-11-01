@@ -31,6 +31,7 @@ const { Option } = Select;
 const PostProperty = () => {
   const [form] = Form.useForm();
   const [fileLists, setFileList] = useState([]);
+  const [fileErrors, setFileErrors] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [autoRenew, setAutoRenew] = useState(false);
@@ -50,6 +51,23 @@ const PostProperty = () => {
 
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+
+  const handleUploadChange = ({ fileList: newFileList }) => {
+    // Validate files
+    const errors = [];
+    newFileList.forEach((file) => {
+      if (file.size > 5000000) {
+        // 5MB limit
+        errors.push(`${file.name} is too large. Max size is 5MB`);
+      }
+      if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+        errors.push(`${file.name} is not a supported file type`);
+      }
+    });
+
+    setFileErrors(errors);
+    setFileList(newFileList);
+  };
 
   // Define all callbacks before using them
   const getUserIdFromLocalStorage = useCallback(() => {
@@ -124,91 +142,6 @@ const PostProperty = () => {
         message.error("Please fill in all required fields before preview");
       });
   }, [form, fileLists, elementData]);
-
-  const handleUploadChange = useCallback(({ fileList }) => {
-    setFileList(fileList);
-  }, []);
-
-  const createListing = useCallback(async () => {
-    try {
-      const storedValues = JSON.parse(
-        localStorage.getItem("pendingPropertyData")
-      );
-
-      if (!storedValues) {
-        throw new Error("No pending listing data found.");
-      }
-
-      const formData = new FormData();
-      const accountId = getUserIdFromLocalStorage();
-      formData.append("AccountId", accountId);
-      formData.append("TierId", storedValues.tier);
-      formData.append("Title", storedValues.tittle);
-      formData.append("Description", storedValues.description);
-      formData.append("Price", storedValues.price);
-
-      // Retrieve the selected colors
-      const selectedColors = storedValues.colors || [];
-      // Join the selected colors into a string
-      const colorsString = selectedColors.join(", ");
-      formData.append("Color", colorsString);
-
-      formData.append("Quantity", storedValues.quantity);
-      formData.append("CategoryId", storedValues.category);
-      formData.append("CreateAt", getCurrentDateTime());
-      formData.append("ExpiresAt", getCurrentDateTime(duration));
-      formData.append("IsActive", true);
-      formData.append("Status", "Approved");
-      formData.append("ElementId", storedValues.element);
-      const currentFileList = fileLists;
-      console.error(fileLists);
-      // Append images
-      if (currentFileList && currentFileList.length > 0) {
-        currentFileList.forEach((file, index) => {
-          if (file.originFileObj) {
-            formData.append(`images`, file.originFileObj, file.name);
-          } else {
-            console.warn(`File at index ${index} does not have originFileObj`);
-          }
-        });
-      } else {
-        console.warn("No files found in currentFileList");
-      }
-      const response = await postMarketplaceListings(formData);
-
-      if (response.status !== 1) {
-        throw new Error(`API call failed with status ${response.status}`);
-      }
-      // After successful listing creation, update the wallet
-      // if (!getIsMemberFromLocalStorage()) {
-      //   await updateUserWallet(price);
-      // }
-      message.success("Posting created successfully!");
-      form.resetFields();
-      setFileList([]);
-      // Clear stored data
-      localStorage.removeItem("pendingPropertyData");
-      localStorage.removeItem("pendingFileList");
-    } catch (error) {
-      console.error("Error creating listing:", error);
-      message.error("Failed to create listing. Please contact support.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [duration, fileLists, getUserIdFromLocalStorage]);
-
-  const handleSubmit = useCallback(async () => {
-    form
-      .validateFields()
-      .then(async (values) => {
-        await onFinish(values);
-      })
-      .catch((errorInfo) => {
-        // Form validation failed
-        message.error("Please fill in all required fields");
-      });
-  }, [form]);
-
   const onFinish = useCallback(
     async (values) => {
       try {
@@ -249,6 +182,101 @@ const PostProperty = () => {
     },
     [getUserIdFromLocalStorage]
   );
+  const createListing = useCallback(async () => {
+    try {
+      const storedValues = JSON.parse(
+        localStorage.getItem("pendingPropertyData")
+      );
+      if (!storedValues) {
+        throw new Error("No pending listing data found.");
+      }
+
+      const formData = new FormData();
+      const accountId = getUserIdFromLocalStorage();
+
+      // Append basic form data
+      formData.append("AccountId", accountId);
+      formData.append("TierId", storedValues.tier);
+      formData.append("Title", storedValues.tittle);
+      formData.append("Description", storedValues.description);
+      formData.append("Price", storedValues.price);
+      formData.append("Color", storedValues.colors.join(", "));
+      formData.append("Quantity", storedValues.quantity);
+      formData.append("CategoryId", storedValues.category);
+      formData.append("CreateAt", getCurrentDateTime());
+      formData.append("ExpiresAt", getCurrentDateTime(duration));
+      formData.append("IsActive", true);
+      formData.append("Status", "Approved");
+      formData.append("ElementId", storedValues.element);
+
+      // Handle file uploads
+      if (fileLists && fileLists.length > 0) {
+        fileLists.forEach((file, index) => {
+          if (file.originFileObj) {
+            formData.append("images", file.originFileObj);
+          }
+        });
+      }
+
+      const response = await postMarketplaceListings(formData);
+
+      if (response.status !== 1) {
+        throw new Error(`API call failed with status ${response.status}`);
+      }
+
+      message.success("Posting created successfully!");
+      form.resetFields();
+      setFileList([]);
+      localStorage.removeItem("pendingPropertyData");
+    } catch (error) {
+      console.error("Error creating listing:", error);
+      message.error("Failed to create listing. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fileLists, duration, getUserIdFromLocalStorage, form]);
+
+  const validateForm = useCallback(
+    async (values) => {
+      const errors = [];
+
+      if (!values.category) errors.push("Category is required");
+      if (!values.tittle) errors.push("Title is required");
+      if (!values.description) errors.push("Description is required");
+      if (!values.price) errors.push("Price is required");
+      if (!values.quantity) errors.push("Quantity is required");
+      if (!values.tier) errors.push("Tier is required");
+      if (!values.colors || values.colors.length === 0)
+        errors.push("Colors are required");
+      if (!values.element) errors.push("Element is required");
+      if (!fileLists || fileLists.length === 0)
+        errors.push("At least one image is required");
+      if (fileLists.length > 5) errors.push("Maximum 5 images allowed");
+      if (fileErrors.length > 0) errors.push(...fileErrors);
+
+      return errors;
+    },
+    [fileLists, fileErrors]
+  );
+
+  // Modified submit handler
+  const handleSubmit = useCallback(async () => {
+    try {
+      const values = await form.validateFields();
+      const validationErrors = await validateForm(values);
+
+      if (validationErrors.length > 0) {
+        validationErrors.forEach((error) => message.error(error));
+        return;
+      }
+
+      setIsLoading(true);
+      await onFinish(values);
+    } catch (error) {
+      console.error("Form validation failed:", error);
+      message.error("Please check all required fields");
+    }
+  }, [form, validateForm, onFinish]);
 
   const handleMembershipChoice = async (choice) => {
     setIsMembershipModalVisible(false);
@@ -405,7 +433,7 @@ const PostProperty = () => {
   if (isLoading) return <p>Loading...</p>; // Display loading message
 
   return (
-    <div className="page-container">
+    <div className="page-containers">
       <AppHeader />
       <div className="content-wrapper">
         <div className="form-container">
@@ -423,7 +451,7 @@ const PostProperty = () => {
               <Col span={8}>
                 <Form.Item
                   name="image"
-                  label="Upload Hình Ảnh"
+                  label="Đăng Hình Ảnh"
                   style={{ marginBottom: "24px" }}
                 >
                   <Upload.Dragger
@@ -608,8 +636,13 @@ const PostProperty = () => {
                     },
                   ]}
                 >
-                  <Checkbox.Group style={{ width: "100%" }}>
-                    <Row gutter={[16, 8]}>
+                  <Checkbox.Group
+                    style={{
+                      width: "100%",
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <Row gutter={[16, 8]} style={{ margin: "5px" }}>
                       <Col span={8}>
                         <Checkbox value="Trắng">Trắng</Checkbox>
                       </Col>
@@ -636,7 +669,10 @@ const PostProperty = () => {
                       Bản mệnh
                     </span>
                   }
-                  style={{ marginBottom: "24px" }}
+                  style={{
+                    marginBottom: "24px",
+                    width: "100%",
+                  }}
                   rules={[
                     {
                       required: true,
@@ -644,8 +680,14 @@ const PostProperty = () => {
                     },
                   ]}
                 >
-                  <Radio.Group style={{ width: "100%" }}>
-                    <Row gutter={[16, 8]}>
+                  <Radio.Group
+                    style={{
+                      width: "100%",
+
+                      backgroundColor: "white",
+                    }}
+                  >
+                    <Row gutter={[16, 8]} style={{ margin: "10px" }}>
                       {elementData.map((element) => (
                         <Col span={8}>
                           <Radio value={element.elementId}>
@@ -696,7 +738,6 @@ const PostProperty = () => {
         </div>
       </div>
       <FooterComponent />
-
       {/* Modal appear when đăng tin */}
       <Modal
         visible={isMembershipModalVisible}
@@ -705,91 +746,6 @@ const PostProperty = () => {
         width={800} // Increased width for better layout
       >
         <Row gutter={24}>
-          <Col span={12}>
-            <div
-              style={{
-                borderRight: "1px solid #f0f0f0",
-                padding: "30px",
-                background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
-                borderRadius: "15px",
-                boxShadow: "0 10px 20px rgba(0, 0, 0, 0.1)",
-                transition: "all 0.3s ease",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-5px)";
-                e.currentTarget.style.boxShadow =
-                  "0 15px 30px rgba(0, 0, 0, 0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 10px 20px rgba(0, 0, 0, 0.1)";
-              }}
-            >
-              <h3
-                style={{
-                  color: "#2c3e50",
-                  fontSize: "28px",
-                  marginBottom: "15px",
-                  fontWeight: "bold",
-                  textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
-                }}
-              >
-                Trở thành thành viên UNINEST
-              </h3>
-              <p
-                style={{
-                  color: "#34495e",
-                  fontSize: "18px",
-                  lineHeight: "1.6",
-                  marginBottom: "10px",
-                }}
-              >
-                Năng suất hơn, mạnh mẽ hơn. Dùng thử các tính năng ưu việt
-              </p>
-              <p
-                style={{
-                  color: "#e74c3c",
-                  fontSize: "22px",
-                  fontWeight: "bold",
-                  marginBottom: "25px",
-                  textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
-                }}
-              >
-                Chỉ với 200.000đ đăng bài không giới hạn
-              </p>
-              <Checkbox onChange={(e) => setAutoRenew(e.target.checked)}>
-                Tự động gia hạn hàng tháng
-              </Checkbox>
-              <Button
-                type="primary"
-                onClick={() => handleMembershipChoice("member")}
-                style={{
-                  marginTop: 20,
-                  backgroundColor: "#3498db",
-                  borderColor: "#3498db",
-                  fontSize: "18px",
-                  padding: "10px 25px",
-                  height: "auto",
-                  transition: "all 0.3s ease",
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#2980b9";
-                  e.currentTarget.style.borderColor = "#2980b9";
-                  e.currentTarget.style.transform = "scale(1.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#3498db";
-                  e.currentTarget.style.borderColor = "#3498db";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
-              >
-                Đăng kí làm thành viên
-              </Button>
-            </div>
-          </Col>
           <Col span={12}>
             <div style={{ paddingLeft: 20 }}>
               <h3
