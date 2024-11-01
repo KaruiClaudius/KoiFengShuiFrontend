@@ -435,7 +435,7 @@ const PostProperty = () => {
   return (
     <div className="page-containers">
       <AppHeader />
-      <div className="content-wrapper">
+      <div className="content-wrappers">
         <div className="form-container">
           <Breadcrumb style={{ marginBottom: "16px", paddingBottom: "15px" }}>
             <Breadcrumb.Item>

@@ -370,7 +370,7 @@ const KoiCompatibilityForm = () => {
                     {pond.shapeName}:{" "}
                   </Text>
 
-                  <Text type="danger">{pond.description}</Text>
+                  <Text>{pond.description}</Text>
                 </div>
               ))}
           </div>

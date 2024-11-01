@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Modal } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
@@ -200,12 +200,9 @@ export default function Homepage() {
             style={{ justifyContent: "center" }}
           >
             <img
-              src={item.listingImages?.[0]?.image?.imageUrl || defaultImage}
+              src={item.listingImages?.[0]?.image?.imageUrl}
               alt={item.title}
               className="property-koi-image"
-              onError={(e) => {
-                e.target.src = defaultImage;
-              }}
             />
           </Link>
 
@@ -327,7 +324,7 @@ export default function Homepage() {
         onClick={() => showModal(item)}
       >
         <div className="property-card">
-          <img src={item.imageUrls[0]} alt="Card" className="property-image" />
+          <img src={item.imageUrls} alt="Card" className="property-image" />
           <div className="property-content">
             <a href={`/property`} className="property-title-link"></a>
             <div className="property-price-container">
@@ -500,57 +497,9 @@ export default function Homepage() {
             <div style={{ display: "flex" }}></div>
           </div>
         </div>
-        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
+        <div style={{ display: "flex" }}>{renderCardsPost(cardDataKoi)}</div>
       </div>
-      <div className="white-box">
-        <div className="container-title">
-          <h2 className="container-title-title">Bán Cá Koi</h2>
-          <a href={`/fishProduct`} className="container-title-link">
-            <h2>Xem thêm {">"}</h2>
-          </a>
-        </div>
-        <div style={{ display: "flex" }}>{renderCards(cardDataKoi)}</div>
-      </div>
-      <div className="white-box">
-        <div className="container-title">
-          <h2 className="container-title-title">Phụ kiện hồ cá</h2>
-          <a href={`/fishProduct`} className="container-title-link">
-            <h2>Xem thêm {">"}</h2>
-          </a>
-        </div>
-        <div style={{ display: "flex" }}>
-          {renderCardsDeconration(cardDataDecoration)}
-        </div>
-      </div>
-      <div className="white-box">
-        <div className="container-title">
-          <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
-          <a href={`/blog`} className="container-title-link">
-            <h2>Xem thêm {">"}</h2>
-          </a>
-        </div>
-        <div className="carousel-wrapper">
-          <button
-            className="carousel-button"
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-          >
-            &lt;
-          </button>
-          <div className="carousel-content">
-            {renderCardsPost(cardDataPost.slice(0, maxPosts))}
-          </div>
-          <button
-            className="carousel-button"
-            onClick={handleNext}
-            disabled={
-              currentIndex + 4 >= Math.min(cardDataPost.length, maxPosts)
-            }
-          >
-            &gt;
-          </button>
-        </div>
-      </div>
+
       <FAQDisplay />
       <FooterComponent />
       <Modal
