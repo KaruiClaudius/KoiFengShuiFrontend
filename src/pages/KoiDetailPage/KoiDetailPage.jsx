@@ -32,10 +32,10 @@ import {
   StarOutlined,
   MessageOutlined,
 } from "@ant-design/icons";
+import { ImOffice } from "react-icons/im";
 
 const ImageGallery = ({ images }) => {
-  //const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl || "");
-
+  const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl || "");
   return (
     <Row gutter={[16, 16]} style={{ height: "100%" }}>
       {/* Left column for sub-images */}
@@ -46,28 +46,29 @@ const ImageGallery = ({ images }) => {
             maxHeight: "80vh",
           }}
         >
-          {/* {images.map((image, index) => ( */}
-          <Image
-            // key={index}
-            src={ex}
-            //alt={`Property Image ${index + 1}`}
-            style={{
-              height: "120px",
-              objectFit: "cover",
-              marginBottom: "8px",
-              cursor: "pointer",
-            }}
-            onClick={() => setMainImage(ex)}
-            preview={false}
-          />
-          {/* ))} */}
+          {images.map((image, index) => (
+            <Col key={index} style={{ display: "inline-block" }}>
+              <Image
+                src={image.image.imageUrl}
+                alt={`Property Image ${index + 1}`}
+                style={{
+                  height: "120px",
+                  objectFit: "cover",
+                  marginBottom: "8px",
+                  cursor: "pointer",
+                }}
+                onClick={() => setMainImage(image.image.imageUrl)}
+                preview={false}
+              />
+            </Col>
+          ))}
         </div>
       </Col>
 
       {/* Right column for main image */}
       <Col xs={24} sm={16} md={18} lg={19}>
         <Image
-          src={ex}
+          src={mainImage}
           alt="Main Property Image"
           style={{
             height: "68vh",
@@ -92,6 +93,7 @@ const KoiDetailPage = () => {
   const [cardDataKoiBaseOnAccount, setCardDataKoiBaseOnAccount] =
     React.useState([]); // Store data
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   const fetchData = async () => {
     try {
@@ -136,89 +138,64 @@ const KoiDetailPage = () => {
     return data.map((item) => (
       <div className="card-container" key={item.listingId}>
         <div className="property-card">
-          {item.tierName === "Preminum" ? (
+          {item.tierName === "Preminum" && (
             <div className="featured-badge">
               <span>Nổi bật</span>
             </div>
-          ) : (
-            <h1> </h1>
           )}
 
-          <img src={ex} alt="Card" className="property-image" />
+          <Link
+            to={`/KoiDetails/${item.listingId}`}
+            style={{ justifyContent: "center" }}
+          >
+            <img
+              src={item.listingImages?.[0]?.image?.imageUrl}
+              alt={item.title}
+              className="property-koi-image"
+              // onError={(e) => {
+              //   e.target.src = ;
+              // }}
+            />
+          </Link>
+
           <div className="property-content">
-            <a
-              href={`/KoiDetails/${item.listingId}`}
-              className="property-title-link"
-            >
-              <div className="property-title-wrapper">
-                <h1 className="property-title">
+            <div className="property-title-wrapper">
+              <h1 className="property-title">
+                <a
+                  href={`/KoiDetails/${item.listingId}`}
+                  className="property-title-link"
+                >
                   [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />
-                </h1>
-              </div>
-            </a>
+                  <TruncatedText text={item.title} maxLength={20} />{" "}
+                </a>
+              </h1>
+            </div>
+
             <div className="property-price-container">
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>
-              <span className="property-price-text" style={{ color: "red" }}>
+              <span className="property-price-text">Giá tiền: </span>
+              <span
+                className="property-price-text"
+                style={{ color: "red", marginLeft: "4px" }}
+              >
                 {formatCurrency(item.price)}VNĐ
               </span>
             </div>
+
             <div className="property-user-container">
               <img
-                src={usericon}
+                src={
+                  item.accountName
+                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                        item.accountName
+                      )}`
+                    : usericon
+                }
                 alt="User Icon"
                 className="property-user-icon"
               />
-              <span className="property-user-text">{item.accountName}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ));
-  };
-
-  const renderKoiBseOnAccount = (data) => {
-    return data.map((item) => (
-      <div className="card-container" key={item.listingId}>
-        <div className="property-card">
-          {item.tierName === "Preminum" ? (
-            <div className="featured-badge">
-              <span>Nổi bật</span>
-            </div>
-          ) : (
-            <h1> </h1>
-          )}
-
-          <img src={ex} alt="Card" className="property-image" />
-          <div className="property-content">
-            <a
-              href={`/KoiDetails/${item.listingId}`}
-              className="property-title-link"
-            >
-              <div className="property-title-wrapper">
-                <h1 className="property-title">
-                  [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />
-                </h1>
-              </div>
-            </a>
-            <div className="property-price-container">
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>
-              <span className="property-price-text" style={{ color: "red" }}>
-                {formatCurrency(item.price)}VNĐ
+              <span className="property-user-text" style={{ margin: "auto 0" }}>
+                {item.accountName}
               </span>
-            </div>
-            <div className="property-user-container">
-              <img
-                src={usericon}
-                alt="User Icon"
-                className="property-user-icon"
-              />
-              <span className="property-user-text">{item.accountName}</span>
             </div>
           </div>
         </div>
@@ -320,6 +297,8 @@ const KoiDetailPage = () => {
                   textDecoration: "none",
                   color: "black",
                 }}
+                onMouseEnter={(e) => (e.target.style.color = "#ff914d")}
+                onMouseLeave={(e) => (e.target.style.color = "black")}
               >
                 Trang chủ
               </Link>
@@ -331,6 +310,8 @@ const KoiDetailPage = () => {
                   textDecoration: "none",
                   color: "black",
                 }}
+                onMouseEnter={(e) => (e.target.style.color = "#ff914d")}
+                onMouseLeave={(e) => (e.target.style.color = "black")}
               >
                 Cá Koi
               </Link>
@@ -355,7 +336,7 @@ const KoiDetailPage = () => {
               >
                 [{koiDetails.elementName}] {koiDetails.title}
               </Typography>
-              <ImageGallery images={ex} />
+              <ImageGallery images={koiDetails.listingImages} />
             </Col>
             {/* Owner Information */}
             <Col xs={24} lg={10}>
@@ -376,7 +357,13 @@ const KoiDetailPage = () => {
                       align="center"
                       style={{ width: "100%" }}
                     >
-                      <Avatar size={64} src={ex} />
+                      <Avatar
+                        size={64}
+                        src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                          koiDetails.accountName
+                        )}`}
+                        alt={koiDetails.accountName}
+                      />
                       <Title level={5}>{koiDetails.accountName}</Title>
                     </Space>
                   </Col>
@@ -443,76 +430,82 @@ const KoiDetailPage = () => {
             <div
               style={{ display: "flex", alignItems: "center", width: "100%" }}
             >
-              <button onClick={scrollLeft2} className="arrow-button">
-                ←
-              </button>
-              <div class="white-box" style={{ width: "100%" }}>
-                <div
-                  className="container-title"
-                  style={{ justifyContent: "space-between", width: "100%" }}
-                >
-                  <h2>Cá Koi Cùng Bản Mệnh</h2>
-                  <a
-                    href={`/fishProduct`}
-                    style={{ textDecoration: "none", color: "black" }}
+              <div
+                className="render-koi-elemet"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <button onClick={scrollLeft2} className="arrow-button">
+                  ←
+                </button>
+                <div class="white-box" style={{ width: "100%" }}>
+                  <div
+                    className="container-title"
+                    style={{ justifyContent: "space-between", width: "100%" }}
                   >
-                    <h2>Xem thêm {">"}</h2>
-                  </a>
+                    <h2>Cá Koi Cùng Bản Mệnh</h2>
+                    <a
+                      href={`/fishProduct`}
+                      style={{ textDecoration: "none", color: "black" }}
+                    >
+                      <h2>Xem thêm {">"}</h2>
+                    </a>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      overflow: "hidden",
+                    }}
+                    ref={scrollContainerRef2}
+                    className="scroll-container"
+                  >
+                    {renderKoi(cardDataKoi)}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    overflow: "hidden",
-                    width: "50%",
-                  }}
-                  ref={scrollContainerRef2}
-                  className="scroll-container"
-                >
-                  {renderKoi(cardDataKoi)}
-                </div>
+                <button onClick={scrollRight2} className="arrow-button">
+                  →
+                </button>
               </div>
-              <button onClick={scrollRight2} className="arrow-button">
-                →
-              </button>
             </div>
           </Col>
         </Row>
         <Row style={{ marginTop: 20, width: "100%", paddingBottom: 50 }}>
           <Col xs={24} lg={24}>
-            <div
-              style={{ display: "flex", alignItems: "center", width: "100%" }}
-            >
-              <button onClick={scrollLeft1} className="arrow-button">
-                ←
-              </button>
-              <div class="white-box" style={{ width: "100%" }}>
-                <div
-                  className="container-title"
-                  style={{ justifyContent: "space-between", width: "100%" }}
-                >
-                  <h2>Cá Koi Liên Quan</h2>
-                  <a
-                    href={`/fishProduct`}
-                    style={{ textDecoration: "none", color: "black" }}
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div
+                className="render-koi-elemet"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                <button onClick={scrollLeft1} className="arrow-button">
+                  ←
+                </button>
+                <div class="white-box" style={{ width: "100%" }}>
+                  <div
+                    className="container-title"
+                    style={{ justifyContent: "space-between", width: "100%" }}
                   >
-                    <h2>Xem thêm {">"}</h2>
-                  </a>
+                    <h2>Cá Koi Liên Quan</h2>
+                    <a
+                      href={`/fishProduct`}
+                      style={{ textDecoration: "none", color: "black" }}
+                    >
+                      <h2>Xem thêm {">"}</h2>
+                    </a>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      overflow: "hidden",
+                    }}
+                    ref={scrollContainerRef1}
+                    className="scroll-container"
+                  >
+                    {renderKoi(cardDataKoiBaseOnAccount)}
+                  </div>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    overflow: "hidden",
-                    width: "50%",
-                  }}
-                  ref={scrollContainerRef1}
-                  className="scroll-container"
-                >
-                  {renderKoiBseOnAccount(cardDataKoiBaseOnAccount)}
-                </div>
+                <button onClick={scrollRight1} className="arrow-button">
+                  →
+                </button>
               </div>
-              <button onClick={scrollRight1} className="arrow-button">
-                →
-              </button>
             </div>
           </Col>
         </Row>
