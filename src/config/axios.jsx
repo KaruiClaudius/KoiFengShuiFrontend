@@ -81,11 +81,22 @@ export const getNewMarketListingsByCategory = (days = 30) => {
   return api.get(`/api/dashboard/new-market-listings-by-category?days=${days}`);
 };
 
-export const getTransactionListing = (page = 1, pageSize = 10) => {
-  return api.get(
-    `/api/dashboard/transaction-listing?page=${page}&pageSize=${pageSize}`
-  );
+export const getTransactionListing = ({
+  page = 1,
+  pageSize = 10,
+  startDate = null,
+  endDate = null,
+}) => {
+  const params = {
+    Page: page,
+    PageSize: pageSize,
+    ...(startDate && { StartDate: startDate }),
+    ...(endDate && { EndDate: endDate }),
+  };
+
+  return api.get("/api/Dashboard/transactions-listing", { params });
 };
+
 export const getTotalTransaction = () => {
   return api.get("/api/Dashboard/total-amount");
 };
