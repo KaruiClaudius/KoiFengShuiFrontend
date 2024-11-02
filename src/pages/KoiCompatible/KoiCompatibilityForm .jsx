@@ -11,6 +11,7 @@ import {
   Descriptions,
   message,
   Layout,
+  Modal,
 } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
@@ -30,6 +31,8 @@ const KoiCompatibilityForm = () => {
   const [loading, setLoading] = useState(false);
   const [compatibilityForm] = Form.useForm();
   const [elementForm] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [comparisonResults, setComparisonResults] = useState(null);
 
   useEffect(() => {
     setResults(null);
@@ -65,19 +68,21 @@ const KoiCompatibilityForm = () => {
       if (formType === "compatibility") {
         response = await assessCompatibility({
           dateOfBirth: parseInt(values.birthYear),
-          isMale: values.isMale, // Add this
+          isMale: values.isMale,
           direction: values.pondDirection,
           pondShape: values.pondShape,
           fishColors: values.koiColors,
           fishQuantity: parseInt(values.koiNumber),
         });
+        setResults(response.data);
+        setIsModalVisible(true); // Show modal after getting results
       } else {
         response = await getFengShuiConsultation({
           yearOfBirth: parseInt(values.birthYear),
-          isMale: values.isMale, // Add this
+          isMale: values.isMale,
         });
+        setResults(response.data);
       }
-      setResults(response.data);
     } catch (error) {
       console.error("Error:", error);
       message.error("An error occurred while processing your request.");
@@ -206,6 +211,122 @@ const KoiCompatibilityForm = () => {
     </Form>
   );
 
+  const CompactComparisonForm = ({ previousValues }) => {
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+
+    const onComparisonSubmit = async (values) => {
+      setLoading(true);
+      try {
+        const response = await assessCompatibility({
+          dateOfBirth: parseInt(values.birthYear),
+          isMale: values.isMale,
+          direction: values.pondDirection,
+          pondShape: values.pondShape,
+          fishColors: values.koiColors,
+          fishQuantity: parseInt(values.koiNumber),
+        });
+        setComparisonResults(response.data);
+      } catch (error) {
+        console.error("Error:", error);
+        message.error("An error occurred while processing your request.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <Form
+        layout="vertical"
+        className="spacious-form"
+        style={{ padding: "20px 0" }}
+        initialValues={previousValues}
+      >
+        <Row gutter={24}>
+          <Col span={24}>
+            <Form.Item label="Năm sinh" style={{ marginBottom: "24px" }}>
+              <Input disabled value={previousValues.birthYear} />
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Form.Item label="Giới tính" style={{ marginBottom: "24px" }}>
+              <Select disabled value={previousValues.isMale}>
+                <Option value={true}>Nam</Option>
+                <Option value={false}>Nữ</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={24}>
+          <Col span={24}>
+            <Form.Item label="Màu sắc cá Koi" style={{ marginBottom: "24px" }}>
+              <Select
+                mode="multiple"
+                disabled
+                value={previousValues.koiColors}
+                style={{ width: "100%" }}
+              >
+                <Option value="Trắng">Trắng</Option>
+                <Option value="Đỏ">Đỏ</Option>
+                <Option value="Vàng">Vàng</Option>
+                <Option value="Đen">Đen</Option>
+                <Option value="Cam">Cam</Option>
+                <Option value="Nâu">Nâu</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Form.Item label="Số lượng cá Koi" style={{ marginBottom: "24px" }}>
+              <Input disabled value={previousValues.koiNumber} />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={24}>
+          <Col span={24}>
+            <Form.Item label="Hướng đặt hồ" style={{ marginBottom: "24px" }}>
+              <Select disabled value={previousValues.pondDirection}>
+                {[
+                  "Đông",
+                  "Tây",
+                  "Nam",
+                  "Bắc",
+                  "Đông Nam",
+                  "Tây Nam",
+                  "Đông Bắc",
+                  "Tây Bắc",
+                ].map((direction) => (
+                  <Option key={direction} value={direction}>
+                    {direction}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={24}>
+            <Form.Item label="Hình dạng hồ" style={{ marginBottom: "24px" }}>
+              <Select disabled value={previousValues.pondShape}>
+                {[
+                  "Tròn",
+                  "Nghiên mực",
+                  "Bán nguyệt",
+                  "Chữ nhật",
+                  "Vuông",
+                  "Các góc nhọn",
+                ].map((shape) => (
+                  <Option key={shape} value={shape}>
+                    {shape}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+    );
+  };
+
   const renderElementForm = () => (
     <Form
       form={elementForm}
@@ -256,58 +377,53 @@ const KoiCompatibilityForm = () => {
     elementForm.resetFields();
   };
 
-  const renderCompatibilityResults = () => (
-    <div style={{ textAlign: "center" }}>
-      <Title level={3}>Kết quả đánh giá độ phù hợp</Title>
-      <Text style={{ fontSize: "24px" }}>
-        Điểm số phù hợp của bạn là:{" "}
-        <strong>{results.overallCompatibilityScore.toFixed(2)}%</strong>
-      </Text>
+  const ResultsDisplay = ({ data }) => (
+    <div>
+      <div style={{ marginBottom: "15px" }}>
+        <Text strong>Tổng điểm: </Text>
+        <Text>{data.overallCompatibilityScore.toFixed(2)}%</Text>
+      </div>
 
-      <Descriptions
-        bordered
-        column={1}
-        size="middle"
-        style={{ marginTop: "20px" }}
-        labelStyle={{ fontWeight: "bold", fontSize: "16px" }}
-        contentStyle={{ fontSize: "16px" }}
-      >
+      <Descriptions bordered column={1} size="small">
         <Descriptions.Item label="Điểm hướng">
-          {results.directionScore.toFixed(2)}%
+          {data.directionScore.toFixed(2)}%
         </Descriptions.Item>
         <Descriptions.Item label="Điểm hình dạng">
-          {results.shapeScore.toFixed(2)}%
+          {data.shapeScore.toFixed(2)}%
         </Descriptions.Item>
         <Descriptions.Item label="Điểm số lượng">
-          {results.quantityScore.toFixed(2)}%
+          {data.quantityScore.toFixed(2)}%
+        </Descriptions.Item>
+        <Descriptions.Item label="Điểm màu sắc tổng">
+          {data.colorScores.TotalScore.toFixed(2)}%
         </Descriptions.Item>
       </Descriptions>
 
-      <div style={{ marginTop: "20px" }}>
-        <Text style={{ fontSize: "20px", fontWeight: "bold" }}>
-          Điểm màu sắc:
-        </Text>
+      <div style={{ marginTop: "15px" }}>
+        <Text strong>Chi tiết điểm màu sắc:</Text>
         <Descriptions
           bordered
           column={1}
           size="small"
           style={{ marginTop: "10px" }}
         >
-          {Object.entries(results.colorScores).map(([color, score]) => (
-            <Descriptions.Item key={color} label={color}>
-              {score.toFixed(2)}%
-            </Descriptions.Item>
-          ))}
+          {Object.entries(data.colorScores)
+            .filter(([color]) => color !== "TotalScore")
+            .map(([color, score]) => (
+              <Descriptions.Item key={color} label={color}>
+                {score.toFixed(2)}%
+              </Descriptions.Item>
+            ))}
         </Descriptions>
       </div>
 
-      {results.recommendations.length > 0 && (
+      {data.recommendations && data.recommendations.length > 0 && (
         <div style={{ marginTop: "20px" }}>
-          <Text style={{ fontSize: "20px", color: "#f5222d" }}>
+          <Text strong style={{ color: "#f5222d" }}>
             Đề xuất cải thiện:
           </Text>
-          <div style={{ fontSize: "16px", textAlign: "left" }}>
-            {results.recommendations.map((recommendation, index) => (
+          <div style={{ marginTop: "10px" }}>
+            {data.recommendations.map((recommendation, index) => (
               <Paragraph key={index}>
                 • <HighlightedText text={recommendation} />
               </Paragraph>
@@ -370,43 +486,26 @@ const KoiCompatibilityForm = () => {
                     {pond.shapeName}:{" "}
                   </Text>
 
-                  <Text type="danger">{pond.description}</Text>
+                  <Text>{pond.description}</Text>
                 </div>
               ))}
           </div>
         </Descriptions.Item>
 
+        {/* Updated direction rendering */}
         <Descriptions.Item label="Hướng hồ phù hợp">
-          {results.suggestedDirections.join(", ")}
+          <div>
+            {results.suggestedDirections.map((direction, index) => (
+              <div key={index} style={{ marginBottom: "10px" }}>
+                <Text strong>{direction.directionName}: </Text>
+                <Text color="blue">{direction.description}</Text>
+              </div>
+            ))}
+          </div>
         </Descriptions.Item>
       </Descriptions>
     </div>
   );
-
-  const renderResults = () => {
-    if (!results) return null;
-
-    return (
-      <Card
-        bordered={false}
-        style={{
-          margin: "20px 0",
-          padding: "20px",
-          background: "#f6f9ff",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          borderRadius: "8px",
-        }}
-      >
-        <Row justify="center" align="middle">
-          <Col span={24}>
-            {formType === "compatibility"
-              ? renderCompatibilityResults()
-              : renderElementResults()}
-          </Col>
-        </Row>
-      </Card>
-    );
-  };
 
   return (
     <Layout
@@ -451,8 +550,52 @@ const KoiCompatibilityForm = () => {
             {formType === "compatibility"
               ? renderCompatibilityForm()
               : renderElementForm()}
-            {renderResults()}
+
+            {/* Only show results card for consultation form */}
+            {results && formType === "element" && (
+              <Card
+                bordered={false}
+                style={{
+                  margin: "20px 0",
+                  padding: "20px",
+                  background: "#f6f9ff",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                  borderRadius: "8px",
+                }}
+              >
+                {renderElementResults()}
+              </Card>
+            )}
           </Card>
+
+          {/* Comparison Modal for compatibility form */}
+          <Modal
+            title="So sánh"
+            visible={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            width={1200}
+            footer={null}
+          >
+            <Row gutter={24}>
+              <Col span={12}>
+                <Card title="Kết quả">
+                  <ResultsDisplay data={results} />
+                </Card>
+              </Col>
+              <Col span={12}>
+                <Card title="Phần đã nhập">
+                  <CompactComparisonForm
+                    previousValues={compatibilityForm.getFieldsValue()}
+                  />
+                  {comparisonResults && (
+                    <div style={{ marginTop: "20px" }}>
+                      <ResultsDisplay data={comparisonResults} />
+                    </div>
+                  )}
+                </Card>
+              </Col>
+            </Row>
+          </Modal>
         </div>
       </Content>
       <FooterComponent />
