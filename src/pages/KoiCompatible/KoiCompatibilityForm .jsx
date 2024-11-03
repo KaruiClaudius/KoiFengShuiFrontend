@@ -129,7 +129,7 @@ const KoiCompatibilityForm = () => {
       </Form.Item>
 
       <Form.Item
-        label="Màu sắc cá koi"
+        label="Màu sắc cá koi đang có"
         name="koiColors"
         rules={[{ required: true, message: "Vui lòng chọn màu cá koi" }]}
       >
