@@ -16,7 +16,6 @@ import TruncatedText from "../../utils/TruncatedText";
 import {
   getFengShuiKoiFishPost,
   getFengShuiKoiDecorationPost,
-  getFengShuiKoiPost,
   getKoiElement,
 } from "../../config/axios";
 import FAQDisplay from "../FAQ/FAQDisplay";
@@ -30,7 +29,6 @@ export default function Homepage() {
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [error, setError] = React.useState(null); // Handle errors
   const [currentIndex, setCurrentIndex] = useState(0); // Carousel index
-  const maxPosts = 7; // Maximum number of blog can  display on Kinh Nghiệm Hay
   const [isModalVisible, setIsModalVisible] = useState(false); // Manages the modal's visibility state; starts as false (hidden)
   const [selectedPost, setSelectedPost] = useState(null); // Stores the currently selected post; initially set to null (no post selected)
 
@@ -86,6 +84,9 @@ export default function Homepage() {
         const responseKoi = await getFengShuiKoiFishPost(); // Adjust endpoint
         const responseDecoration = await getFengShuiKoiDecorationPost();
         const responsePost = await getAllPosts();
+
+   
+
         setCardDataKoi(responseKoi.data); // Store the data
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
@@ -183,6 +184,8 @@ export default function Homepage() {
   const scrollRight2 = () => scrollRight(scrollContainerRef2);
   const scrollLeft3 = () => scrollLeft(scrollContainerRef3);
   const scrollRight3 = () => scrollRight(scrollContainerRef3);
+  const scrollLeft4 = () => scrollLeft(scrollContainerRef4);
+  const scrollRight4 = () => scrollRight(scrollContainerRef4);
 
   const renderKoi = (data) => {
     return data.map((item) => (
@@ -318,29 +321,27 @@ export default function Homepage() {
       </div>
     ));
   };
+
+  // Function to render the posts
   const renderCardsPost = (data) => {
-    const visiblePosts = data.slice(currentIndex, currentIndex + 4); // Extracts a subset of 4 posts
-    return visiblePosts.map((item, index) => (
-      <div
-        className="card-container"
-        key={`${item.id}-${index}`}
-        onClick={() => showModal(item)}
-      >
-        <div className="property-card">
-          <img src={item.imageUrls} alt="Card" className="property-image" />
-          <div className="property-content">
-            <a href={`/property`} className="property-title-link"></a>
-            <div className="property-price-container">
-              <span className="property-price-text-red">{item.name}</span>
-              <span className="property-price-text-black">
-                {item.description}
-              </span>
+
+    const activePosts = data.filter(post => post.status === "active");
+
+    return activePosts.map((item, index) => (
+        <div className="card-container" key={`${item.id}-${index}`} onClick={() => showModal(item)}>
+            <div className="property-card">
+                <img src={item.imageUrls[0]} alt="Card" className="property-image" />
+                <div className="property-content">
+                    <h1 className="property-title">
+                        <TruncatedText text={item.name} maxLength={20} />
+                    </h1>
+                    <span className="property-price-text-black">{item.description}</span>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
     ));
   };
+
   const showModal = (post) => {
     setSelectedPost(post);
     setIsModalVisible(true);
@@ -490,17 +491,25 @@ export default function Homepage() {
               →
             </button>
           </div>
-          <div class="white-box">
-            <div className="container-title">
-              <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
-              <a href={`/blog`} className="container-title-link">
-                <h2>Xem thêm {">"}</h2>
-              </a>
+          <div className="render-koi-elemet" style={{ display: "flex", alignItems: "center" }}>
+            <button onClick={scrollLeft4} className="arrow-button">←</button>
+            <div className="white-box">
+              <div className="container-title">
+                <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
+                <a href={`/blog`} className="container-title-link">
+                  <h2>Xem thêm {">"}</h2>
+                </a>
+              </div>
+              <div style={{ display: "flex", overflowX: "hidden" }}
+               ref={scrollContainerRef4} 
+               className="scroll-container">
+                
+                {renderCardsPost(cardDataPost)}
+              </div>
             </div>
-            <div style={{ display: "flex" }}></div>
+            <button onClick={scrollRight4} className="arrow-button">→</button>
           </div>
         </div>
-        <div style={{ display: "flex" }}>{renderCardsPost(cardDataKoi)}</div>
       </div>
 
       <FAQDisplay />

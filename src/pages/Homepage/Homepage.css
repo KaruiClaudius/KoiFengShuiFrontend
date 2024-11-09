@@ -129,9 +129,8 @@
   overflow: hidden;
   border: 1px solid #e0e0e0;
   width: 100%;
-  height: max-content;  /* Fixed height for uniformity */
+  height: 300px;
   position: relative;
-  
 }
 
 .featured-badge {
@@ -277,17 +276,18 @@
 }
 
 .arrow-button {
-  height: 100%;
-  background-color: transparent; /* Change to desired color */
-  color: transparent; /* Change to desired text color */
-  border: none; /* Remove border */
-  cursor: pointer; /* Change cursor on hover */
-  padding: 10px; /* Add some padding */
-  margin: auto 5px; /* Space between button and scroll area */
-  font-size: 24px; /* Adjust font size */
-  border-radius: 5px; /* Add rounded corners */
-  transition: background-color 0.3s; /* Smooth transition for hover */
+  width: 30px; 
+  height: 30px;
+  color: white;
+  border: none;
+  border-radius: 50%; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
+
 .arrow-button:hover {
   color: black;
   background-color: orange;
@@ -363,7 +363,23 @@
 }
 
 .card-container {
-  flex: 1; 
+  flex: 1;
   margin: 5px;
   max-width: 25%;
+  min-width: 200px;
+  text-align: center;
+}
+
+.property-image {
+  width: 100%;
+  height: 150px; 
+  object-fit: cover;
+}
+
+.property-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
 }
