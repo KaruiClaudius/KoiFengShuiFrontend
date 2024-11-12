@@ -1,0 +1,11 @@
+.page-containers {
+    margin-top: 70px;
+    justify-content: center;
+}
+.content-wrappers {
+    justify-self: center;
+    background-color: #f6f4f3;
+    width: 70%;
+    padding: 50px;
+    padding-top: 0;
+}

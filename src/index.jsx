@@ -11,6 +11,7 @@ import ProtectedRoute from "./config/ProtectedRoute";
 // import PaymentMethod from "./pages/Payment/Payment";
 import AdminFAQ from "./pages/FAQ/FAQManager.jsx";
 import AdminPost from "./pages/AdminPost/AdminPost";
+import BlogPage from "./pages/AdminPost/BlogPage";
 import "./index.css";
 
 // import LandingPage from "./pages/LandingPage";
@@ -20,7 +21,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/Homepage/Homepage";
 import KoiDetailPage from "./pages/KoiDetailPage/KoiDetailPage";
 import DecorationPage from "./pages/DecorationPage/DecorationPage";
-
+import PostListingPage from "./pages/PostListing/PostListingPage";
+import KoiListingsPage from "./pages/KoiListingPage/KoiListingPage";
 const App = () => {
   return (
     <StyledEngineProvider injectFirst>
@@ -40,6 +42,8 @@ const App = () => {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/KoiDetails/:id" element={<KoiDetailPage />} />
           <Route path="/Decoration/:id" element={<DecorationPage />} />
+          <Route path="/ListingPost" element={<PostListingPage />} />
+          <Route path="/KoiListings" element={<KoiListingsPage />} />
           {/* <Route path="/Decoration/:id" element={<DecorationPage />} /> */}
           <Route
             path="/FAQManager"
@@ -66,6 +70,7 @@ const App = () => {
             }
           />
           {/* <Route path="/payment" element={<PaymentMethod />} /> */}
+          <Route path="/blog" element={<BlogPage />} />
         </Routes>
       </Router>
     </StyledEngineProvider>

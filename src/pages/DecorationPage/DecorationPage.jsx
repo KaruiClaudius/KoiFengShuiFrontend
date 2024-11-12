@@ -6,9 +6,10 @@ import ex from "../../assets/koio_ex.png";
 import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import searchIcon from "../../assets/icons/searchIcon.svg";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { CardContent } from "@mui/material";
 import TruncatedText from "../../utils/TruncatedText";
+import "../HomePage/Homepage.css";
 import {
   Row,
   Col,
@@ -22,6 +23,7 @@ import {
   Descriptions,
   Space,
   Layout,
+  message,
 } from "antd";
 import api, { getFengShuiKoiDetail } from "../../config/axios";
 import {
@@ -30,13 +32,13 @@ import {
   MessageOutlined,
 } from "@ant-design/icons";
 const ImageGallery = ({ images }) => {
-  //const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl);
+  const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl);
 
   return (
     <Row gutter={[16, 16]}>
       <Col span={24}>
         <Image
-          src={des}
+          src={mainImage}
           alt="Main Property Image"
           style={{
             width: "40vw",
@@ -51,21 +53,22 @@ const ImageGallery = ({ images }) => {
           gutter={[8, 8]}
           style={{ overflowX: "auto", whiteSpace: "nowrap" }}
         >
-          {/* {images.map((image, index) => (  ))}*/}
-          <Col style={{ display: "inline-block" }}>
-            <Image
-              src={des}
-              alt={`Property Image`}
-              style={{
-                width: "120px",
-                height: "120px",
-                objectFit: "cover",
-                cursor: "pointer",
-              }}
-              onClick={() => setMainImage(ex)}
-              preview={false}
-            />
-          </Col>
+          {images.map((image, index) => (
+            <Col key={index} style={{ display: "inline-block" }}>
+              <Image
+                src={image.image.imageUrl}
+                alt={`Property Image`}
+                style={{
+                  width: "120px",
+                  height: "120px",
+                  objectFit: "cover",
+                  cursor: "pointer",
+                }}
+                onClick={() => setMainImage(image.image.imageUrl)}
+                preview={false}
+              />
+            </Col>
+          ))}
         </Row>
       </Col>
     </Row>
@@ -74,14 +77,18 @@ const ImageGallery = ({ images }) => {
 
 const DecorationPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [koiDetails, setDataDecoration] = React.useState(null);
+  const [decorId, setDecorId] = React.useState(null);
+
   const [error, setError] = React.useState(null); // Handle errors
   const { Title, Text } = Typography;
   const scrollContainerRef1 = useRef(null);
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
   const [cardDataKoiBaseOnAccount, setCardDataKoiBaseOnAccount] =
     React.useState([]); // Store data
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   function formatCurrency(value) {
     // Ensure value is a number
     const numValue = Number(value);
@@ -107,7 +114,7 @@ const DecorationPage = () => {
 
   const renderDecoration = (data) => {
     return data.map((item) => (
-      <div className="card-container">
+      <div key={item.listingId || index} className="card-container">
         <div className="property-card">
           {item.tierName == "Preminum" ? (
             <div className="featured-badge">
@@ -117,11 +124,16 @@ const DecorationPage = () => {
             <h1> </h1>
           )}
 
-          <img src={des} alt="Card" className="property-image" />
+          <img
+            src={item.listingImages?.[0]?.image?.imageUrl}
+            alt="Card"
+            className="property-image"
+          />
           <div className="property-content">
             <a
               href={`/Decoration/${item.listingId}`}
               className="property-title-link"
+              style={{ width: "70%" }}
             >
               {/* {item.element && item.element.length > 0 ? ( */}
               <div className="property-title-wrapper">
@@ -133,19 +145,34 @@ const DecorationPage = () => {
                 <h1 className="property-title">{item.name}</h1>
               )} */}
             </a>
-            <div className="property-price-container">
+            <div
+              className="property-price-container"
+              style={{ display: "flex" }}
+            >
               <h2 className="property-price-text" style={{ marginRight: 5 }}>
                 Giá tiền:
               </h2>{" "}
               {/* Replace icon as needed */}
-              <span className="property-price-text" style={{ color: "red" }}>
+              <span className="property-price-price" style={{ color: "red" }}>
                 {formatCurrency(item.price)}VNĐ
               </span>
             </div>
             <div className="property-user-container">
-              <img src={usericon} alt="Banner" className="property-user-icon" />{" "}
+              <img
+                src={
+                  item.accountName
+                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                        item.accountName
+                      )}`
+                    : usericon
+                }
+                alt="Banner"
+                className="property-user-icon"
+              />{" "}
               {/* Replace icon as needed */}
-              <span className="property-user-text">{item.accountName}</span>
+              <span className="property-user-text" style={{ margin: "auto" }}>
+                {item.accountName}
+              </span>
             </div>
           </div>
         </div>
@@ -181,11 +208,6 @@ const DecorationPage = () => {
       categoryId = 2
     ) => {
       try {
-        // const responseKoi = await api
-        //   .get(
-        //     `/api/MarketplaceListings/GetAllByElementId/${koiDetail}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
-        //   )
-        //   .then((response) => response.data);
         const responseKoiBaseOnAccount = await api
           .get(
             `/api/MarketplaceListings/GetAllByAccount/${koiAccount}/Category/${categoryId}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
@@ -201,9 +223,39 @@ const DecorationPage = () => {
       }
     }
   );
+  // const updateUserData = (event) => {
+  //   const updatedUser = event.detail;
+  //   setUserData(updatedUser);
+  //   setFullName(updatedUser.fullName);
+  //   setUserRole(updatedUser.roleId);
+  //   const elementName = updatedUser.elementId
+  //     ? elementMapping[updatedUser.elementId]
+  //     : "Unknown";
+  //   setElementName(elementName);
+  //   setAvatarUrl(
+  //     `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+  //       updatedUser.fullName
+  //     )}`
+  //   );
+  // };
   React.useEffect(() => {
     fetchData();
     fetchKoiData();
+
+    // // Add event listener
+    // window.addEventListener("userProfileUpdated", updateUserData);
+
+    // Initial data load
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    // if (token && user) {
+    //   updateUserData({ detail: user });
+    // }
+    setIsLoggedIn(!!token);
+    // // Cleanup function to remove event listener
+    // return () => {
+    //   window.removeEventListener("userProfileUpdated", updateUserData);
+    // };
   }, [fetchData, fetchKoiData]);
   if (loading) {
     return <div>Loading...</div>;
@@ -235,7 +287,12 @@ const DecorationPage = () => {
   const scrollLeft1 = () => scrollLeft(scrollContainerRef1);
   const scrollRight1 = () => scrollRight(scrollContainerRef1);
   const handleButtonClick = () => {
-    setShowPhoneNumber(!showPhoneNumber);
+    if (isLoggedIn) {
+      setShowPhoneNumber(!showPhoneNumber);
+    } else {
+      message.error("Đăng nhập để thấy số điện thoại người đăng");
+      //navigate("/auth");
+    }
   };
 
   return (
@@ -296,7 +353,7 @@ const DecorationPage = () => {
                 {koiDetails.elementName && `[${koiDetails.elementName}] `}{" "}
                 {koiDetails.title}
               </Typography>
-              <ImageGallery images={ex} />
+              <ImageGallery images={koiDetails.listingImages} />
             </Col>
             {/* Owner Information */}
             <Col xs={24} lg={10}>
@@ -317,7 +374,16 @@ const DecorationPage = () => {
                       align="center"
                       style={{ width: "100%" }}
                     >
-                      <Avatar size={64} src={ex} />
+                      <Avatar
+                        size={64}
+                        src={
+                          koiDetails.accountName
+                            ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                                koiDetails.accountName
+                              )}`
+                            : usericon
+                        }
+                      />
                       <Title level={5}>{koiDetails.accountName}</Title>
                     </Space>
                   </Col>
@@ -351,9 +417,9 @@ const DecorationPage = () => {
                         style={{ width: "100%" }}
                         onClick={handleButtonClick}
                       >
-                        {showPhoneNumber
+                        {showPhoneNumber && isLoggedIn
                           ? koiDetails.accountPhoneNumber
-                          : "Call Now"}
+                          : "Gọi ngay bây giờ"}
                       </Button>
                     </Space>
                   </Col>
@@ -381,18 +447,16 @@ const DecorationPage = () => {
             </Card>
           </Col>
         </Row>
-        <Row style={{ marginTop: 20, width: "100%", paddingBottom: 50 }}>
+        <Row style={{ marginTop: 20, paddingBottom: 50 }}>
           <Col xs={24} lg={24}>
-            <div
-              style={{ display: "flex", alignItems: "center", width: "100%" }}
-            >
+            <div style={{ display: "flex", alignItems: "center" }}>
               <button onClick={scrollLeft1} className="arrow-button">
                 ←
               </button>
               <div class="white-box" style={{ width: "100%" }}>
                 <div
                   className="container-title"
-                  style={{ justifyContent: "space-between", width: "100%" }}
+                  style={{ justifyContent: "space-between" }}
                 >
                   <h2>Đồ Trang Trí Liên Quan</h2>
                   <a
@@ -406,7 +470,7 @@ const DecorationPage = () => {
                   style={{
                     display: "flex",
                     overflow: "hidden",
-                    width: "50%",
+                    width: "100%",
                   }}
                   ref={scrollContainerRef1}
                   className="scroll-container"

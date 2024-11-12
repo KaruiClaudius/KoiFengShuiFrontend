@@ -26,6 +26,7 @@ const AppHeader = () => {
   const [userRole, setUserRole] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [userData, setUserData] = useState(null);
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   const elementMapping = {
@@ -94,7 +95,7 @@ const AppHeader = () => {
   };
 
   const sellingFishClick = () => {
-    navigate("/sellingFish");
+    navigate("/KoiListings");
   };
   const koiCompatible = () => {
     navigate("/KoiCompatible");
@@ -102,7 +103,6 @@ const AppHeader = () => {
   const blogClick = () => {
     navigate("/blog");
   };
-
 
   return (
     <AppBar sx={{ backgroundColor: "#231815" }}>
@@ -178,10 +178,7 @@ const AppHeader = () => {
               opacity: 0.8,
             },
           }}
-          
-        >
-     
-        </Typography>
+        ></Typography>
 
         <Box sx={{ flexGrow: 1 }} />
 
@@ -248,7 +245,7 @@ const AppHeader = () => {
               backgroundColor: "#ff4d4f",
               "&:hover": { backgroundColor: "#ff7875" },
             }}
-            onClick={() => navigate("/upPost")}
+            onClick={() => navigate("/ListingPost")}
           >
             Đăng tin
           </Button>

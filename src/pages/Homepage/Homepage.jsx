@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Modal } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
@@ -7,31 +8,39 @@ import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { getAllPosts } from "../../config/axios";
 // import { CardContent } from "@mui/material";
 // import { Typography } from "antd";
 import TruncatedText from "../../utils/TruncatedText";
 import {
   getFengShuiKoiFishPost,
   getFengShuiKoiDecorationPost,
-  getFengShuiKoiPost,
+  getKoiElement,
 } from "../../config/axios";
 import FAQDisplay from "../FAQ/FAQDisplay";
 export default function Homepage() {
   const navigate = useNavigate();
   const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
+  const [cardDataKoiElement, setCardDataKoiElement] = React.useState([]); // Store data
   const [cardDataDecoration, setCardDataDecoration] = React.useState([]); // Store data
+  const [existElementData, setExistElementData] = React.useState([]); // Store data
   const [cardDataPost, setCardDataPost] = React.useState([]); // Store data
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [error, setError] = React.useState(null); // Handle errors
+  const [currentIndex, setCurrentIndex] = useState(0); // Carousel index
+  const [isModalVisible, setIsModalVisible] = useState(false); // Manages the modal's visibility state; starts as false (hidden)
+  const [selectedPost, setSelectedPost] = useState(null); // Stores the currently selected post; initially set to null (no post selected)
 
   const scrollContainerRef1 = useRef(null); // Reference to the scrollable container
   const scrollContainerRef2 = useRef(null);
   const scrollContainerRef3 = useRef(null);
   const scrollContainerRef4 = useRef(null);
-
+  const [elementName, setElementName] = useState("");
+  const [elementId, setElementId] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
   const sellingFishClick = () => {
-    navigate("/sellingFish");
+    navigate("/KoiListings");
   };
 
   const fishProductClick = () => {
@@ -46,24 +55,74 @@ export default function Homepage() {
     navigate("/blog");
   };
 
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) =>
+      Math.min(prevIndex + 1, Math.min(cardDataPost.length - 4, maxPosts - 4))
+    );
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
   React.useEffect(() => {
+    // const updateUserData = (event) => {
+    //   const updatedUser = event.detail;
+    //   const elementName = elementMapping[updatedUser.elementId];
+    //   setElementName(elementName);
+    //   setElementId(updatedUser.elementId);
+    // };
+
+    // // Initial data load
+    // const token = localStorage.getItem("token");
+    // const user = JSON.parse(localStorage.getItem("user"));
+    // if (token && user) {
+    //   updateUserData({ detail: user });
+    // }
     const fetchData = async () => {
       try {
         const responseKoi = await getFengShuiKoiFishPost(); // Adjust endpoint
         const responseDecoration = await getFengShuiKoiDecorationPost();
-        const responsePost = await getFengShuiKoiPost();
+        const responsePost = await getAllPosts();
+
+   
+
         setCardDataKoi(responseKoi.data); // Store the data
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
+        if (user != null) {
+          if (user.elementId) {
+            const responseKoiElement = await getKoiElement(
+              user.elementId,
+              1,
+              10
+            ); // Store the data
+            setCardDataKoiElement(responseKoiElement.data);
+          }
+        } else {
+          setCardDataKoiElement(null);
+        }
       } catch (error) {
         setError(error.message); // Handle error
       } finally {
         setLoading(false); // Stop loading
       }
     };
+
+    //window.addEventListener("userProfileUpdated", updateUserData);
+
     // Fetch data from API when the component mounts
     fetchData();
+    // if (elementId != null) {
+    //   fetchDataElement(elementId);
+    // }
+    // Cleanup function to remove event listener
+    // return () => {
+    //   window.removeEventListener("userProfileUpdated", updateUserData);
+    // };
   }, []);
+
+  // Add event listener
 
   function formatCurrency(value) {
     // Ensure value is a number
@@ -125,43 +184,62 @@ export default function Homepage() {
   const scrollRight2 = () => scrollRight(scrollContainerRef2);
   const scrollLeft3 = () => scrollLeft(scrollContainerRef3);
   const scrollRight3 = () => scrollRight(scrollContainerRef3);
+  const scrollLeft4 = () => scrollLeft(scrollContainerRef4);
+  const scrollRight4 = () => scrollRight(scrollContainerRef4);
 
   const renderKoi = (data) => {
     return data.map((item) => (
       <div className="card-container" key={item.listingId}>
         <div className="property-card">
-          {item.tierName === "Preminum" ? (
+          {item.tierName === "Preminum" && (
             <div className="featured-badge">
               <span>Nổi bật</span>
             </div>
-          ) : (
-            <h1> </h1>
           )}
 
-          <img src={ex} alt="Card" className="property-image" />
+          <Link
+            to={`/KoiDetails/${item.listingId}`}
+            style={{ justifyContent: "center" }}
+          >
+            <img
+              src={item.listingImages?.[0]?.image?.imageUrl}
+              alt={item.title}
+              className="property-koi-image"
+            />
+          </Link>
+
           <div className="property-content">
-            <a
-              href={`/KoiDetails/${item.listingId}`}
-              className="property-title-link"
-            >
-              <div className="property-title-wrapper">
-                <h1 className="property-title">
+            <div className="property-title-wrapper">
+              <h1 className="property-title">
+                <a
+                  href={`/KoiDetails/${item.listingId}`}
+                  className="property-title-link"
+                >
                   [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />
-                </h1>
-              </div>
-            </a>
+                  <TruncatedText text={item.title} maxLength={20} />{" "}
+                </a>
+              </h1>
+            </div>
+
             <div className="property-price-container">
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>
-              <span className="property-price-text" style={{ color: "red" }}>
+              <span className="property-price-text">Giá tiền: </span>
+              <span
+                className="property-price-price"
+                style={{ color: "red", marginLeft: "4px" }}
+              >
                 {formatCurrency(item.price)}VNĐ
               </span>
             </div>
+
             <div className="property-user-container">
               <img
-                src={usericon}
+                src={
+                  item.accountName
+                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                        item.accountName
+                      )}`
+                    : usericon
+                }
                 alt="User Icon"
                 className="property-user-icon"
               />
@@ -184,8 +262,21 @@ export default function Homepage() {
           ) : (
             <h1> </h1>
           )}
-
-          <img src={des} alt="Card" className="property-image" />
+          <Link
+            key={item.homeId}
+            to={`/Decoration/${item.listingId}`}
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+            }}
+          >
+            <img
+              src={item.listingImages?.[0]?.image?.imageUrl}
+              alt={item.title}
+              className="property-image"
+            />
+          </Link>
           <div className="property-content">
             <a
               href={`/Decoration/${item.listingId}`}
@@ -206,12 +297,22 @@ export default function Homepage() {
                 Giá tiền:
               </h2>{" "}
               {/* Replace icon as needed */}
-              <span className="property-price-text" style={{ color: "red" }}>
+              <span className="property-price-price" style={{ color: "red" }}>
                 {formatCurrency(item.price)}VNĐ
               </span>
             </div>
             <div className="property-user-container">
-              <img src={usericon} alt="Banner" className="property-user-icon" />{" "}
+              <img
+                src={
+                  item.accountName
+                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                        item.accountName
+                      )}`
+                    : usericon
+                }
+                alt="Banner"
+                className="property-user-icon"
+              />{" "}
               {/* Replace icon as needed */}
               <span className="property-user-text">{item.accountName}</span>
             </div>
@@ -220,6 +321,36 @@ export default function Homepage() {
       </div>
     ));
   };
+
+  // Function to render the posts
+  const renderCardsPost = (data) => {
+
+    const activePosts = data.filter(post => post.status === "active");
+
+    return activePosts.map((item, index) => (
+        <div className="card-container" key={`${item.id}-${index}`} onClick={() => showModal(item)}>
+            <div className="property-card">
+                <img src={item.imageUrls[0]} alt="Card" className="property-image" />
+                <div className="property-content">
+                    <h1 className="property-title">
+                        <TruncatedText text={item.name} maxLength={20} />
+                    </h1>
+                    <span className="property-price-text-black">{item.description}</span>
+                </div>
+            </div>
+        </div>
+    ));
+  };
+
+  const showModal = (post) => {
+    setSelectedPost(post);
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
   if (loading) return <p>Loading...</p>; // Display loading message
   if (error) return <p>Error: {error}</p>;
   return (
@@ -243,11 +374,11 @@ export default function Homepage() {
             Cân Bằng Phong Thủy, Koi Vượng Tài Lộc
           </p>
           <div className="search-bar-container">
-            <input
+            {/* <input
               type="text"
               placeholder="Tìm kiếm..."
               className="search-bar"
-            />
+            /> */}
             <button className="search-icon-button">
               <img
                 src={searchIcon}
@@ -275,31 +406,39 @@ export default function Homepage() {
       </div>
       <div className="main-container">
         <div className="content-wrapper">
-          <div className="render-koi-elemet">
-            <button onClick={scrollLeft1} className="arrow-button">
-              ←
-            </button>
-            <div class="white-box">
-              <div className="container-title">
-                <h2 className="container-title-title">Cá Koi Theo Bản Mệnh</h2>
-                <a href={`/fishProduct`} className="container-title-link">
-                  <h2>Xem thêm {">"}</h2>
-                </a>
-              </div>
+          {cardDataKoiElement != null ? (
+            <div className="render-koi-elemet">
+              <button onClick={scrollLeft1} className="arrow-button">
+                ←
+              </button>
+              <div class="white-box">
+                <div className="container-title">
+                  <h2 className="container-title-title">
+                    Cá Koi Theo Bản Mệnh
+                  </h2>
+                  <a href={`/fishProduct`} className="container-title-link">
+                    <h2>Xem thêm {">"}</h2>
+                  </a>
+                </div>
 
-              <div
-                style={{ display: "flex", overflowX: "scroll", width: "100%" }}
-                ref={scrollContainerRef1}
-                className="scroll-container"
-              >
-                {/* Render Koi items here */}
-                {renderKoi(cardDataKoi)}
+                <div
+                  style={{
+                    display: "flex",
+                    overflowX: "hidden",
+                    width: "100%",
+                  }}
+                  ref={scrollContainerRef1}
+                  className="scroll-container"
+                >
+                  {/* Render Koi items here */}
+                  {renderKoi(cardDataKoiElement)}
+                </div>
               </div>
+              <button onClick={scrollRight1} className="arrow-button">
+                →
+              </button>
             </div>
-            <button onClick={scrollRight1} className="arrow-button">
-              →
-            </button>
-          </div>
+          ) : null}
           <div
             className="render-koi-elemet"
             style={{ display: "flex", alignItems: "center" }}
@@ -315,7 +454,7 @@ export default function Homepage() {
                 </a>
               </div>
               <div
-                style={{ display: "flex", overflowX: "scroll" }}
+                style={{ display: "flex", overflowX: "hidden" }}
                 ref={scrollContainerRef2}
                 className="scroll-container"
               >
@@ -341,7 +480,7 @@ export default function Homepage() {
                 </a>
               </div>
               <div
-                style={{ display: "flex", overflowX: "scroll" }}
+                style={{ display: "flex", overflowX: "hidden" }}
                 ref={scrollContainerRef3}
                 className="scroll-container"
               >
@@ -352,19 +491,45 @@ export default function Homepage() {
               →
             </button>
           </div>
-          <div class="white-box">
-            <div className="container-title">
-              <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
-              <a href={`/blog`} className="container-title-link">
-                <h2>Xem thêm {">"}</h2>
-              </a>
+          <div className="render-koi-elemet" style={{ display: "flex", alignItems: "center" }}>
+            <button onClick={scrollLeft4} className="arrow-button">←</button>
+            <div className="white-box">
+              <div className="container-title">
+                <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
+                <a href={`/blog`} className="container-title-link">
+                  <h2>Xem thêm {">"}</h2>
+                </a>
+              </div>
+              <div style={{ display: "flex", overflowX: "hidden" }}
+               ref={scrollContainerRef4} 
+               className="scroll-container">
+                
+                {renderCardsPost(cardDataPost)}
+              </div>
             </div>
-            <div style={{ display: "flex" }}></div>
+            <button onClick={scrollRight4} className="arrow-button">→</button>
           </div>
         </div>
       </div>
+
       <FAQDisplay />
       <FooterComponent />
+      <Modal
+        title={null}
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <img
+          src={selectedPost?.imageUrls[0]}
+          alt="Card"
+          style={{ width: "100%" }}
+        />
+        <h2 style={{ textAlign: "center", marginTop: "10px" }}>
+          {selectedPost?.name}
+        </h2>
+        <p>{selectedPost?.description}</p>
+      </Modal>
     </div>
   );
 }
