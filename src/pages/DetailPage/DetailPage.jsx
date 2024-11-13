@@ -4,11 +4,12 @@ import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
 import ex from "../../assets/koio_ex.png";
 import usericon from "../../assets/icons/userIcon.png";
-import "./KoiDetailPage.css";
+import "./DetailPage.css";
 import TruncatedText from "../../utils/TruncatedText";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CardContent } from "@mui/material";
+const type = JSON.parse(localStorage.getItem("type"));
 import {
   Row,
   Col,
@@ -82,7 +83,7 @@ const ImageGallery = ({ images }) => {
     </Row>
   );
 };
-const KoiDetailPage = () => {
+const DetailPage = () => {
   const { id } = useParams();
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [koiDetails, setDataKoi] = React.useState(null);
@@ -91,6 +92,7 @@ const KoiDetailPage = () => {
   const scrollContainerRef1 = useRef(null);
   const scrollContainerRef2 = useRef(null);
   const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
+  const [categoryData, setCategory] = useState([]);
   const [cardDataKoiBaseOnAccount, setCardDataKoiBaseOnAccount] =
     React.useState([]); // Store data
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
@@ -101,6 +103,10 @@ const KoiDetailPage = () => {
     try {
       const response = await getFengShuiKoiDetail(id);
       setDataKoi(response.data[0]); // Access the first item in the data array
+      const responseMarketCategory = await api
+        .get("/api/MarketCategory/GetAll")
+        .then((response) => response.data);
+      setCategory(responseMarketCategory.data);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -113,7 +119,7 @@ const KoiDetailPage = () => {
       koiAccount = koiDetails.accountId,
       page = 1,
       pageSize = 10,
-      categoryId = 1
+      categoryId = koiDetails.categoryId
     ) => {
       try {
         const responseKoi = await api
@@ -140,14 +146,14 @@ const KoiDetailPage = () => {
     return data.map((item) => (
       <div className="card-container" key={item.listingId}>
         <div className="property-card">
-          {item.tierName === "Preminum" && (
+          {item.tierName === "Tin Nổi Bật" && (
             <div className="featured-badge">
               <span>Nổi bật</span>
             </div>
           )}
 
           <Link
-            to={`/KoiDetails/${item.listingId}`}
+            to={`/Details/${item.listingId}`}
             style={{ justifyContent: "center" }}
           >
             <img
@@ -164,11 +170,11 @@ const KoiDetailPage = () => {
             <div className="property-title-wrapper">
               <h1 className="property-title">
                 <a
-                  href={`/KoiDetails/${item.listingId}`}
+                  href={`/Details/${item.listingId}`}
                   className="property-title-link"
                 >
-                  [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />{" "}
+                  {item.elementName != "Non element" && `[${item.elementName}]`}{" "}
+                  <TruncatedText text={item.title} maxLength={10} />{" "}
                 </a>
               </h1>
             </div>
@@ -209,10 +215,6 @@ const KoiDetailPage = () => {
     fetchData();
     fetchKoiData();
     const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    // if (token && user) {
-    //   updateUserData({ detail: user });
-    // }
     setIsLoggedIn(!!token);
   }, [fetchData, fetchKoiData]);
 
@@ -230,16 +232,13 @@ const KoiDetailPage = () => {
 
     if (numValue < 1e6) {
       // Less than a million
-      return numValue.toLocaleString("vi-VN");
-    } else if (numValue >= 1e6 && numValue < 1e9) {
-      // Millions
-      return formatLargeNumber(numValue, 1e6, "triệu");
+      return addThousandSeparators(numValue);
     } else if (numValue >= 1e9) {
       // Billions
       return formatLargeNumber(numValue, 1e9, "tỷ");
     } else {
       // Default case (shouldn't normally be reached)
-      return numValue.toLocaleString("vi-VN");
+      return addThousandSeparators(numValue);
     }
   }
 
@@ -247,11 +246,15 @@ const KoiDetailPage = () => {
     const wholePart = Math.floor(value / unitValue);
     const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
 
-    let result = wholePart.toLocaleString("vi-VN") + " " + unitName;
+    let result = addThousandSeparators(wholePart) + " " + unitName;
     if (fractionalPart > 0) {
-      result += " " + fractionalPart.toLocaleString("vi-VN");
+      result += " " + addThousandSeparators(fractionalPart);
     }
     return result;
+  }
+
+  function addThousandSeparators(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -317,7 +320,7 @@ const KoiDetailPage = () => {
               <div style={{ padding: "0 3px" }}>&gt;</div>
               <Link
                 underline="none"
-                to={`/listing`}
+                to={`/KoiListings`}
                 style={{
                   textDecoration: "none",
                   color: "black",
@@ -325,7 +328,11 @@ const KoiDetailPage = () => {
                 onMouseEnter={(e) => (e.target.style.color = "#ff914d")}
                 onMouseLeave={(e) => (e.target.style.color = "black")}
               >
-                Cá Koi
+                {
+                  categoryData.find(
+                    (category) => category.categoryid === koiDetails.categoryId
+                  )?.categoryName
+                }
               </Link>
               <div style={{ padding: "0 3px" }}>&gt;</div>
               <div style={{ color: "orange", fontWeight: "bold" }}>
@@ -346,7 +353,9 @@ const KoiDetailPage = () => {
                   marginBottom: "20px",
                 }}
               >
-                [{koiDetails.elementName}] {koiDetails.title}
+                {koiDetails.elementName != "Non element" &&
+                  `[${koiDetails.elementName}]`}{" "}
+                {koiDetails.title}
               </Typography>
               <ImageGallery images={koiDetails.listingImages} />
             </Col>
@@ -384,7 +393,7 @@ const KoiDetailPage = () => {
                   <Col span={24}>
                     <Descriptions bordered column={1}>
                       <Descriptions.Item label="Giá tiền">
-                        {formatCurrency(koiDetails.price)} VNĐ
+                        {formatCurrency(koiDetails.price)} đ
                       </Descriptions.Item>
                       <Descriptions.Item label="Số lượng">
                         {koiDetails.quantity}
@@ -433,91 +442,135 @@ const KoiDetailPage = () => {
               <Typography style={{ fontWeight: "bold", fontSize: "25px" }}>
                 Mô tả
               </Typography>
-              <Text>{koiDetails.description}</Text>
+              <Text>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: koiDetails.description,
+                  }}
+                ></div>
+              </Text>
             </Card>
           </Col>
         </Row>
-        <Row style={{ marginTop: 20, width: "100%" }}>
-          <Col xs={24} lg={24}>
-            <div
-              style={{ display: "flex", alignItems: "center", width: "100%" }}
-            >
+        {cardDataKoi && cardDataKoi.length > 0 && (
+          <Row style={{ marginTop: 20, width: "100%" }}>
+            <Col xs={24} lg={24}>
               <div
-                className="render-koi-elemet"
-                style={{ display: "flex", alignItems: "center" }}
+                style={{ display: "flex", alignItems: "center", width: "100%" }}
               >
-                <button onClick={scrollLeft2} className="arrow-button">
-                  ←
-                </button>
-                <div class="white-box" style={{ width: "100%" }}>
-                  <div
-                    className="container-title"
-                    style={{ justifyContent: "space-between", width: "100%" }}
-                  >
-                    <h2>Cá Koi Cùng Bản Mệnh</h2>
-                    <a
-                      href={`/fishProduct`}
-                      style={{ textDecoration: "none", color: "black" }}
-                    >
-                      <h2>Xem thêm {">"}</h2>
-                    </a>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      overflow: "hidden",
-                    }}
-                    ref={scrollContainerRef2}
-                    className="scroll-container"
-                  >
-                    {renderKoi(cardDataKoi)}
-                  </div>
+                <div
+                  className="render-koi-elemet"
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  <button onClick={scrollLeft2} className="arrow-button">
+                    ←
+                  </button>
+                  {koiDetails.elementName != "Non element" &&
+                    koiDetails.elementName &&
+                    cardDataKoi && (
+                      <div class="white-box" style={{ width: "100%" }}>
+                        <div
+                          className="container-title"
+                          style={{
+                            justifyContent: "space-between",
+                            width: "100%",
+                          }}
+                        >
+                          {categoryData.find(
+                            (category) =>
+                              category.categoryid === koiDetails.categoryId
+                          )?.categoryName && (
+                            <h2>
+                              {
+                                categoryData.find(
+                                  (category) =>
+                                    category.categoryid ===
+                                    koiDetails.categoryId
+                                )?.categoryName
+                              }{" "}
+                              Cùng Bản Mệnh
+                            </h2>
+                          )}
+                          <a
+                            href={`/KoiListings?category=1&element=${koiDetails.elementId}`}
+                            style={{ textDecoration: "none", color: "black" }}
+                          >
+                            <h2>Xem thêm {">"}</h2>
+                          </a>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            overflow: "hidden",
+                          }}
+                          ref={scrollContainerRef2}
+                          className="scroll-container"
+                        >
+                          {renderKoi(cardDataKoi)}
+                        </div>
+                      </div>
+                    )}
+                  <button onClick={scrollRight2} className="arrow-button">
+                    →
+                  </button>
                 </div>
-                <button onClick={scrollRight2} className="arrow-button">
-                  →
-                </button>
               </div>
-            </div>
-          </Col>
-        </Row>
+            </Col>
+          </Row>
+        )}
         <Row style={{ marginTop: 20, width: "100%", paddingBottom: 50 }}>
           <Col xs={24} lg={24}>
             <div style={{ display: "flex", alignItems: "center" }}>
-              <div
-                className="render-koi-elemet"
-                style={{ display: "flex", alignItems: "center" }}
-              >
-                <button onClick={scrollLeft1} className="arrow-button">
-                  ←
-                </button>
-                <div class="white-box" style={{ width: "100%" }}>
+              {cardDataKoiBaseOnAccount &&
+                cardDataKoiBaseOnAccount.length > 0 && (
                   <div
-                    className="container-title"
-                    style={{ justifyContent: "space-between", width: "100%" }}
+                    className="render-koi-elemet"
+                    style={{ display: "flex", alignItems: "center" }}
                   >
-                    <h2>Cá Koi Liên Quan</h2>
-                    <a
-                      href={`/fishProduct`}
-                      style={{ textDecoration: "none", color: "black" }}
-                    >
-                      <h2>Xem thêm {">"}</h2>
-                    </a>
+                    <button onClick={scrollLeft1} className="arrow-button">
+                      ←
+                    </button>
+
+                    <div class="white-box" style={{ width: "100%" }}>
+                      <div
+                        className="container-title"
+                        style={{
+                          justifyContent: "space-between",
+                          width: "100%",
+                        }}
+                      >
+                        {categoryData.find(
+                          (category) =>
+                            category.categoryid === koiDetails.categoryId
+                        )?.categoryName && (
+                          <h2>
+                            {
+                              categoryData.find(
+                                (category) =>
+                                  category.categoryid === koiDetails.categoryId
+                              )?.categoryName
+                            }{" "}
+                            Liên Quan
+                          </h2>
+                        )}
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          overflow: "hidden",
+                        }}
+                        ref={scrollContainerRef1}
+                        className="scroll-container"
+                      >
+                        {renderKoi(cardDataKoiBaseOnAccount)}
+                      </div>
+                    </div>
+
+                    <button onClick={scrollRight1} className="arrow-button">
+                      →
+                    </button>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      overflow: "hidden",
-                    }}
-                    ref={scrollContainerRef1}
-                    className="scroll-container"
-                  >
-                    {renderKoi(cardDataKoiBaseOnAccount)}
-                  </div>
-                </div>
-                <button onClick={scrollRight1} className="arrow-button">
-                  →
-                </button>
-              </div>
+                )}
             </div>
           </Col>
         </Row>
@@ -526,4 +579,4 @@ const KoiDetailPage = () => {
     </div>
   );
 };
-export default KoiDetailPage;
+export default DetailPage;

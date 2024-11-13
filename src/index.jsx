@@ -19,7 +19,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 //import Homepage, Detail Page
 import HomePage from "./pages/Homepage/Homepage";
-import KoiDetailPage from "./pages/KoiDetailPage/KoiDetailPage";
+import DetailPage from "./pages/DetailPage/DetailPage.jsx";
 import DecorationPage from "./pages/DecorationPage/DecorationPage";
 import PostListingPage from "./pages/PostListing/PostListingPage";
 import KoiListingsPage from "./pages/KoiListingPage/KoiListingPage";
@@ -40,7 +40,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/KoiDetails/:id" element={<KoiDetailPage />} />
+          <Route path="/Details/:id" element={<DetailPage />} />
           <Route path="/Decoration/:id" element={<DecorationPage />} />
           <Route path="/ListingPost" element={<PostListingPage />} />
           <Route path="/KoiListings" element={<KoiListingsPage />} />
