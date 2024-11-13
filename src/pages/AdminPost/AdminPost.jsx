@@ -24,6 +24,8 @@ const AdminPost = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false); // Controls modal visibility
   const [isEdit, setIsEdit] = useState(false); // Indicates if editing a post
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false); // State for delete confirmation modal
+  const [postToDelete, setPostToDelete] = useState(null); // Stores the post to delete
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -59,16 +61,26 @@ const AdminPost = () => {
     }
   }, [error]);
 
-  const handleDelete = async (postId) => {
+  const handleDelete = (postId) => {
+    setPostToDelete(postId); // Set the post to delete
+    setConfirmDeleteVisible(true); // Show delete confirmation modal
+  };
+
+  const confirmDelete = async () => {
     setLoading(true);
     try {
-      await deletePost(postId);
-      setPosts(posts.filter((post) => post.postId !== postId));
+      await deletePost(postToDelete);
+      setPosts(posts.filter((post) => post.postId !== postToDelete));
+      setConfirmDeleteVisible(false); // Close confirmation modal
     } catch (err) {
       setError("An error occurred while deleting Post");
     } finally {
       setLoading(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setConfirmDeleteVisible(false); // Close confirmation modal
   };
 
   const showModal = (post = {}) => {
@@ -227,6 +239,7 @@ const AdminPost = () => {
             open={isModalOpen}
             onOk={handleModalOk}
             onCancel={handleCancel}
+            centered 
           >
             <Form layout="vertical">
               <Form.Item
@@ -303,6 +316,15 @@ const AdminPost = () => {
                 </Upload>
               </Form.Item>
             </Form>
+          </Modal>        
+          <Modal
+            title="Confirm Deletion"
+            open={confirmDeleteVisible}
+            onOk={confirmDelete}
+            onCancel={cancelDelete}
+            centered 
+          >
+            <p>Are you sure you want to delete this post?</p>
           </Modal>
         </Box>
       </Box>

@@ -14,6 +14,8 @@ const FAQManager = () => {
   const [isEdit, setIsEdit] = useState(false); // Indicates if editing an FAQ
   const [currentFaq, setCurrentFaq] = useState({}); // Stores the FAQ being edited
   const [currentAccountId, setCurrentAccountId] = useState(null); // Stores current account ID
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false); // State for delete confirmation modal
+  const [faqToDelete, setFaqToDelete] = useState(null); // Stores the FAQ to delete
 
   useEffect(() => {
     const fetchFAQs = async () => {
@@ -44,17 +46,27 @@ const FAQManager = () => {
     }
   }, []);
 
-  const handleDelete = async (faqId) => {
+  const handleDelete = (faqId) => {
+    setFaqToDelete(faqId); // Set the FAQ to delete
+    setConfirmDeleteVisible(true); // Show delete confirmation modal
+  };
+
+  const confirmDelete = async () => {
     setLoading(true);
     try {
-      await deleteFAQ(faqId);
-      setFaqs(faqs.filter((faq) => faq.faqId !== faqId)); // Remove deleted FAQ from list
+      await deleteFAQ(faqToDelete);
+      setFaqs(faqs.filter((faq) => faq.faqId !== faqToDelete)); // Remove deleted FAQ from list
+      setConfirmDeleteVisible(false); // Close confirmation modal
     } catch (err) {
       console.error("Error deleting FAQ", err);
       setError("An error occurred while deleting FAQ");
     } finally {
       setLoading(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setConfirmDeleteVisible(false); // Close confirmation modal
   };
 
   const showCRUDModal = (faq = {}) => {
@@ -127,11 +139,11 @@ const FAQManager = () => {
               <Button type="primary" onClick={() => showCRUDModal()}>
                 Add FAQ
               </Button>
-              <div style={{ margin: '20px 0' }}>
+              <div style={{ margin: '20px 0', backgroundColor: "#ffffff", padding: '20px', borderRadius: '5px' }}>
                 {faqs.map((faq) => (
                   <div key={faq.faqId} className="faq-item" style={{ 
                     margin: '10px 0', 
-                    backgroundColor: "#ffffff", 
+                    backgroundColor: "#f9f9f9", 
                     padding: '10px', 
                     borderRadius: '5px',
                     textAlign: 'left',
@@ -141,11 +153,11 @@ const FAQManager = () => {
                     <p style={{ color: "black", wordWrap: "break-word", overflowWrap: "break-word" }}>
                       Answer: {faq.answer}
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                      <Button style={{ color: "black" }} onClick={() => showCRUDModal(faq)}>Edit</Button>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>                    
                       <Button danger style={{ color: "red" }} onClick={() => handleDelete(faq.faqId)}>
                         Delete
                       </Button>
+                      <Button style={{ color: "black" }} onClick={() => showCRUDModal(faq)}>Edit</Button>
                     </div>
                   </div>
                 ))}
@@ -175,6 +187,16 @@ const FAQManager = () => {
                 />
               </Form.Item>
             </Form>
+          </Modal>
+   
+          <Modal
+            title="Confirm Deletion"
+            open={confirmDeleteVisible}
+            onOk={confirmDelete}
+            onCancel={cancelDelete}
+            centered
+          >
+            <p>Are you sure you want to delete this FAQ?</p>
           </Modal>
         </Box>
       </Box>

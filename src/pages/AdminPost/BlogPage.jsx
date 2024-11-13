@@ -46,7 +46,6 @@ export default function BlogPage() {
           <h1 className="blog-card-title">
             {item.name}
           </h1>
-          <div className="blog-card-divider"></div>
           <p className="blog-card-description">
             {item.description}
           </p>  
@@ -59,8 +58,10 @@ export default function BlogPage() {
   if (error) return <p>Error: {error}</p>; // Display error message
 
   return (
+    
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f6f4f3" }}>
       <AppHeader />
+      
       <div className="blog-container" style={{ flex: 1 }}>
         <div className="blog-header">
           <h2>Kinh Nghiệm Hay</h2>
@@ -82,7 +83,6 @@ export default function BlogPage() {
               <img key={index} src={url} alt={`Post ${selectedPost.postId}`} className="modal-image" />
             ))}
             <h2 className="modal-title">{selectedPost.name}</h2>
-            <div className="modal-divider"></div>
             <p className="modal-description">{selectedPost.description}</p>
           </div>
         )}
