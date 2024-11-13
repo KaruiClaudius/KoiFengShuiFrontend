@@ -223,76 +223,6 @@ export default function Homepage() {
       </div>
     ));
   };
-  const renderDecoration = (data) => {
-    return data.map((item) => (
-      <div className="card-container">
-        <div className="property-card">
-          {item.tierName == "Preminum" ? (
-            <div className="featured-badge">
-              <span>Nổi bật</span>
-            </div>
-          ) : (
-            <h1> </h1>
-          )}
-          <Link
-            key={item.homeId}
-            to={`/Decoration/${item.listingId}`}
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-            }}
-          >
-            <img
-              src={item.listingImages?.[0]?.image?.imageUrl}
-              alt={item.title}
-              className="property-image"
-            />
-          </Link>
-          <div className="property-content">
-            <a
-              href={`/Decoration/${item.listingId}`}
-              className="property-title-link"
-            >
-              {/* {item.element && item.element.length > 0 ? ( */}
-              <div className="property-title-wrapper">
-                <h1 className="property-title">
-                  <TruncatedText text={item.title} maxLength={10} />
-                </h1>
-              </div>
-              {/* ) : (
-                <h1 className="property-title">{item.name}</h1>
-              )} */}
-            </a>
-            <div className="property-price-container">
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>{" "}
-              {/* Replace icon as needed */}
-              <span className="property-price-price" style={{ color: "red" }}>
-                {formatCurrency(item.price)}VNĐ
-              </span>
-            </div>
-            <div className="property-user-container">
-              <img
-                src={
-                  item.accountName
-                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                        item.accountName
-                      )}`
-                    : usericon
-                }
-                alt="Banner"
-                className="property-user-icon"
-              />{" "}
-              {/* Replace icon as needed */}
-              <span className="property-user-text">{item.accountName}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ));
-  };
 
   // Function to render the posts
   const renderCardsPost = (data) => {
@@ -351,11 +281,6 @@ export default function Homepage() {
             Cân Bằng Phong Thủy, Koi Vượng Tài Lộc
           </p>
           <div className="search-bar-container">
-            {/* <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              className="search-bar"
-            /> */}
             <button className="search-icon-button">
               <img
                 src={searchIcon}
@@ -425,6 +350,7 @@ export default function Homepage() {
               </button>
             </div>
           ) : null}
+
           <div
             className="render-koi-elemet"
             style={{ display: "flex", alignItems: "center" }}
@@ -454,6 +380,7 @@ export default function Homepage() {
               →
             </button>
           </div>
+
           <div
             className="render-koi-elemet"
             style={{ display: "flex", alignItems: "center" }}
@@ -483,20 +410,33 @@ export default function Homepage() {
               →
             </button>
           </div>
+
           <div
-            class="white-box"
-            style={{ width: "50%", justifyContent: "center", margin: "0 auto" }}
+            className="render-koi-elemet"
+            style={{ display: "flex", alignItems: "center" }}
           >
-            <div className="container-title">
-              <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
-              <a href={`/blog`} className="container-title-link">
-                <h2>Xem thêm {">"}</h2>
-              </a>
+            <button onClick={scrollLeft4} className="arrow-button">
+              ←
+            </button>
+            <div className="white-box">
+              <div className="container-title">
+                <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
+                <a href={`/blog`} className="container-title-link">
+                  <h2>Xem thêm {">"}</h2>
+                </a>
+              </div>
+              <div
+                style={{ display: "flex", overflowX: "hidden" }}
+                ref={scrollContainerRef4}
+                className="scroll-container"
+              >
+                {renderCardsPost(cardDataPost)}
+              </div>
             </div>
+            <button onClick={scrollRight4} className="arrow-button">
+              →
+            </button>
           </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          {renderCardsPost(cardDataPost)}
         </div>
       </div>
 

@@ -1,17 +1,3 @@
-// import AppHeader from "../../components/Header/Header";
-// import FooterComponent from "../../components/Footer/Footer";
-// import { Layout } from "antd";
-// import { Content } from "antd/es/layout/layout";
-
-// export default function KoiListingPage() {
-//   return (
-//     <Layout style={{ minHeight: "100vh" }}>
-//       <AppHeader />
-//       <Content></Content>
-//       <FooterComponent />
-//     </Layout>
-//   );
-// }
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Form,
