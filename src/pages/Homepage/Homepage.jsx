@@ -69,8 +69,6 @@ export default function Homepage() {
         const responseDecoration = await getFengShuiKoiDecorationPost(2);
         const responsePost = await getAllPosts();
 
-   
-
         setCardDataKoi(responseKoi.data); // Store the data
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
@@ -298,21 +296,26 @@ export default function Homepage() {
 
   // Function to render the posts
   const renderCardsPost = (data) => {
-
-    const activePosts = data.filter(post => post.status === "active");
+    const activePosts = data.filter((post) => post.status === "active");
 
     return activePosts.map((item, index) => (
-        <div className="card-container" key={`${item.id}-${index}`} onClick={() => showModal(item)}>
-            <div className="property-card">
-                <img src={item.imageUrls[0]} alt="Card" className="property-image" />
-                <div className="property-content">
-                    <h1 className="property-title">
-                        <TruncatedText text={item.name} maxLength={20} />
-                    </h1>
-                    <span className="property-price-text-black">{item.description}</span>
-                </div>
-            </div>
+      <div
+        className="card-container"
+        key={`${item.id}-${index}`}
+        onClick={() => showModal(item)}
+      >
+        <div className="property-card">
+          <img src={item.imageUrls[0]} alt="Card" className="property-image" />
+          <div className="property-content">
+            <h1 className="property-title">
+              <TruncatedText text={item.name} maxLength={20} />
+            </h1>
+            <span className="property-price-text-black">
+              {item.description}
+            </span>
+          </div>
         </div>
+      </div>
     ));
   };
 
@@ -490,7 +493,6 @@ export default function Homepage() {
                 <h2>Xem thêm {">"}</h2>
               </a>
             </div>
-            <button onClick={scrollRight4} className="arrow-button">→</button>
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "center" }}>
