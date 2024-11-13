@@ -95,7 +95,7 @@ const AppHeader = () => {
   };
 
   const sellingFishClick = () => {
-    navigate("/KoiListings");
+    navigate("/KoiListings?category=1");
   };
   const koiCompatible = () => {
     navigate("/KoiCompatible");

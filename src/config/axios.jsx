@@ -32,10 +32,10 @@ export const getFengShuiConsultation = (data) => {
   return api.post("/api/Consultation/fengshui", data);
 };
 
-export const getFengShuiKoiFishPost = (page = 1, pageSize = 10) => {
+export const getFengShuiKoiFishPost = (categoryId, page = 1, pageSize = 10) => {
   return api
     .get(
-      `/api/MarketplaceListings/GetAllByCategoryType/1?page=${page}&pageSize=${pageSize}`
+      `/api/MarketplaceListings/GetAllByCategoryType/${categoryId}?page=${page}&pageSize=${pageSize}`
     )
     .then((response) => response.data);
 };
@@ -52,7 +52,7 @@ export const getKoiElement = (elementId, page = 1, pageSize = 10) => {
   }
 };
 
-export const getFengShuiKoiDecorationPost = (page = 1, pageSize = 5) => {
+export const getFengShuiKoiDecorationPost = (page = 1, pageSize = 10) => {
   return api
     .get(
       `/api/MarketplaceListings/GetAllByCategoryType/2?page=${page}&pageSize=${pageSize}`

@@ -39,9 +39,16 @@ export default function Homepage() {
   const [elementName, setElementName] = useState("");
   const [elementId, setElementId] = useState("");
   const user = JSON.parse(localStorage.getItem("user"));
-  const sellingFishClick = () => {
-    navigate("/KoiListings");
+
+  const sellingFishClick = (categoryId) => {
+    // navigate("/KoiListings", {
+    //   state: { category: categoryId },
+    // });
+    navigate(`/KoiListings?category=${categoryId}`);
   };
+  // const sellingFishClick = () => {
+  //   navigate("/KoiListings");
+  // };
 
   const fishProductClick = () => {
     navigate("/fishProduct");
@@ -55,34 +62,11 @@ export default function Homepage() {
     navigate("/blog");
   };
 
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) =>
-      Math.min(prevIndex + 1, Math.min(cardDataPost.length - 4, maxPosts - 4))
-    );
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
-  };
-
   React.useEffect(() => {
-    // const updateUserData = (event) => {
-    //   const updatedUser = event.detail;
-    //   const elementName = elementMapping[updatedUser.elementId];
-    //   setElementName(elementName);
-    //   setElementId(updatedUser.elementId);
-    // };
-
-    // // Initial data load
-    // const token = localStorage.getItem("token");
-    // const user = JSON.parse(localStorage.getItem("user"));
-    // if (token && user) {
-    //   updateUserData({ detail: user });
-    // }
     const fetchData = async () => {
       try {
-        const responseKoi = await getFengShuiKoiFishPost(); // Adjust endpoint
-        const responseDecoration = await getFengShuiKoiDecorationPost();
+        const responseKoi = await getFengShuiKoiFishPost(1); // Adjust endpoint
+        const responseDecoration = await getFengShuiKoiDecorationPost(2);
         const responsePost = await getAllPosts();
 
    
@@ -109,17 +93,8 @@ export default function Homepage() {
       }
     };
 
-    //window.addEventListener("userProfileUpdated", updateUserData);
-
     // Fetch data from API when the component mounts
     fetchData();
-    // if (elementId != null) {
-    //   fetchDataElement(elementId);
-    // }
-    // Cleanup function to remove event listener
-    // return () => {
-    //   window.removeEventListener("userProfileUpdated", updateUserData);
-    // };
   }, []);
 
   // Add event listener
@@ -134,16 +109,13 @@ export default function Homepage() {
 
     if (numValue < 1e6) {
       // Less than a million
-      return numValue.toLocaleString("vi-VN");
-    } else if (numValue >= 1e6 && numValue < 1e9) {
-      // Millions
-      return formatLargeNumber(numValue, 1e6, "triệu");
+      return addThousandSeparators(numValue);
     } else if (numValue >= 1e9) {
       // Billions
       return formatLargeNumber(numValue, 1e9, "tỷ");
     } else {
       // Default case (shouldn't normally be reached)
-      return numValue.toLocaleString("vi-VN");
+      return addThousandSeparators(numValue);
     }
   }
 
@@ -151,13 +123,16 @@ export default function Homepage() {
     const wholePart = Math.floor(value / unitValue);
     const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
 
-    let result = wholePart.toLocaleString("vi-VN") + " " + unitName;
+    let result = addThousandSeparators(wholePart) + " " + unitName;
     if (fractionalPart > 0) {
-      result += " " + fractionalPart.toLocaleString("vi-VN");
+      result += " " + addThousandSeparators(fractionalPart);
     }
     return result;
   }
 
+  function addThousandSeparators(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
   // Function to scroll left by a specific amount
   const scrollLeft = (containerRef) => {
     if (containerRef.current) {
@@ -191,14 +166,14 @@ export default function Homepage() {
     return data.map((item) => (
       <div className="card-container" key={item.listingId}>
         <div className="property-card">
-          {item.tierName === "Preminum" && (
+          {item.tierName === "Tin Nổi Bật" && (
             <div className="featured-badge">
               <span>Nổi bật</span>
             </div>
           )}
 
           <Link
-            to={`/KoiDetails/${item.listingId}`}
+            to={`/Details/${item.listingId}`}
             style={{ justifyContent: "center" }}
           >
             <img
@@ -212,11 +187,11 @@ export default function Homepage() {
             <div className="property-title-wrapper">
               <h1 className="property-title">
                 <a
-                  href={`/KoiDetails/${item.listingId}`}
+                  href={`/Details/${item.listingId}`}
                   className="property-title-link"
                 >
-                  [{item.elementName}]{" "}
-                  <TruncatedText text={item.title} maxLength={20} />{" "}
+                  {item.elementName != "Non element" && `[${item.elementName}]`}{" "}
+                  <TruncatedText text={item.title} maxLength={10} />{" "}
                 </a>
               </h1>
             </div>
@@ -227,7 +202,7 @@ export default function Homepage() {
                 className="property-price-price"
                 style={{ color: "red", marginLeft: "4px" }}
               >
-                {formatCurrency(item.price)}VNĐ
+                {formatCurrency(item.price)} đ
               </span>
             </div>
 
@@ -250,7 +225,6 @@ export default function Homepage() {
       </div>
     ));
   };
-
   const renderDecoration = (data) => {
     return data.map((item) => (
       <div className="card-container">
@@ -389,10 +363,16 @@ export default function Homepage() {
             </button>
           </div>
           <div className="button-group">
-            <button className="custom-button" onClick={sellingFishClick}>
+            <button
+              className="custom-button"
+              onClick={() => sellingFishClick(1)}
+            >
               Bán Cá Koi
             </button>
-            <button className="custom-button" onClick={fishProductClick}>
+            <button
+              className="custom-button"
+              onClick={() => sellingFishClick(2)}
+            >
               Phụ Kiện Hồ Cá
             </button>
             <button className="custom-button" onClick={blogClick}>
@@ -416,7 +396,10 @@ export default function Homepage() {
                   <h2 className="container-title-title">
                     Cá Koi Theo Bản Mệnh
                   </h2>
-                  <a href={`/fishProduct`} className="container-title-link">
+                  <a
+                    href={`/KoiListings?category=1&element=${user.elementId}`}
+                    className="container-title-link"
+                  >
                     <h2>Xem thêm {">"}</h2>
                   </a>
                 </div>
@@ -449,7 +432,10 @@ export default function Homepage() {
             <div class="white-box">
               <div className="container-title">
                 <h2 className="container-title-title">Bán Cá Koi</h2>
-                <a href={`/fishProduct`} className="container-title-link">
+                <a
+                  href={`/KoiListings?category=1`}
+                  className="container-title-link"
+                >
                   <h2>Xem thêm {">"}</h2>
                 </a>
               </div>
@@ -474,8 +460,11 @@ export default function Homepage() {
             </button>
             <div class="white-box">
               <div className="container-title">
-                <h2 className="container-title-title">Phụ kiện hồ cá</h2>
-                <a href={`/fishProduct`} className="container-title-link">
+                <h2 className="container-title-title">Trang trí hồ cá</h2>
+                <a
+                  href={`/KoiListings?category=2`}
+                  className="container-title-link"
+                >
                   <h2>Xem thêm {">"}</h2>
                 </a>
               </div>
@@ -484,31 +473,28 @@ export default function Homepage() {
                 ref={scrollContainerRef3}
                 className="scroll-container"
               >
-                {renderDecoration(cardDataDecoration)}
+                {renderKoi(cardDataDecoration)}
               </div>
             </div>
             <button onClick={scrollRight3} className="arrow-button">
               →
             </button>
           </div>
-          <div className="render-koi-elemet" style={{ display: "flex", alignItems: "center" }}>
-            <button onClick={scrollLeft4} className="arrow-button">←</button>
-            <div className="white-box">
-              <div className="container-title">
-                <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
-                <a href={`/blog`} className="container-title-link">
-                  <h2>Xem thêm {">"}</h2>
-                </a>
-              </div>
-              <div style={{ display: "flex", overflowX: "hidden" }}
-               ref={scrollContainerRef4} 
-               className="scroll-container">
-                
-                {renderCardsPost(cardDataPost)}
-              </div>
+          <div
+            class="white-box"
+            style={{ width: "50%", justifyContent: "center", margin: "0 auto" }}
+          >
+            <div className="container-title">
+              <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
+              <a href={`/blog`} className="container-title-link">
+                <h2>Xem thêm {">"}</h2>
+              </a>
             </div>
             <button onClick={scrollRight4} className="arrow-button">→</button>
           </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          {renderCardsPost(cardDataPost)}
         </div>
       </div>
 

@@ -4,6 +4,48 @@ import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import usericon from "../../assets/icons/userIcon.png";
 const { Title, Text } = Typography;
+function formatCurrency(value) {
+  // Ensure value is a number
+  const numValue = Number(value);
+
+  if (isNaN(numValue)) {
+    return "Invalid input";
+  }
+
+  if (numValue < 1e6) {
+    // Less than a million
+    return addThousandSeparators(numValue);
+  } else if (numValue >= 1e9) {
+    // Billions
+    return formatLargeNumber(numValue, 1e9, "tỷ");
+  } else {
+    // Default case (shouldn't normally be reached)
+    return addThousandSeparators(numValue);
+  }
+}
+
+function formatLargeNumber(value, unitValue, unitName) {
+  const wholePart = Math.floor(value / unitValue);
+  const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
+
+  let result = addThousandSeparators(wholePart) + " " + unitName;
+  if (fractionalPart > 0) {
+    result += " " + addThousandSeparators(fractionalPart);
+  }
+  return result;
+}
+function addThousandSeparators(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+// Function to scroll left by a specific amount
+const scrollLeft = (containerRef) => {
+  if (containerRef.current) {
+    containerRef.current.scrollBy({
+      left: -300, // Adjust the scroll distance as needed
+      behavior: "smooth", // Smooth scroll
+    });
+  }
+};
 
 const PropertyPreview = ({ propertyDetails, onBack }) => {
   return (
@@ -18,9 +60,17 @@ const PropertyPreview = ({ propertyDetails, onBack }) => {
       <div style={{ padding: "70px 100px 0 100px", overflow: "auto" }}>
         <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
           <Col xs={24} lg={14}>
-            <Title level={2}>
-              [{propertyDetails.elementName}] {propertyDetails.name}
-            </Title>
+            <Typography
+              style={{
+                fontWeight: "bold",
+                fontSize: "30px",
+                marginBottom: "20px",
+              }}
+            >
+              {propertyDetails.elementName != "Non element" &&
+                `[${propertyDetails.elementName}]`}{" "}
+              {propertyDetails.name}
+            </Typography>
             <ImageGallery images={propertyDetails.homeImages} />
           </Col>
           <Col xs={24} lg={10}>
@@ -61,7 +111,7 @@ const PropertyPreview = ({ propertyDetails, onBack }) => {
                 <Col span={24}>
                   <Descriptions bordered column={1}>
                     <Descriptions.Item label="Giá tiền">
-                      {propertyDetails.price} VNĐ
+                      {formatCurrency(propertyDetails.price)} đ
                     </Descriptions.Item>
                     <Descriptions.Item label="Số lượng">
                       {propertyDetails.quantity}
@@ -89,7 +139,13 @@ const PropertyPreview = ({ propertyDetails, onBack }) => {
               }}
             >
               <Title level={3}>Mô tả</Title>
-              <Text>{propertyDetails.description}</Text>
+              <Text>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: propertyDetails.description,
+                  }}
+                ></div>
+              </Text>
             </Card>
           </Col>
         </Row>
