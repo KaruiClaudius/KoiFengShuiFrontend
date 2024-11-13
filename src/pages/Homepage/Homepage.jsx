@@ -16,7 +16,6 @@ import TruncatedText from "../../utils/TruncatedText";
 import {
   getFengShuiKoiFishPost,
   getFengShuiKoiDecorationPost,
-  getFengShuiKoiPost,
   getKoiElement,
 } from "../../config/axios";
 import FAQDisplay from "../FAQ/FAQDisplay";
@@ -30,7 +29,6 @@ export default function Homepage() {
   const [loading, setLoading] = React.useState(true); // Handle loading state
   const [error, setError] = React.useState(null); // Handle errors
   const [currentIndex, setCurrentIndex] = useState(0); // Carousel index
-  const maxPosts = 7; // Maximum number of blog can  display on Kinh Nghiệm Hay
   const [isModalVisible, setIsModalVisible] = useState(false); // Manages the modal's visibility state; starts as false (hidden)
   const [selectedPost, setSelectedPost] = useState(null); // Stores the currently selected post; initially set to null (no post selected)
 
@@ -70,6 +68,9 @@ export default function Homepage() {
         const responseKoi = await getFengShuiKoiFishPost(1); // Adjust endpoint
         const responseDecoration = await getFengShuiKoiDecorationPost(2);
         const responsePost = await getAllPosts();
+
+   
+
         setCardDataKoi(responseKoi.data); // Store the data
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
@@ -158,6 +159,8 @@ export default function Homepage() {
   const scrollRight2 = () => scrollRight(scrollContainerRef2);
   const scrollLeft3 = () => scrollLeft(scrollContainerRef3);
   const scrollRight3 = () => scrollRight(scrollContainerRef3);
+  const scrollLeft4 = () => scrollLeft(scrollContainerRef4);
+  const scrollRight4 = () => scrollRight(scrollContainerRef4);
 
   const renderKoi = (data) => {
     return data.map((item) => (
@@ -222,29 +225,97 @@ export default function Homepage() {
       </div>
     ));
   };
-  const renderCardsPost = (data) => {
-    const visiblePosts = data.slice(currentIndex, currentIndex + 3); // Extracts a subset of 4 posts
-    return visiblePosts.map((item, index) => (
-      <div
-        className="card-container"
-        key={`${item.id}-${index}`}
-        onClick={() => showModal(item)}
-      >
+  const renderDecoration = (data) => {
+    return data.map((item) => (
+      <div className="card-container">
         <div className="property-card">
-          <img src={item.imageUrls} alt="Card" className="property-image" />
+          {item.tierName == "Preminum" ? (
+            <div className="featured-badge">
+              <span>Nổi bật</span>
+            </div>
+          ) : (
+            <h1> </h1>
+          )}
+          <Link
+            key={item.homeId}
+            to={`/Decoration/${item.listingId}`}
+            style={{
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+            }}
+          >
+            <img
+              src={item.listingImages?.[0]?.image?.imageUrl}
+              alt={item.title}
+              className="property-image"
+            />
+          </Link>
           <div className="property-content">
-            <a href={`/property`} className="property-title-link"></a>
+            <a
+              href={`/Decoration/${item.listingId}`}
+              className="property-title-link"
+            >
+              {/* {item.element && item.element.length > 0 ? ( */}
+              <div className="property-title-wrapper">
+                <h1 className="property-title">
+                  <TruncatedText text={item.title} maxLength={10} />
+                </h1>
+              </div>
+              {/* ) : (
+                <h1 className="property-title">{item.name}</h1>
+              )} */}
+            </a>
             <div className="property-price-container">
-              <span className="property-price-text-red">{item.name}</span>
-              <span className="property-price-text-black">
-                {item.description}
+              <h2 className="property-price-text" style={{ marginRight: 5 }}>
+                Giá tiền:
+              </h2>{" "}
+              {/* Replace icon as needed */}
+              <span className="property-price-price" style={{ color: "red" }}>
+                {formatCurrency(item.price)}VNĐ
               </span>
+            </div>
+            <div className="property-user-container">
+              <img
+                src={
+                  item.accountName
+                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                        item.accountName
+                      )}`
+                    : usericon
+                }
+                alt="Banner"
+                className="property-user-icon"
+              />{" "}
+              {/* Replace icon as needed */}
+              <span className="property-user-text">{item.accountName}</span>
             </div>
           </div>
         </div>
       </div>
     ));
   };
+
+  // Function to render the posts
+  const renderCardsPost = (data) => {
+
+    const activePosts = data.filter(post => post.status === "active");
+
+    return activePosts.map((item, index) => (
+        <div className="card-container" key={`${item.id}-${index}`} onClick={() => showModal(item)}>
+            <div className="property-card">
+                <img src={item.imageUrls[0]} alt="Card" className="property-image" />
+                <div className="property-content">
+                    <h1 className="property-title">
+                        <TruncatedText text={item.name} maxLength={20} />
+                    </h1>
+                    <span className="property-price-text-black">{item.description}</span>
+                </div>
+            </div>
+        </div>
+    ));
+  };
+
   const showModal = (post) => {
     setSelectedPost(post);
     setIsModalVisible(true);
@@ -419,7 +490,7 @@ export default function Homepage() {
                 <h2>Xem thêm {">"}</h2>
               </a>
             </div>
-            <div style={{ display: "flex" }}></div>
+            <button onClick={scrollRight4} className="arrow-button">→</button>
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "center" }}>

@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 // material-ui
-import Link from "@mui/material/Link";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -12,7 +11,9 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import Pagination from "@mui/material/Pagination";
+import dayjs from "dayjs";
+import DateRangePicker from "../../components/DateRangePicker";
 // project import
 import Dot from "../../components/@extended/Dot";
 
@@ -124,22 +125,51 @@ export default function OrderTable() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize] = useState(100);
+  // Add state for date range
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
+
+  const fetchListings = async (currentPage, startDate, endDate) => {
+    try {
+      setLoading(true);
+      const response = await getTransactionListing({
+        page: currentPage,
+        pageSize,
+        startDate,
+        endDate,
+      });
+      setListings(response.data.transactions);
+      setTotalCount(response.data.totalCount);
+    } catch (err) {
+      setError("Failed to fetch transactions");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDateRangeChange = (startDate, endDate) => {
+    setDateRange({ startDate, endDate }); // Store the selected dates
+    setPage(1); // Reset to first page when date range changes
+    fetchListings(1, startDate, endDate);
+  };
+
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+    fetchListings(newPage, dateRange.startDate, dateRange.endDate); // Use stored date range
+  };
 
   useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        setLoading(true);
-        const response = await getTransactionListing();
-        setListings(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch market listings");
-        setLoading(false);
-      }
-    };
+    fetchListings(page, dateRange.startDate, dateRange.endDate);
+  }, []); // Only run on mount
 
-    fetchListings();
-  }, []);
+  const formatDate = (dateString) => {
+    return dayjs(dateString).format("DD/MM/YYYY HH:mm");
+  };
 
   if (loading) {
     return (
@@ -168,7 +198,19 @@ export default function OrderTable() {
   }
 
   return (
-    <Box>
+    <Box sx={{ p: 3 }}>
+      {" "}
+      {/* Add padding around the entire container */}
+      {/* Date Range Picker Section */}
+      <Box sx={{ mb: 4 }}>
+        {" "}
+        {/* Add margin bottom to separate from table */}
+        <DateRangePicker
+          onDateRangeChange={handleDateRangeChange}
+          initialStartDate={dateRange.startDate}
+          initialEndDate={dateRange.endDate}
+        />
+      </Box>
       <TableContainer
         sx={{
           width: "100%",
@@ -204,6 +246,14 @@ export default function OrderTable() {
           </TableBody>
         </Table>
       </TableContainer>
+      <Box display="flex" justifyContent="center" mt={2}>
+        <Pagination
+          count={Math.ceil(totalCount / pageSize)}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
     </Box>
   );
 }

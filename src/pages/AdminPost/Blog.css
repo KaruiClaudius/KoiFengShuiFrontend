@@ -36,14 +36,31 @@
     border-radius: 10px;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    width: calc(25% - 20px);
+    width: calc(40% - 15px);
     transition: transform 0.3s, box-shadow 0.3s;
     cursor: pointer;
+    position: relative;
   }
   
   .blog-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  }
+  
+  .blog-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .blog-card:hover::before {
+    opacity: 1;
   }
   
   .blog-card-image {
@@ -62,7 +79,7 @@
   }
   
   .blog-card-title {
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: #333;
     margin-bottom: 15px;
@@ -74,7 +91,7 @@
   }
   
   .blog-card-description {
-    font-size: 0.5rem;
+    font-size: 1rem;
     color: #666;
     line-height: 1.6;
     margin-bottom: 15px;
@@ -159,6 +176,8 @@
       width: 100%;
     }
   }
+
+  
   /* Admin Post css */
   .admin-post-container {
     display: flex;
@@ -174,29 +193,39 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-right: 500px;
-    max-width: 800px;
+    max-width: 100%;
     padding-top: 70px;
   }
   
   .admin-post-header {
     color: white;
-  }
+    margin-bottom:0.1px;
+    padding-right: 100px;
+  } 
   
   .admin-post-select {
-    display: flex;
-    justify-content: center;
+   
     margin-bottom: 20px;
+    padding-right: 400px;
   }
   
   .admin-post-item {
-    margin: 10px 0;
-    background-color: #ffffff;
-    padding: 10px;
+    background-color: #f9f9f9;
+    padding: 15px;
     border-radius: 5px;
     text-align: left;
     display: flex;
     flex-direction: column;
+    width: calc(33.33% - 20px);
+    margin: 10px;
+    box-sizing: border-box;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+  
+  .admin-post-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
   }
   
   .admin-post-image {
@@ -218,6 +247,20 @@
     margin-top: 10px;
   }
   
+  .admin-post-left {
+    flex: 2;
+    padding-right: 10px;
+  }
+  
+  .admin-post-right {
+    flex: 1;
+    flex-basis: 33.33%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
   .admin-post-name {
     color: black;
     word-break: break-word;
@@ -230,6 +273,7 @@
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: normal;
+    margin-bottom: 30px;
   }
   
   .admin-post-status {
@@ -250,3 +294,76 @@
     color: red;
   }
   
+  .admin-post-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  
+  .admin-post-wrapper {
+    position: relative;
+    background-color: #e0f7fa;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    width: 100%;
+    min-width: 1704.53px;
+    min-height: 840.4px;
+  }
+  
+  .add-post-button {
+    position: absolute;
+    top: 4px;
+    right: 10px;
+    z-index: 1;
+  }
+  
+  .admin-post-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  
+  .admin-post-item {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    width: calc(33.33% - 20px);
+    margin: 10px;
+    box-sizing: border-box;
+  }
+  
+  .dashboard-sidebar {
+    width: 100px;
+  }
+  
+  .search-input {
+    position: absolute;
+    top: 3px;
+    left: 5px;
+    width: 200px;
+    z-index: 1;
+    padding: 8px;
+  }
+  
+  .search-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .search-input {
+    width: 200px;
+  }
+  .admin-post-select {
+    position: absolute;
+    top: 3px;
+    right: 890px;
+   
+     
+  }

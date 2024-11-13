@@ -24,13 +24,17 @@ export default function GoogleLoginButton() {
       // Store the token
       localStorage.setItem("token", res.data.token);
 
-      // Store user info
-      const userInfo = {
-        id: res.data.id,
-        fullName: res.data.fullName,
-        email: res.data.email,
-      };
-      localStorage.setItem("user", JSON.stringify(userInfo));
+      // Fetch user details
+      const userDetailsResponse = await api.get(
+        `api/Account/email/${res.data.email}`,
+        {
+          headers: { Authorization: `Bearer ${res.data.token}` },
+        }
+      );
+      const userDetails = userDetailsResponse.data;
+
+      // Store user details in localStorage
+      localStorage.setItem("user", JSON.stringify(userDetails));
       localStorage.setItem("email", res.data.email); // Store email separately for consistency
 
       // Set the token in the default Authorization header for future requests

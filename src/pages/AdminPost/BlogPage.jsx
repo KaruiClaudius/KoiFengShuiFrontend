@@ -6,16 +6,16 @@ import { getAllPosts } from "../../config/axios";
 import './Blog.css';
 
 export default function BlogPage() {
-  const [blogPosts, setBlogPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedPost, setSelectedPost] = useState(null);
+  const [blogPosts, setBlogPosts] = useState([]); // Stores list of blog posts
+  const [loading, setLoading] = useState(true); // Indicates loading state
+  const [error, setError] = useState(null); // Stores error messages
+  const [selectedPost, setSelectedPost] = useState(null); // Stores the selected post for modal
 
   useEffect(() => {
     const fetchBlogPosts = async () => {
       try {
         const response = await getAllPosts();
-        const filteredPosts = response.data.filter(post => post.id === 3 && post.status === "active");
+        const filteredPosts = response.data.filter(post => post.id === 3 && post.status === "active"); // Filter posts by id and status
         setBlogPosts(filteredPosts);
       } catch (error) {
         setError(error.message);
@@ -26,11 +26,11 @@ export default function BlogPage() {
     fetchBlogPosts();
   }, []);
 
-  const openModal = (post) => {
+  const openModal = (post) => { // Opens modal when a post is clicked
     setSelectedPost(post);
   };
 
-  const closeModal = () => {
+  const closeModal = () => { // Closes modal
     setSelectedPost(null);
   };
 
@@ -46,8 +46,7 @@ export default function BlogPage() {
           <h1 className="blog-card-title">
             {item.name}
           </h1>
-          <div className="blog-card-divider"></div>
-          <p  style={{ color: 'black', fontSize: '0.8em' }}>
+          <p className="blog-card-description">
             {item.description}
           </p>  
         </div>
@@ -55,12 +54,14 @@ export default function BlogPage() {
     ));
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (loading) return <p>Loading...</p>; // Display loading message
+  if (error) return <p>Error: {error}</p>; // Display error message
 
   return (
+    
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f6f4f3" }}>
       <AppHeader />
+      
       <div className="blog-container" style={{ flex: 1 }}>
         <div className="blog-header">
           <h2>Kinh Nghiệm Hay</h2>
@@ -82,7 +83,6 @@ export default function BlogPage() {
               <img key={index} src={url} alt={`Post ${selectedPost.postId}`} className="modal-image" />
             ))}
             <h2 className="modal-title">{selectedPost.name}</h2>
-            <div className="modal-divider"></div>
             <p className="modal-description">{selectedPost.description}</p>
           </div>
         )}
