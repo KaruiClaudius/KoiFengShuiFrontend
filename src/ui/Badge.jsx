@@ -1,4 +1,3 @@
-import React from "react";
 import { ElementDot } from "../assets/motifs/Motifs";
 
 const elementColors = {

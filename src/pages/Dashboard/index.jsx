@@ -1,233 +1,183 @@
-import React, { useState, useEffect } from "react";
-// material-ui
-import Avatar from "@mui/material/Avatar";
-import Grid from "@mui/material/Grid";
-import List from "@mui/material/List";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import { Pagination } from "@mui/material";
-
-// project import
-import MainCard from "../../components/MainCard";
-import AnalyticEcommerce from "../../components/cards/statistics/AnalyticEcommerce";
-import MonthlyBarChart from "./MonthlyBarChart";
-import UniqueVisitorCard from "./UniqueVisitorCard";
+import { useEffect, useState } from "react";
+import { Button, Card, EmptyState } from "../../ui";
+import { LotusMark } from "../../assets/motifs/Motifs";
 import {
+  getNewMarketListingsCount,
   getNewUsersCount,
   getNewUsersList,
-  getNewMarketListingsCount,
-} from "../../config/axios";
-import DashboardSidebar from "../../components/Sidebar/Sidebar";
-import AppHeader from "../../components/Header/Header";
-import FooterComponent from "../../components/Footer/Footer";
+} from "../../api/dashboard";
+import MonthlyBarChart from "./MonthlyBarChart";
+import UniqueVisitorCard from "./UniqueVisitorCard";
 
-// assets
+const ITEMS_PER_PAGE = 3;
 
-// avatar style
-const avatarSX = {
-  width: 36,
-  height: 36,
-  fontSize: "1rem",
-};
-
-// action style
-const actionSX = {
-  mt: 0.75,
-  ml: 1,
-  top: "auto",
-  right: "auto",
-  alignSelf: "flex-start",
-  transform: "none",
-};
-
-// ==============================|| DASHBOARD - DEFAULT ||============================== //
+const formatDate = (value) =>
+  new Date(value).toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 export default function DashboardDefault() {
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newUsersList, setNewUsersList] = useState([]);
   const [newMarketListingsCount, setNewMarketListingsCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const itemsPerPage = 3;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(newUsersList.length / ITEMS_PER_PAGE)
+  );
 
   useEffect(() => {
+    let cancelled = false;
     const fetchDashboardData = async () => {
       try {
         const countResponse = await getNewUsersCount();
+        if (cancelled) return;
         setNewUsersCount(countResponse.data.count);
 
         const usersResponse = await getNewUsersList();
+        if (cancelled) return;
         setNewUsersList(usersResponse.data);
 
         const marketListingsCountResponse = await getNewMarketListingsCount();
+        if (cancelled) return;
         setNewMarketListingsCount(marketListingsCountResponse.data.count);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
     };
-    setTotalPages(Math.ceil(newUsersList.length / itemsPerPage));
+
     fetchDashboardData();
-  }, [newUsersList]);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const handleChangePage = (event, newPage) => {
-    setCurrentPage(newPage);
-  };
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const visibleUsers = newUsersList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        backgroundColor: "#14335c",
-      }}
-    >
-      <AppHeader />
-      <Box sx={{ display: "flex", flexGrow: 1, overflow: "hidden" }}>
-        <DashboardSidebar />
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <Grid container rowSpacing={4.5} columnSpacing={2.75}>
-            {/* row 1 */}
+    <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header>
+        <h1 className="font-display text-3xl font-bold text-ink md:text-4xl">
+          Dashboard
+        </h1>
+        <p className="mt-1 text-muted">Tổng quan hoạt động của hệ thống</p>
+      </header>
 
-            <Grid item xs={12} sx={{ mb: -2.25 }}>
-              <Typography variant="h5" color="white">
-                Dashboard
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="Người dùng mới"
-                count={newUsersCount.toString()}
-                color="warning"
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <Card className="p-5">
+          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+            Người dùng mới
+          </p>
+          <p className="mt-2 font-display text-4xl font-bold text-ink">
+            {newUsersCount.toLocaleString("vi-VN")}
+          </p>
+        </Card>
+        <Card className="p-5">
+          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+            Bài đăng mới
+          </p>
+          <p className="mt-2 font-display text-4xl font-bold text-ink">
+            {newMarketListingsCount.toLocaleString("vi-VN")}
+          </p>
+        </Card>
+        <Card className="flex items-center gap-4 p-5">
+          <LotusMark size={36} className="shrink-0 text-jade" />
+          <div>
+            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
+              Sức khỏe hệ thống
+              <span
+                className="inline-block h-2 w-2 rounded-full bg-jade"
+                aria-hidden="true"
               />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="Bài đăng mới"
-                count={newMarketListingsCount.toString()}
-                color="warning"
-              />
-            </Grid>
+            </p>
+            <p className="mt-1 font-display text-lg font-bold text-jade">
+              Hoạt động bình thường
+            </p>
+          </div>
+        </Card>
+      </div>
 
-            <Grid
-              item
-              md={8}
-              sx={{ display: { sm: "none", md: "block", lg: "none" } }}
-            />
+      <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Card className="p-5">
+          <h2 className="font-display text-xl font-bold text-ink">
+            Lượng truy cập
+          </h2>
+          <p className="text-sm text-muted">Thống kê tuần này</p>
+          <div className="mt-4">
+            <MonthlyBarChart />
+          </div>
+        </Card>
+        <UniqueVisitorCard />
+      </div>
 
-            {/* row 2 */}
-            {/* Total posts */}
-            <Grid item xs={12} md={7} lg={8}>
-              <UniqueVisitorCard />
-            </Grid>
-
-            <Grid item xs={12} md={5} lg={4}>
-              <Grid
-                container
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Grid item>
-                  <Typography variant="h5" color="white">
-                    Lượng truy cập
-                  </Typography>
-                </Grid>
-                <Grid item />
-              </Grid>
-              <MainCard sx={{ mt: 2 }} content={false}>
-                <Box sx={{ p: 3, pb: 0 }}>
-                  <Stack spacing={2}>
-                    <Typography variant="h6" color="text.secondary">
-                      Thống kê tuần này
-                    </Typography>
-                  </Stack>
-                </Box>
-                <MonthlyBarChart />
-              </MainCard>
-            </Grid>
-
-            {/* List new user */}
-            <Grid item xs={12}>
-              <Grid item>
-                <Typography variant="h5" color="white">
-                  Người đăng kí mới
-                </Typography>
-              </Grid>
-              <Grid item />
-              <MainCard sx={{ mt: 2 }} content={false}>
-                <List
-                  component="nav"
-                  sx={{
-                    px: 0,
-                    py: 0,
-                    "& .MuiListItemButton-root": {
-                      py: 1.5,
-                      "& .MuiAvatar-root": avatarSX,
-                      "& .MuiListItemSecondaryAction-root": {
-                        ...actionSX,
-                        position: "relative",
-                      },
-                    },
-                  }}
-                >
-                  {newUsersList
-                    .slice(startIndex, endIndex)
-                    .map((user, index) => (
-                      <ListItemButton
-                        key={user.accountId}
-                        divider={index < itemsPerPage - 1}
-                      >
-                        <ListItemAvatar>
-                          <Avatar
-                            src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                              user.fullName
-                            )}`}
-                            alt={user.fullName}
-                            sx={avatarSX}
-                          />
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={
-                            <Typography variant="subtitle1">
-                              {user.fullName}
-                            </Typography>
-                          }
-                          secondary={new Date(user.createAt).toLocaleString()}
-                        />
-                      </ListItemButton>
-                    ))}
-                </List>
-                <Pagination
-                  count={totalPages}
-                  page={currentPage}
-                  onChange={handleChangePage}
-                  color="primary"
-                  size="small"
-                  sx={{ mt: 2 }}
+      <Card className="mt-8 p-5">
+        <h2 className="font-display text-xl font-bold text-ink">
+          Người đăng kí mới
+        </h2>
+        {visibleUsers.length === 0 ? (
+          <EmptyState
+            className="mt-4"
+            title="Chưa có người dùng mới"
+            description="Danh sách sẽ được cập nhật khi có người đăng ký."
+          />
+        ) : (
+          <ul className="mt-2 divide-y divide-gold/20">
+            {visibleUsers.map((user) => (
+              <li key={user.accountId} className="flex items-center gap-3 py-3">
+                <img
+                  src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+                    user.fullName
+                  )}`}
+                  alt={user.fullName}
+                  loading="lazy"
+                  className="h-9 w-9 shrink-0 rounded-full border border-gold/40 bg-paper-2 object-cover"
                 />
-              </MainCard>
-            </Grid>
-          </Grid>
-        </Box>
-      </Box>
-      <FooterComponent />
-    </Box>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-ink">
+                    {user.fullName}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {formatDate(user.createAt)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="mt-4 flex items-center justify-between border-t border-gold/20 pt-4">
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="Trang trước"
+            disabled={currentPage <= 1}
+            onClick={() =>
+              setCurrentPage((page) => Math.max(1, page - 1))
+            }
+          >
+            Trang trước
+          </Button>
+          <span className="text-sm text-muted">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="Trang sau"
+            disabled={currentPage >= totalPages}
+            onClick={() =>
+              setCurrentPage((page) => Math.min(totalPages, page + 1))
+            }
+          >
+            Trang sau
+          </Button>
+        </div>
+      </Card>
+    </section>
   );
 }

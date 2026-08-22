@@ -1,4 +1,3 @@
-import React from "react";
 import * as MenuPrimitive from "@radix-ui/react-dropdown-menu";
 
 export const Menu = MenuPrimitive.Root;

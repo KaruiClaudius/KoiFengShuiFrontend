@@ -1,4 +1,3 @@
-import React from "react";
 import DragonGate from "../assets/motifs/Motifs";
 
 const EmptyState = ({

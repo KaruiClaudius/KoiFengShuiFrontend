@@ -1,4 +1,3 @@
-import React from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import AppHeader from "../components/Header/Header";
 import { PATHS } from "../routes/paths";

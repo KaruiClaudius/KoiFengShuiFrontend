@@ -1,106 +1,123 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
-import { useTheme } from "@mui/material/styles";
-import ReactApexChart from "react-apexcharts";
-import { getNewMarketListingsByCategory } from "../../config/axios";
+import { useEffect, useId, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Skeleton } from "../../ui";
+import { getNewMarketListingsByCategory } from "../../api/dashboard";
 
-const areaChartOptions = {
-  chart: {
-    height: 450,
-    type: "area",
-    toolbar: {
-      show: false,
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  stroke: {
-    curve: "smooth",
-    width: 2,
-  },
-  grid: {
-    strokeDashArray: 0,
-  },
+function CategoryTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="rounded-md border border-gold/40 bg-surface px-3 py-2 shadow-plaque">
+      <p className="font-display text-sm font-bold text-ink">{label}</p>
+      <p className="text-sm text-ink-soft">
+        {Number(payload[0].value).toLocaleString("vi-VN")} bài đăng
+      </p>
+    </div>
+  );
+}
+
+CategoryTooltip.propTypes = {
+  active: PropTypes.bool,
+  payload: PropTypes.arrayOf(PropTypes.object),
+  label: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default function IncomeAreaChart({ slot }) {
-  const theme = useTheme();
-  const { secondary } = theme.palette.text;
-  const line = theme.palette.divider;
-
-  const [options, setOptions] = useState(areaChartOptions);
-  const [series, setSeries] = useState([]);
+  const gradientId = `area-gradient-${useId().replace(/:/g, "")}`;
+  const days = slot === "month" ? 30 : 7;
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchCategoryData = async () => {
       setLoading(true);
       try {
-        const days = slot === "month" ? 30 : 7;
         const response = await getNewMarketListingsByCategory(days);
         const categoryData = response.data;
-
-        // Process data for chart
-        const categories = categoryData.map((item) => item.categoryName);
-        const seriesData = [
-          {
-            name: "Số lượng bài đăng",
-            data: categoryData.map((item) => item.count),
-          },
-        ];
-
-        setOptions((prevState) => ({
-          ...prevState,
-          colors: [theme.palette.primary.main],
-          xaxis: {
-            categories: categories,
-            labels: {
-              style: {
-                colors: Array(categories.length).fill(secondary),
-              },
-            },
-            axisBorder: {
-              show: true,
-              color: line,
-            },
-            tickAmount: categories.length,
-          },
-          yaxis: {
-            labels: {
-              style: {
-                colors: [secondary],
-              },
-            },
-          },
-          grid: {
-            borderColor: line,
-          },
-        }));
-
-        setSeries(seriesData);
+        if (cancelled) return;
+        setData(
+          categoryData.map((item) => ({
+            name: item.categoryName,
+            count: item.count,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching category data:", error);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchCategoryData();
-  }, [slot, theme, secondary, line]);
+    return () => {
+      cancelled = true;
+    };
+  }, [days]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Skeleton className="h-[320px] w-full" />;
   }
 
   return (
-    <ReactApexChart
-      options={options}
-      series={series}
-      type="area"
-      height={450}
-    />
+    <ResponsiveContainer width="100%" height={320}>
+      <AreaChart
+        data={data}
+        margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
+      >
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="0%"
+              stopColor="var(--element-thuy)"
+              stopOpacity={0.35}
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--element-thuy)"
+              stopOpacity={0}
+            />
+          </linearGradient>
+        </defs>
+        <CartesianGrid stroke="#e7dcc3" vertical={false} />
+        <XAxis
+          dataKey="name"
+          tick={{ fill: "var(--color-muted)", fontSize: 12 }}
+          axisLine={{ stroke: "#e7dcc3" }}
+          tickLine={false}
+          interval={0}
+          tickMargin={8}
+        />
+        <YAxis
+          allowDecimals={false}
+          tick={{ fill: "var(--color-muted)", fontSize: 12 }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip content={<CategoryTooltip />} cursor={{ stroke: "#e7dcc3" }} />
+        <Area
+          type="monotone"
+          dataKey="count"
+          name="Số bài đăng"
+          stroke="var(--element-thuy)"
+          strokeWidth={2}
+          fill={`url(#${gradientId})`}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
-IncomeAreaChart.propTypes = { slot: PropTypes.string };
+IncomeAreaChart.propTypes = {
+  slot: PropTypes.string,
+};

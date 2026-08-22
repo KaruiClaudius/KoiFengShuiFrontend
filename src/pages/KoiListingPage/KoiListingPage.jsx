@@ -1,29 +1,28 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Row,
-  Radio,
-  Breadcrumb,
-  message,
-  Checkbox,
-  Layout,
-  Typography,
-  Pagination,
-} from "antd";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import api, { getFengShuiKoiFishPost } from "../../config/axios";
-import "./KoiListingPage.css";
-import {
-  Link,
-  useSearchParams,
-  useLocation,
-} from "react-router-dom";
-const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
-import AppHeader from "../../components/Header/Header";
-import FooterComponent from "../../components/Footer/Footer";
-import usericon from "../../assets/icons/userIcon.png";
-import TruncatedText from "../../utils/TruncatedText";
+import { Button, Card, EmptyState, notify, Skeleton } from "../../ui";
+import { default as ListingCard } from "../../components/ListingCard";
+
+const COLOR_OPTIONS = [
+  { value: "White", label: "Trắng" },
+  { value: "Red", label: "Đỏ" },
+  { value: "Black", label: "Đen" },
+  { value: "Yellow", label: "Vàng" },
+  { value: "Silver", label: "Xám bạc" },
+];
+
+const PAGE_WINDOW_SIZE = 5;
+const SKELETON_COUNT = 6;
+
+const getPageWindow = (currentPage, totalPages) => {
+  const start = Math.min(
+    Math.max(1, currentPage - Math.floor(PAGE_WINDOW_SIZE / 2)),
+    Math.max(1, totalPages - PAGE_WINDOW_SIZE + 1)
+  );
+  const end = Math.min(totalPages, start + PAGE_WINDOW_SIZE - 1);
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+};
 
 const KoiListingPage = () => {
   const [loading, setLoading] = useState(true);
@@ -31,381 +30,352 @@ const KoiListingPage = () => {
 
   const [elementData, setElement] = useState([]);
   const [categoryData, setCategory] = useState([]);
-  const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
+  const [cardDataKoi, setCardDataKoi] = useState([]);
 
-  // Add pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
-  const [total, setTotal] = useState(0);
-
-  const [selectedColors, setSelectedColors] = useState([]); // New state for selected colors
-  const [selectedElement, setSelectedElement] = useState([]); // New state for selected colors
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedElement, setSelectedElement] = useState([]);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedElementUrl, setSelectedElementUrl] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(12);
+  const [total, setTotal] = useState(0);
 
   const [searchParams] = useSearchParams();
-  const location = useLocation();
 
-  // Handle pagination change
-  const handlePageChange = (page, pageSize) => {
-    setCurrentPage(page);
-    setPageSize(pageSize);
-  };
-
-  // Read selectedCategory from URL on initial load
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const categoryFromUrl = params.get("category");
-    const elementFromUrl = params.get("element");
-
-    if (categoryFromUrl) {
-      setSelectedCategory(Number(categoryFromUrl));
-      if (elementFromUrl) {
-        setSelectedElementUrl(elementFromUrl);
-        setSelectedElement(elementFromUrl);
+    let cancelled = false;
+    const loadMeta = async () => {
+      try {
+        const responseMarketCategory = await api
+          .get("/api/MarketCategory/GetAll")
+          .then((response) => response.data);
+        const responseElement = await api
+          .get("/api/Element/GetAll")
+          .then((response) => response.data);
+        if (cancelled) return;
+        setCategory(responseMarketCategory.data);
+        setElement(responseElement.data);
+      } catch (err) {
+        if (!cancelled) setError(err.message);
       }
-      setCurrentPage(1); // Reset to first page for new category
+    };
+    loadMeta();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category");
+    const elementFromUrl = searchParams.get("element");
+    if (!categoryFromUrl) return;
+    setSelectedCategory(Number(categoryFromUrl));
+    if (elementFromUrl) {
+      setSelectedElement([Number(elementFromUrl)]);
     }
-  }, [location.search]);
+    setCurrentPage(1);
+  }, [searchParams]);
 
-  //Filter By Element
-  const filterKoiByElement = (data) => {
-    if (selectedElement.length === 0) return data;
-    return data.filter((item) => selectedElement.includes(item.elementId));
-  };
-
-  // Update fetchData to use selectedCategory directly
   const fetchData = useCallback(async () => {
+    if (!selectedCategory) return;
     try {
-      const responseMarketCategory = await api
-        .get("/api/MarketCategory/GetAll")
-        .then((response) => response.data);
-      setCategory(responseMarketCategory.data);
-      // setLoading(true); // Set loading before fetching
-      const responseElement = await api
-        .get("/api/Element/GetAll")
-        .then((response) => response.data);
-      setElement(responseElement.data);
-
-      if (selectedCategory) {
-        // Only fetch if category is set
-        const responseKoi = await getFengShuiKoiFishPost(
-          selectedCategory,
-          currentPage,
-          pageSize
-        );
-        const filteredData = responseKoi.data;
-        setCardDataKoi(filteredData);
-        setTotal(responseKoi.totalItems);
-      }
-    } catch (error) {
-      setError(error.message);
+      setLoading(true);
+      setError(null);
+      const responseKoi = await getFengShuiKoiFishPost(
+        selectedCategory,
+        currentPage,
+        pageSize
+      );
+      setCardDataKoi(
+        Array.isArray(responseKoi?.data) ? responseKoi.data : []
+      );
+      setTotal(responseKoi?.totalItems ?? 0);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   }, [selectedCategory, currentPage, pageSize]);
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, [fetchData]);
-
-  // Handle category change
-  const handleCategoryChange = (value) => {
-    setSelectedCategory(value);
-    setCurrentPage(1); // Reset to the first page for a new category
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set("category", value);
-    window.history.pushState({}, "", `?${newSearchParams.toString()}`);
-  };
-
-  const handleColorChange = (checkedValues) => {
-    setSelectedColors(checkedValues);
-  };
-  const handleElementChange = (checkedValues) => {
-    setSelectedElementUrl(checkedValues);
-    setSelectedElement(checkedValues);
-  };
   useEffect(() => {
-    if (selectedCategory) {
-      fetchData();
+    if (!selectedCategory) {
+      setLoading(false);
+      return;
     }
-  }, [fetchData]);
+    fetchData();
+  }, [fetchData, selectedCategory]);
 
-  //Filter By Color
+  const filterKoiByElement = (data) => {
+    if (selectedElement.length === 0) return data;
+    return data.filter((item) => selectedElement.includes(item.elementId));
+  };
+
   const filterKoiByColor = (data) => {
     if (selectedColors.length === 0) return data;
     return data.filter((item) => {
-      // Check if item.color is defined and is a string
       if (item.color && typeof item.color === "string") {
         return selectedColors.some((color) =>
           item.color.toLowerCase().includes(color.toLowerCase())
         );
       }
-      return false; // If item.color is undefined or not a string, exclude it
+      return false;
     });
   };
 
-  // Clear all filters
+  const filteredKoi = filterKoiByElement(filterKoiByColor(cardDataKoi));
+
+  const toggleColor = (value) => {
+    setSelectedColors((prev) =>
+      prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value]
+    );
+  };
+
+  const toggleElement = (elementId) => {
+    const nextElements = selectedElement.includes(elementId)
+      ? selectedElement.filter((id) => id !== elementId)
+      : [...selectedElement, elementId];
+    setSelectedElement(nextElements);
+  };
+
   const clearFilters = () => {
     setSelectedColors([]);
     setSelectedElement([]);
-    setSelectedElementUrl(null);
-    message.success("Đã xóa tất cả bộ lọc");
+    notify.success("Đã xóa tất cả bộ lọc");
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
-  if (error) return <div>Error: {error}</div>;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pageWindow = getPageWindow(currentPage, totalPages);
 
-  const renderKoi = (data) => {
-    const filteredData = filterKoiByElement(filterKoiByColor(data));
+  const currentCategoryName = categoryData.find(
+    (category) => category.categoryid === selectedCategory
+  )?.categoryName;
 
-    return filteredData.map((item) => (
-      <div className="card-containers" key={item.listingId}>
-        <div className="property-cards">
-          <div className="property-card-headers">
-            {item.tierName === "Tin Nổi Bật" && (
-              <div className="featured-badge">
-                <span>Nổi bật</span>
-              </div>
-            )}
-
-            <Link
-              to={`/Details/${item.listingId}`}
-              className="property-koi-image-links"
+  const filterPanel = (
+    <div className="flex flex-col gap-6">
+      <fieldset className="m-0 border-0 p-0">
+        <legend className="font-display text-base font-semibold text-ink">
+          Bản mệnh
+        </legend>
+        <div className="mt-3 space-y-2.5">
+          {elementData.map((element) => (
+            <label
+              key={element.elementId}
+              htmlFor={`koi-element-${element.elementId}`}
+              className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-soft transition-colors duration-fast ease-water hover:text-ink"
             >
-              <img
-                src={item.listingImages?.[0]?.image?.imageUrl}
-                alt={item.title}
-                className="property-koi-images"
+              <input
+                id={`koi-element-${element.elementId}`}
+                type="checkbox"
+                className="h-4 w-4 accent-crimson"
+                checked={selectedElement.includes(element.elementId)}
+                onChange={() => toggleElement(element.elementId)}
               />
-            </Link>
-          </div>
-          <div className="property-contents flex-1">
-            <div className="property-title-wrappers">
-              <h1 className="property-titles">
-                <a
-                  href={`/Details/${item.listingId}`}
-                  className="property-title-links"
-                >
-                  {item.elementName != "Non element" && `[${item.elementName}]`}{" "}
-                  <TruncatedText text={item.title} maxLength={18} />{" "}
-                </a>
-              </h1>
-            </div>
-
-            <div className="property-user-containers">
-              <img
-                src={
-                  item.accountName
-                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                        item.accountName
-                      )}`
-                    : usericon
-                }
-                alt="User Icon"
-                className="property-user-icons"
-              />
-              <span
-                className="property-user-texts"
-                style={{ margin: "auto", width: "100%" }}
-              >
-                {item.accountName}
-              </span>
-            </div>
-          </div>
+              {element.elementName}
+            </label>
+          ))}
         </div>
-      </div>
-    ));
-  };
-  return (
-    <Layout className="min-h-screen">
-      <AppHeader />
-      <Layout style={{ marginTop: "100px", padding: "0 20px" }}>
-        <Sider
-          width={250}
-          className="sider"
-          style={{ backgroundColor: "#f6f4f3", marginRight: "20px" }}
-        >
-          <div className="mt-4 mb-6">
-            <Title
-              level={4}
-              style={{
-                marginBottom: "10px",
-                backgroundColor: "#d8d8d8",
-                padding: "10px",
-              }}
-            >
-              Danh mục sản phẩm
-            </Title>
-            <div
-              className="flex flex-wrap gap-2"
-              style={{
-                backgroundColor: "white",
-                padding: "10px",
-                marginBottom: "10px",
-              }}
-            >
-              <Row gutter={[16, 8]}>
-                <Radio.Group
-                  value={selectedCategory}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                >
-                  {categoryData.map((category) => (
-                    <Radio
-                      key={category.categoryid}
-                      value={category.categoryid}
-                    >
-                      {category.categoryName}
-                    </Radio>
-                  ))}
-                </Radio.Group>
-              </Row>
-            </div>
-          </div>
-          <div className="mt-4 mb-6">
-            <Title
-              level={4}
-              style={{
-                marginBottom: "10px",
-                backgroundColor: "#d8d8d8",
-                padding: "10px",
-              }}
-            >
-              Màu sắc
-            </Title>
-            <div className="flex flex-wrap gap-2">
-              <Checkbox.Group
-                style={{
-                  width: "100%",
-                  backgroundColor: "white",
-                  paddingLeft: "20px",
-                  marginBottom: "20px",
-                }}
-                onChange={handleColorChange}
-              >
-                <Row gutter={[10, 9]} style={{ margin: "5px" }}>
-                  <Col span={10}>
-                    <Checkbox value="White">Trắng</Checkbox>
-                  </Col>
-                  <Col span={10}>
-                    <Checkbox value="Đỏ">Đỏ</Checkbox>
-                  </Col>
-                  <Col span={10}>
-                    <Checkbox value="Đen">Đen</Checkbox>
-                  </Col>
-                  <Col span={10}>
-                    <Checkbox value="Vàng">Vàng</Checkbox>
-                  </Col>
-                  <Col span={10}>
-                    <Checkbox value="Silver">Xám bạc</Checkbox>
-                  </Col>
-                </Row>
-              </Checkbox.Group>
-            </div>
-          </div>
+      </fieldset>
 
-          <div className="mt-4 mb-6">
-            <Title
-              level={4}
-              style={{
-                marginBottom: "10px",
-                backgroundColor: "#d8d8d8",
-                padding: "10px",
-              }}
+      <fieldset className="m-0 border-0 p-0">
+        <legend className="font-display text-base font-semibold text-ink">
+          Màu sắc
+        </legend>
+        <div className="mt-3 space-y-2.5">
+          {COLOR_OPTIONS.map((option) => (
+            <label
+              key={option.value}
+              htmlFor={`koi-color-${option.value}`}
+              className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-soft transition-colors duration-fast ease-water hover:text-ink"
             >
-              Bản mệnh
-            </Title>
-            <div className="flex flex-wrap gap-2">
-              <Checkbox.Group
-                style={{
-                  marginBottom: "10px",
-                  backgroundColor: "white",
-                  padding: "10px",
-                }}
-                value={selectedElementUrl}
-                onChange={handleElementChange}
-                // onChange={(e) => handleElementChange(e.target.value)}
-              >
-                <Row gutter={[16, 8]} style={{ margin: "" }}>
-                  {elementData.map((element) => (
-                    <Col span={8}>
-                      <Checkbox
-                        value={element.elementId}
-                        key={element.elementId}
-                      >
-                        {element.elementName}
-                      </Checkbox>
-                    </Col>
-                  ))}
-                </Row>
-              </Checkbox.Group>
-            </div>
-          </div>
-          <Button
-            type="primary"
-            onClick={clearFilters}
-            style={{ width: "100%", marginTop: "20px" }}
+              <input
+                id={`koi-color-${option.value}`}
+                type="checkbox"
+                className="h-4 w-4 accent-crimson"
+                checked={selectedColors.includes(option.value)}
+                onChange={() => toggleColor(option.value)}
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        className="w-full"
+        onClick={clearFilters}
+      >
+        Xóa bộ lọc
+      </Button>
+    </div>
+  );
+
+  return (
+    <main className="min-h-screen grain-bg bg-paper pb-16">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted"
+        >
+          <Link
+            to="/"
+            className="transition-colors duration-fast ease-water hover:text-crimson"
           >
-            Xóa tất cả bộ lọc
-          </Button>
-        </Sider>
-        <Content className="p-8 bg-gray-50">
-          <Breadcrumb>
-            <Breadcrumb.Item>
-              {" "}
-              <Link to="/" style={{ textDecoration: "none", color: "#F9A825" }}>
-                Trang chủ
-              </Link>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              {selectedCategory &&
-                categoryData.find(
-                  (category) => category.categoryid === selectedCategory
-                )?.categoryName}
-            </Breadcrumb.Item>
-          </Breadcrumb>
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <span>Loading...</span>
-            </div>
-          ) : error ? (
-            <div className="flex justify-center items-center h-64 text-red-500">
-              Error: {error}
-            </div>
-          ) : (
+            Trang chủ
+          </Link>
+          {currentCategoryName && (
             <>
-              <div className="koi-grid">{renderKoi(cardDataKoi)}</div>
+              <span aria-hidden="true">›</span>
+              <span
+                aria-current="page"
+                className="min-w-0 truncate font-medium text-ink-soft"
+              >
+                {currentCategoryName}
+              </span>
             </>
           )}
-        </Content>
-      </Layout>
-      <div
-        className="mt-8 flex justify-center"
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          margin: "32px auto",
-        }}
-      >
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          defaultCurrent={1}
-          total={total}
-          onChange={handlePageChange}
-          showSizeChanger
-          showTotal={(total) => `Total ${total} items`}
-          pageSizeOptions={[6, 12, 50]}
-        />
+        </nav>
+
+        <header className="mt-6 md:mt-8">
+          <h1 className="font-display text-3xl leading-tight text-ink md:text-4xl lg:text-5xl">
+            Cá Koi
+          </h1>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted">
+            Những chú cá koi phong thủy được tuyển chọn kỹ lưỡng, mang may mắn
+            và bình an theo bản mệnh của bạn.
+          </p>
+        </header>
+
+        <div className="mt-8 grid gap-8 md:mt-10 lg:grid-cols-[280px_1fr]">
+          <Card className="hidden h-fit p-5 lg:sticky lg:top-24 lg:block">
+            {filterPanel}
+          </Card>
+
+          <section aria-label="Danh sách cá koi" className="min-w-0">
+            <details className="group lg:hidden">
+              <summary className="flex list-none cursor-pointer select-none items-center justify-between gap-3 rounded-md border border-gold/40 bg-surface px-4 py-3 font-semibold text-ink shadow-plaque [&::-webkit-details-marker]:hidden">
+                Lọc
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4 shrink-0 transition-transform duration-fast ease-water group-open:rotate-180"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </summary>
+              <Card className="mt-3 p-5">{filterPanel}</Card>
+            </details>
+
+            {loading ? (
+              <div
+                role="status"
+                aria-label="Đang tải"
+                className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 lg:mt-0"
+              >
+                {Array.from({ length: SKELETON_COUNT }, (_, index) => (
+                  <Card key={index} className="overflow-hidden">
+                    <Skeleton className="aspect-[4/3] w-full rounded-none" />
+                    <div className="space-y-3 p-4">
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-9 w-full" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : error ? (
+              <EmptyState
+                className="mt-6 lg:mt-0"
+                title="Đã xảy ra lỗi"
+                description="Không thể tải danh sách cá koi. Vui lòng thử lại."
+                action={
+                  <Button type="button" onClick={fetchData}>
+                    Thử lại
+                  </Button>
+                }
+              />
+            ) : filteredKoi.length === 0 ? (
+              <EmptyState
+                className="mt-6 lg:mt-0"
+                title="Không tìm thấy kết quả phù hợp"
+                description="Hãy thử bỏ bớt bộ lọc bản mệnh hoặc màu sắc để xem thêm chú cá khác."
+                action={
+                  <Button type="button" variant="secondary" onClick={clearFilters}>
+                    Xóa bộ lọc
+                  </Button>
+                }
+              />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredKoi.map((item) => (
+                    <ListingCard key={item.listingId} item={item} to="/Details" />
+                  ))}
+                </div>
+
+                <nav
+                  aria-label="Phân trang"
+                  className="mt-10 flex flex-wrap items-center justify-center gap-x-4 gap-y-3 border-t border-gold/20 pt-6"
+                >
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    aria-label="Trang trước"
+                    disabled={currentPage <= 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  >
+                    Trang trước
+                  </Button>
+                  <div className="hidden items-center gap-1.5 sm:flex">
+                    {pageWindow.map((page) => (
+                      <button
+                        key={page}
+                        type="button"
+                        aria-label={`Tới trang ${page}`}
+                        aria-current={page === currentPage ? "page" : undefined}
+                        onClick={() => handlePageChange(page)}
+                        className={`inline-flex h-9 min-w-[2.25rem] items-center justify-center rounded-sm px-2 text-sm font-semibold transition-all duration-fast ease-water active:scale-[0.98] ${
+                          page === currentPage
+                            ? "bg-crimson text-[#FDF6EC]"
+                            : "text-ink-soft hover:bg-paper-2"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-sm text-muted">
+                    Trang {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    aria-label="Trang sau"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  >
+                    Trang sau
+                  </Button>
+                </nav>
+              </>
+            )}
+          </section>
+        </div>
       </div>
-      <FooterComponent />
-    </Layout>
+    </main>
   );
 };
 
