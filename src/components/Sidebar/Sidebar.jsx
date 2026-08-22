@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import ApprovalIcon from "@mui/icons-material/Approval";
 import HelpIcon from "@mui/icons-material/Help";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import AppHeader from "../Header/Header";
@@ -20,21 +19,16 @@ const DashboardSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
-    {
-      text: "Approve Posts",
-      icon: <ApprovalIcon />,
-      path: "/dashboard/approve-posts",
-    },
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/Dashboard" },
     {
       text: "Manage FAQs",
       icon: <HelpIcon />,
       path: "/FAQManager",
     },
     {
-      text: "Admin Posts", 
+      text: "Admin Posts",
       icon: <AdminPanelSettingsIcon />,
-      path: "/AdminPost", 
+      path: "/AdminPost",
     },
   ];
 

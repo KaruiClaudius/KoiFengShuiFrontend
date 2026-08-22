@@ -145,7 +145,6 @@ export default function AuthPage() {
 
           navigate("/");
         } catch (err) {
-          console.log(err);
           if (err.response && err.response.status === 400) {
             if (err.response.data.message === "Email not found.") {
               setError("Email không tồn tại.");
@@ -176,7 +175,10 @@ export default function AuthPage() {
           });
           toggleAuthMode("signin");
         } catch (err) {
-          console.error(err);
+          console.error(
+            "Sign up failed:",
+            err.response?.status || err.message
+          );
           setError(
             err.response?.data ||
               "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại."
@@ -190,7 +192,10 @@ export default function AuthPage() {
           });
           toggleAuthMode("signin");
         } catch (err) {
-          console.error(err);
+          console.error(
+            "Forgot password failed:",
+            err.response?.status || err.message
+          );
           setError(
             err.response?.data ||
               "Đã xảy ra lỗi trong quá trình khôi phục mật khẩu. Vui lòng thử lại."

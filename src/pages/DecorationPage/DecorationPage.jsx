@@ -1,13 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
-import image from "../../assets/banner1.jpg";
-import ex from "../../assets/koio_ex.png";
-import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
-import searchIcon from "../../assets/icons/searchIcon.svg";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { CardContent } from "@mui/material";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import TruncatedText from "../../utils/TruncatedText";
 import "../HomePage/Homepage.css";
 import {
@@ -15,22 +10,15 @@ import {
   Col,
   Card,
   Button,
-  List,
-  Divider,
   Image,
   Typography,
   Avatar,
   Descriptions,
   Space,
-  Layout,
   message,
 } from "antd";
 import api, { getFengShuiKoiDetail } from "../../config/axios";
-import {
-  PhoneOutlined,
-  StarOutlined,
-  MessageOutlined,
-} from "@ant-design/icons";
+import { PhoneOutlined } from "@ant-design/icons";
 const ImageGallery = ({ images }) => {
   const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl);
 
@@ -89,39 +77,14 @@ const DecorationPage = () => {
   const [cardDataKoiBaseOnAccount, setCardDataKoiBaseOnAccount] =
     React.useState([]); // Store data
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  function formatCurrency(value) {
-    // Ensure value is a number
-    const numValue = Number(value);
-
-    if (isNaN(numValue)) {
-      return "Invalid input";
-    }
-
-    if (numValue < 1e6) {
-      // Less than a million
-      return numValue.toLocaleString("vi-VN");
-    } else if (numValue >= 1e6 && numValue < 1e9) {
-      // Millions
-      return formatLargeNumber(numValue, 1e6, "triệu");
-    } else if (numValue >= 1e9) {
-      // Billions
-      return formatLargeNumber(numValue, 1e9, "tỷ");
-    } else {
-      // Default case (shouldn't normally be reached)
-      return numValue.toLocaleString("vi-VN");
-    }
-  }
-
   const renderDecoration = (data) => {
     return data.map((item) => (
-      <div key={item.listingId || index} className="card-container">
+      <div key={item.listingId} className="card-container">
         <div className="property-card">
-          {item.tierName == "Preminum" ? (
+          {item.tierName == "Preminum" && (
             <div className="featured-badge">
               <span>Nổi bật</span>
             </div>
-          ) : (
-            <h1> </h1>
           )}
 
           <img
@@ -135,28 +98,12 @@ const DecorationPage = () => {
               className="property-title-link"
               style={{ width: "70%" }}
             >
-              {/* {item.element && item.element.length > 0 ? ( */}
               <div className="property-title-wrapper">
                 <h1 className="property-title">
                   <TruncatedText text={item.title} maxLength={10} />
                 </h1>
               </div>
-              {/* ) : (
-                <h1 className="property-title">{item.name}</h1>
-              )} */}
             </a>
-            <div
-              className="property-price-container"
-              style={{ display: "flex" }}
-            >
-              <h2 className="property-price-text" style={{ marginRight: 5 }}>
-                Giá tiền:
-              </h2>{" "}
-              {/* Replace icon as needed */}
-              <span className="property-price-price" style={{ color: "red" }}>
-                {formatCurrency(item.price)}VNĐ
-              </span>
-            </div>
             <div className="property-user-container">
               <img
                 src={
@@ -180,88 +127,41 @@ const DecorationPage = () => {
     ));
   };
 
-  function formatLargeNumber(value, unitValue, unitName) {
-    const wholePart = Math.floor(value / unitValue);
-    const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
-
-    let result = wholePart.toLocaleString("vi-VN") + " " + unitName;
-    if (fractionalPart > 0) {
-      result += " " + fractionalPart.toLocaleString("vi-VN");
-    }
-    return result;
-  }
-  const fetchData = async () => {
-    try {
-      const response = await getFengShuiKoiDetail(id);
-      setDataDecoration(response.data[0]); // Access the first item in the data array
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const fetchKoiData = useCallback(
-    async (
-      koiAccount = koiDetails.accountId,
-      page = 1,
-      pageSize = 10,
-      categoryId = 2
-    ) => {
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
       try {
-        const responseKoiBaseOnAccount = await api
-          .get(
-            `/api/MarketplaceListings/GetAllByAccount/${koiAccount}/Category/${categoryId}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
-          )
-          .then((response) => response.data);
+        const response = await getFengShuiKoiDetail(id);
+        if (cancelled) return;
+        const detail = response.data[0];
+        setDataDecoration(detail);
 
-        //setCardDataKoi(responseKoi.data);
-        setCardDataKoiBaseOnAccount(responseKoiBaseOnAccount.data);
+        if (detail) {
+          const responseKoiBaseOnAccount = await api
+            .get(
+              `/api/MarketplaceListings/GetAllByAccount/${detail.accountId}/Category/2?excludeListingId=${id}&page=1&pageSize=10`
+            )
+            .then((response) => response.data);
+          if (cancelled) return;
+          setCardDataKoiBaseOnAccount(responseKoiBaseOnAccount.data);
+        }
       } catch (error) {
-        setError(error.message);
+        if (!cancelled) setError(error.message);
       } finally {
-        setLoading(false); // Set loading to false after data is fetched
+        if (!cancelled) setLoading(false);
       }
-    }
-  );
-  // const updateUserData = (event) => {
-  //   const updatedUser = event.detail;
-  //   setUserData(updatedUser);
-  //   setFullName(updatedUser.fullName);
-  //   setUserRole(updatedUser.roleId);
-  //   const elementName = updatedUser.elementId
-  //     ? elementMapping[updatedUser.elementId]
-  //     : "Unknown";
-  //   setElementName(elementName);
-  //   setAvatarUrl(
-  //     `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-  //       updatedUser.fullName
-  //     )}`
-  //   );
-  // };
-  React.useEffect(() => {
-    fetchData();
-    fetchKoiData();
+    };
+    load();
+    setIsLoggedIn(!!localStorage.getItem("token"));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
-    // // Add event listener
-    // window.addEventListener("userProfileUpdated", updateUserData);
-
-    // Initial data load
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    // if (token && user) {
-    //   updateUserData({ detail: user });
-    // }
-    setIsLoggedIn(!!token);
-    // // Cleanup function to remove event listener
-    // return () => {
-    //   window.removeEventListener("userProfileUpdated", updateUserData);
-    // };
-  }, [fetchData, fetchKoiData]);
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!koiDetails) return <div>No property details found</div>;
 
@@ -323,7 +223,7 @@ const DecorationPage = () => {
               <div style={{ padding: "0 3px" }}>&gt;</div>
               <Link
                 underline="none"
-                to={`/listing`}
+                to={`/KoiListings?category=2`}
                 style={{
                   textDecoration: "none",
                   color: "black",
@@ -391,9 +291,6 @@ const DecorationPage = () => {
                   {/* Additional Information */}
                   <Col span={24}>
                     <Descriptions bordered column={1}>
-                      <Descriptions.Item label="Giá tiền">
-                        {formatCurrency(koiDetails.price)} VNĐ
-                      </Descriptions.Item>
                       <Descriptions.Item label="Số lượng">
                         {koiDetails.quantity}
                       </Descriptions.Item>
@@ -453,7 +350,7 @@ const DecorationPage = () => {
               <button onClick={scrollLeft1} className="arrow-button">
                 ←
               </button>
-              <div class="white-box" style={{ width: "100%" }}>
+              <div className="white-box" style={{ width: "100%" }}>
                 <div
                   className="container-title"
                   style={{ justifyContent: "space-between" }}

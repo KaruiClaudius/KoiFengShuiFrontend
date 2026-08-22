@@ -1,40 +1,20 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Form,
-  Input,
-  Select,
   Button,
-  Upload,
   Col,
   Row,
   Radio,
   Breadcrumb,
   message,
-  Modal,
-  InputNumber,
   Checkbox,
-  Card,
-  DatePicker,
   Layout,
   Typography,
-  List,
-  Tag,
   Pagination,
-  Collapse,
-  Space,
 } from "antd";
-import {
-  FilterOutlined,
-  HomeOutlined,
-  EnvironmentOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-} from "@ant-design/icons";
 import api, { getFengShuiKoiFishPost } from "../../config/axios";
 import "./KoiListingPage.css";
 import {
   Link,
-  useNavigate,
   useSearchParams,
   useLocation,
 } from "react-router-dom";
@@ -42,39 +22,16 @@ const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
-import Panel from "antd/es/splitter/Panel";
+import usericon from "../../assets/icons/userIcon.png";
 import TruncatedText from "../../utils/TruncatedText";
 
 const KoiListingPage = () => {
-  const priceRanges = [
-    { label: "0 - 1,000,000đ", min: 0, max: 1000000 },
-    { label: "1,000,000đ - 2,000,000đ", min: 1000000, max: 2000000 },
-    { label: "2,000,000đ - 3,000,000đ", min: 2000000, max: 3000000 },
-    { label: "3,000,000đ - 4,000,000đ", min: 3000000, max: 4000000 },
-    { label: "Trên 4,000,000đ", min: 4000000, max: Infinity },
-  ];
-
-  const colors = [
-    "White",
-    "Red",
-    "Black",
-    "Yellow",
-    "Orange",
-    "Blue",
-    "Gray",
-    "Silver",
-    "Purple",
-    "Green",
-  ];
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [elementData, setElement] = useState([]);
   const [categoryData, setCategory] = useState([]);
   const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
-
-  const [priceRange, setPriceRange] = useState(null);
 
   // Add pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,9 +40,6 @@ const KoiListingPage = () => {
 
   const [selectedColors, setSelectedColors] = useState([]); // New state for selected colors
   const [selectedElement, setSelectedElement] = useState([]); // New state for selected colors
-
-  const [sortOrder, setSortOrder] = useState(null); // 'asc' or 'desc' or null
-  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedElementUrl, setSelectedElementUrl] = useState(null);
@@ -141,9 +95,7 @@ const KoiListingPage = () => {
           currentPage,
           pageSize
         );
-        const filteredData = filterKoiByElement(
-          filterKoiByColor(filterKoiByPrice(responseKoi.data))
-        );
+        const filteredData = responseKoi.data;
         setCardDataKoi(filteredData);
         setTotal(responseKoi.totalItems);
       }
@@ -152,7 +104,7 @@ const KoiListingPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, currentPage, pageSize, filterKoiByElement]);
+  }, [selectedCategory, currentPage, pageSize]);
 
   // useEffect(() => {
   //   fetchData();
@@ -178,7 +130,7 @@ const KoiListingPage = () => {
     if (selectedCategory) {
       fetchData();
     }
-  }, [selectedCategory, handleElementChange]);
+  }, [fetchData]);
 
   //Filter By Color
   const filterKoiByColor = (data) => {
@@ -194,22 +146,11 @@ const KoiListingPage = () => {
     });
   };
 
-  //Filter By Price
-  const filterKoiByPrice = (data) => {
-    if (!selectedPriceRange) return data;
-    return data.filter((item) => {
-      const price = Number(item.price);
-      return price >= selectedPriceRange.min && price < selectedPriceRange.max;
-    });
-  };
-
   // Clear all filters
   const clearFilters = () => {
-    setSelectedPriceRange(null);
     setSelectedColors([]);
     setSelectedElement([]);
     setSelectedElementUrl(null);
-    setSortOrder(null);
     message.success("Đã xóa tất cả bộ lọc");
   };
 
@@ -219,58 +160,8 @@ const KoiListingPage = () => {
 
   if (error) return <div>Error: {error}</div>;
 
-  function formatCurrency(value) {
-    // Ensure value is a number
-    const numValue = Number(value);
-
-    if (isNaN(numValue)) {
-      return "Invalid input";
-    }
-
-    if (numValue < 1e6) {
-      // Less than a million
-      return addThousandSeparators(numValue);
-    } else if (numValue >= 1e9) {
-      // Billions
-      return formatLargeNumber(numValue, 1e9, "tỷ");
-    } else {
-      // Default case (shouldn't normally be reached)
-      return addThousandSeparators(numValue);
-    }
-  }
-
-  function formatLargeNumber(value, unitValue, unitName) {
-    const wholePart = Math.floor(value / unitValue);
-    const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
-
-    let result = addThousandSeparators(wholePart) + " " + unitName;
-    if (fractionalPart > 0) {
-      result += " " + addThousandSeparators(fractionalPart);
-    }
-    return result;
-  }
-
-  function addThousandSeparators(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  }
-
-  // Add sorting function
-  const sortKoiByPrice = (data) => {
-    if (!sortOrder) return data;
-
-    return [...data].sort((a, b) => {
-      const priceA = Number(a.price);
-      const priceB = Number(b.price);
-
-      return sortOrder === "asc" ? priceA - priceB : priceB - priceA;
-    });
-  };
-
   const renderKoi = (data) => {
-    // Apply all filters and sorting
-    const filteredData = sortKoiByPrice(
-      filterKoiByElement(filterKoiByColor(filterKoiByPrice(data)))
-    );
+    const filteredData = filterKoiByElement(filterKoiByColor(data));
 
     return filteredData.map((item) => (
       <div className="card-containers" key={item.listingId}>
@@ -304,16 +195,6 @@ const KoiListingPage = () => {
                   <TruncatedText text={item.title} maxLength={18} />{" "}
                 </a>
               </h1>
-            </div>
-
-            <div className="property-price-containers">
-              <span className="property-price-texts">Giá tiền: </span>
-              <span
-                className="property-price-prices"
-                style={{ color: "red", marginLeft: "4px", fontWeight: "bold" }}
-              >
-                {formatCurrency(item.price)} đ
-              </span>
             </div>
 
             <div className="property-user-containers">
@@ -385,44 +266,6 @@ const KoiListingPage = () => {
               </Row>
             </div>
           </div>
-          <div className="mb-8">
-            <Title
-              level={4}
-              style={{
-                marginBottom: "10px",
-                backgroundColor: "#d8d8d8",
-                padding: "10px",
-              }}
-            >
-              Lọc giá
-            </Title>
-
-            <Radio.Group
-              value={
-                selectedPriceRange ? JSON.stringify(selectedPriceRange) : ""
-              }
-              onChange={(e) =>
-                setSelectedPriceRange(
-                  e.target.value ? JSON.parse(e.target.value) : null
-                )
-              }
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "8px",
-                padding: "10px",
-                backgroundColor: "white",
-                marginBottom: "10px",
-              }}
-            >
-              {priceRanges.map((range, index) => (
-                <Radio key={index} value={JSON.stringify(range)}>
-                  {range.label}
-                </Radio>
-              ))}
-            </Radio.Group>
-          </div>
-
           <div className="mt-4 mb-6">
             <Title
               level={4}
@@ -446,7 +289,7 @@ const KoiListingPage = () => {
               >
                 <Row gutter={[10, 9]} style={{ margin: "5px" }}>
                   <Col span={10}>
-                    <Checkbox value="Trắng">Trắng</Checkbox>
+                    <Checkbox value="White">Trắng</Checkbox>
                   </Col>
                   <Col span={10}>
                     <Checkbox value="Đỏ">Đỏ</Checkbox>
@@ -458,7 +301,7 @@ const KoiListingPage = () => {
                     <Checkbox value="Vàng">Vàng</Checkbox>
                   </Col>
                   <Col span={10}>
-                    <Checkbox value="Xám bạc">Xám bạc</Checkbox>
+                    <Checkbox value="Silver">Xám bạc</Checkbox>
                   </Col>
                 </Row>
               </Checkbox.Group>
@@ -552,7 +395,7 @@ const KoiListingPage = () => {
       >
         <Pagination
           current={currentPage}
-          pageSize={total}
+          pageSize={pageSize}
           defaultCurrent={1}
           total={total}
           onChange={handlePageChange}

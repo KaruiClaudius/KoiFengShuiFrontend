@@ -72,7 +72,7 @@ export default function BlogPage() {
       </div>
       <FooterComponent />
       <Modal
-        visible={!!selectedPost}
+        open={!!selectedPost}
         onCancel={closeModal}
         footer={null}
         title={null}

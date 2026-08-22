@@ -16,16 +16,12 @@ import MainCard from "../../components/MainCard";
 import AnalyticEcommerce from "../../components/cards/statistics/AnalyticEcommerce";
 import MonthlyBarChart from "./MonthlyBarChart";
 import UniqueVisitorCard from "./UniqueVisitorCard";
-// import SaleReportCard from "./SaleReportCard";
-import OrdersTable from "./OrdersTable";
-import DashboardSidebar from "../../components/Sidebar/Sidebar";
 import {
   getNewUsersCount,
   getNewUsersList,
   getNewMarketListingsCount,
-  getTotalTransaction,
-  getTotalTransactionCount,
-} from "../../config/axios"; // Update the import path as needed
+} from "../../config/axios";
+import DashboardSidebar from "../../components/Sidebar/Sidebar";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 
@@ -53,22 +49,11 @@ const actionSX = {
 export default function DashboardDefault() {
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newUsersList, setNewUsersList] = useState([]);
-  const [newTotalTransaction, setNewTotalTransaction] = useState([]);
   const [newMarketListingsCount, setNewMarketListingsCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalTransactionCount, setTotalTransactionCount] = useState(0);
 
   const itemsPerPage = 3;
-
-  const formatVND = (amount) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -81,15 +66,8 @@ export default function DashboardDefault() {
 
         const marketListingsCountResponse = await getNewMarketListingsCount();
         setNewMarketListingsCount(marketListingsCountResponse.data.count);
-
-        const totalTransaction = await getTotalTransaction();
-        setNewTotalTransaction(totalTransaction.data);
-
-        const transactionCountResponse = await getTotalTransactionCount();
-        setTotalTransactionCount(transactionCountResponse.data.totalCount);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-        // Handle error (e.g., show an error message to the user)
       }
     };
     setTotalPages(Math.ceil(newUsersList.length / itemsPerPage));
@@ -132,18 +110,6 @@ export default function DashboardDefault() {
               <Typography variant="h5" color="white">
                 Dashboard
               </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="Tiền nạp ví"
-                count={formatVND(newTotalTransaction.totalAmount || 0)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <AnalyticEcommerce
-                title="Tổng giao dịch thành công"
-                count={totalTransactionCount.toLocaleString()}
-              />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={3}>
               <AnalyticEcommerce
@@ -197,28 +163,8 @@ export default function DashboardDefault() {
               </MainCard>
             </Grid>
 
-            {/* row 3 */}
-            {/* Recent post */}
-            <Grid item xs={12} md={7} lg={8}>
-              <Grid
-                container
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Grid item>
-                  <Typography variant="h5" color="white">
-                    Giao dịch gần đây
-                  </Typography>
-                </Grid>
-                <Grid item />
-              </Grid>
-              <MainCard sx={{ mt: 2 }} content={false}>
-                <OrdersTable />
-              </MainCard>
-            </Grid>
-
             {/* List new user */}
-            <Grid item xs={12} md={5} lg={4}>
+            <Grid item xs={12}>
               <Grid item>
                 <Typography variant="h5" color="white">
                   Người đăng kí mới

@@ -1,40 +1,27 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
-import image from "../../assets/banner1.jpg";
-import ex from "../../assets/koio_ex.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./DetailPage.css";
 import TruncatedText from "../../utils/TruncatedText";
-import searchIcon from "../../assets/icons/searchIcon.svg";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { CardContent } from "@mui/material";
-const type = JSON.parse(localStorage.getItem("type"));
+import { Link, useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import {
   Row,
   Col,
   Card,
   Button,
-  List,
-  Divider,
   Image,
   Typography,
   Avatar,
   Descriptions,
   Space,
-  Layout,
   message,
 } from "antd";
 import api, {
   getFengShuiKoiDetail,
-  getFengShuiKoiFishPost,
 } from "../../config/axios";
-import {
-  PhoneOutlined,
-  StarOutlined,
-  MessageOutlined,
-} from "@ant-design/icons";
-import { ImOffice } from "react-icons/im";
+import { PhoneOutlined } from "@ant-design/icons";
 
 const ImageGallery = ({ images }) => {
   const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl || "");
@@ -96,52 +83,52 @@ const DetailPage = () => {
   const [cardDataKoiBaseOnAccount, setCardDataKoiBaseOnAccount] =
     React.useState([]); // Store data
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      const response = await getFengShuiKoiDetail(id);
-      setDataKoi(response.data[0]); // Access the first item in the data array
-      const responseMarketCategory = await api
-        .get("/api/MarketCategory/GetAll")
-        .then((response) => response.data);
-      setCategory(responseMarketCategory.data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const fetchKoiData = useCallback(
-    async (
-      koiElement = koiDetails.elementId,
-      koiAccount = koiDetails.accountId,
-      page = 1,
-      pageSize = 10,
-      categoryId = koiDetails.categoryId
-    ) => {
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
       try {
-        const responseKoi = await api
-          .get(
-            `/api/MarketplaceListings/GetAllByElementId/${koiElement}/Category/${categoryId}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
-          )
-          .then((response) => response.data);
-        const responseKoiBaseOnAccount = await api
-          .get(
-            `/api/MarketplaceListings/GetAllByAccount/${koiAccount}/Category/${categoryId}?excludeListingId=${id}&page=${page}&pageSize=${pageSize}`
-          )
-          .then((response) => response.data);
+        const response = await getFengShuiKoiDetail(id);
+        if (cancelled) return;
+        const detail = response.data[0];
+        setDataKoi(detail);
 
-        setCardDataKoi(responseKoi.data);
-        setCardDataKoiBaseOnAccount(responseKoiBaseOnAccount.data);
+        const responseMarketCategory = await api
+          .get("/api/MarketCategory/GetAll")
+          .then((response) => response.data);
+        if (cancelled) return;
+        setCategory(responseMarketCategory.data);
+
+        if (detail) {
+          const [responseKoi, responseKoiBaseOnAccount] = await Promise.all([
+            api
+              .get(
+                `/api/MarketplaceListings/GetAllByElementId/${detail.elementId}/Category/${detail.categoryId}?excludeListingId=${id}&page=1&pageSize=10`
+              )
+              .then((response) => response.data),
+            api
+              .get(
+                `/api/MarketplaceListings/GetAllByAccount/${detail.accountId}/Category/${detail.categoryId}?excludeListingId=${id}&page=1&pageSize=10`
+              )
+              .then((response) => response.data),
+          ]);
+          if (cancelled) return;
+          setCardDataKoi(responseKoi.data);
+          setCardDataKoiBaseOnAccount(responseKoiBaseOnAccount.data);
+        }
       } catch (error) {
-        setError(error.message);
+        if (!cancelled) setError(error.message);
       } finally {
-        setLoading(false); // Set loading to false after data is fetched
+        if (!cancelled) setLoading(false);
       }
-    }
-  );
+    };
+    load();
+    setIsLoggedIn(!!localStorage.getItem("token"));
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
   const renderKoi = (data) => {
     return data.map((item) => (
       <div className="card-container" key={item.listingId}>
@@ -179,16 +166,6 @@ const DetailPage = () => {
               </h1>
             </div>
 
-            <div className="property-price-container">
-              <span className="property-price-text">Giá tiền: </span>
-              <span
-                className="property-price-text"
-                style={{ color: "red", marginLeft: "4px" }}
-              >
-                {formatCurrency(item.price)}VNĐ
-              </span>
-            </div>
-
             <div className="property-user-container">
               <img
                 src={
@@ -211,52 +188,10 @@ const DetailPage = () => {
     ));
   };
 
-  React.useEffect(() => {
-    fetchData();
-    fetchKoiData();
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, [fetchData, fetchKoiData]);
-
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  function formatCurrency(value) {
-    // Ensure value is a number
-    const numValue = Number(value);
-
-    if (isNaN(numValue)) {
-      return "Invalid input";
-    }
-
-    if (numValue < 1e6) {
-      // Less than a million
-      return addThousandSeparators(numValue);
-    } else if (numValue >= 1e9) {
-      // Billions
-      return formatLargeNumber(numValue, 1e9, "tỷ");
-    } else {
-      // Default case (shouldn't normally be reached)
-      return addThousandSeparators(numValue);
-    }
-  }
-
-  function formatLargeNumber(value, unitValue, unitName) {
-    const wholePart = Math.floor(value / unitValue);
-    const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
-
-    let result = addThousandSeparators(wholePart) + " " + unitName;
-    if (fractionalPart > 0) {
-      result += " " + addThousandSeparators(fractionalPart);
-    }
-    return result;
-  }
-
-  function addThousandSeparators(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  }
-  if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!koiDetails) return <div>No property details found</div>;
 
@@ -392,9 +327,6 @@ const DetailPage = () => {
                   {/* Additional Information */}
                   <Col span={24}>
                     <Descriptions bordered column={1}>
-                      <Descriptions.Item label="Giá tiền">
-                        {formatCurrency(koiDetails.price)} đ
-                      </Descriptions.Item>
                       <Descriptions.Item label="Số lượng">
                         {koiDetails.quantity}
                       </Descriptions.Item>
@@ -445,7 +377,7 @@ const DetailPage = () => {
               <Text>
                 <div
                   dangerouslySetInnerHTML={{
-                    __html: koiDetails.description,
+                    __html: DOMPurify.sanitize(koiDetails.description || ""),
                   }}
                 ></div>
               </Text>
@@ -468,7 +400,7 @@ const DetailPage = () => {
                   {koiDetails.elementName != "Non element" &&
                     koiDetails.elementName &&
                     cardDataKoi && (
-                      <div class="white-box" style={{ width: "100%" }}>
+                      <div className="white-box" style={{ width: "100%" }}>
                         <div
                           className="container-title"
                           style={{
@@ -531,7 +463,7 @@ const DetailPage = () => {
                       ←
                     </button>
 
-                    <div class="white-box" style={{ width: "100%" }}>
+                    <div className="white-box" style={{ width: "100%" }}>
                       <div
                         className="container-title"
                         style={{
@@ -566,17 +498,17 @@ const DetailPage = () => {
                       </div>
                     </div>
 
-                    <button onClick={scrollRight1} className="arrow-button">
-                      →
-                    </button>
-                  </div>
-                )}
-            </div>
-          </Col>
-        </Row>
-      </div>
-      <FooterComponent />
-    </div>
-  );
-};
+                      <button onClick={scrollRight1} className="arrow-button">
+                        →
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Col>
+            </Row>
+          </div>
+          <FooterComponent />
+        </div>
+      );
+    };
 export default DetailPage;

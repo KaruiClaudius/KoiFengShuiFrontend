@@ -3,15 +3,11 @@ import { Modal } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import image from "../../assets/banner1.jpg";
-import ex from "../../assets/koio_ex.png";
-import des from "../../assets/deconration.png";
 import usericon from "../../assets/icons/userIcon.png";
 import "./Homepage.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllPosts } from "../../config/axios";
-// import { CardContent } from "@mui/material";
-// import { Typography } from "antd";
 import TruncatedText from "../../utils/TruncatedText";
 import {
   getFengShuiKoiFishPost,
@@ -49,10 +45,6 @@ export default function Homepage() {
   // const sellingFishClick = () => {
   //   navigate("/KoiListings");
   // };
-
-  const fishProductClick = () => {
-    navigate("/fishProduct");
-  };
 
   const koiCompatible = () => {
     navigate("/KoiCompatible");
@@ -95,42 +87,6 @@ export default function Homepage() {
     fetchData();
   }, []);
 
-  // Add event listener
-
-  function formatCurrency(value) {
-    // Ensure value is a number
-    const numValue = Number(value);
-
-    if (isNaN(numValue)) {
-      return "Invalid input";
-    }
-
-    if (numValue < 1e6) {
-      // Less than a million
-      return addThousandSeparators(numValue);
-    } else if (numValue >= 1e9) {
-      // Billions
-      return formatLargeNumber(numValue, 1e9, "tỷ");
-    } else {
-      // Default case (shouldn't normally be reached)
-      return addThousandSeparators(numValue);
-    }
-  }
-
-  function formatLargeNumber(value, unitValue, unitName) {
-    const wholePart = Math.floor(value / unitValue);
-    const fractionalPart = Math.round((value % unitValue) / (unitValue / 10));
-
-    let result = addThousandSeparators(wholePart) + " " + unitName;
-    if (fractionalPart > 0) {
-      result += " " + addThousandSeparators(fractionalPart);
-    }
-    return result;
-  }
-
-  function addThousandSeparators(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  }
   // Function to scroll left by a specific amount
   const scrollLeft = (containerRef) => {
     if (containerRef.current) {
@@ -192,16 +148,6 @@ export default function Homepage() {
                   <TruncatedText text={item.title} maxLength={10} />{" "}
                 </a>
               </h1>
-            </div>
-
-            <div className="property-price-container">
-              <span className="property-price-text">Giá tiền: </span>
-              <span
-                className="property-price-price"
-                style={{ color: "red", marginLeft: "4px" }}
-              >
-                {formatCurrency(item.price)} đ
-              </span>
             </div>
 
             <div className="property-user-container">
@@ -319,7 +265,7 @@ export default function Homepage() {
               <button onClick={scrollLeft1} className="arrow-button">
                 ←
               </button>
-              <div class="white-box">
+              <div className="white-box">
                 <div className="container-title">
                   <h2 className="container-title-title">
                     Cá Koi Theo Bản Mệnh
@@ -358,7 +304,7 @@ export default function Homepage() {
             <button onClick={scrollLeft2} className="arrow-button">
               ←
             </button>
-            <div class="white-box">
+            <div className="white-box">
               <div className="container-title">
                 <h2 className="container-title-title">Bán Cá Koi</h2>
                 <a
@@ -388,7 +334,7 @@ export default function Homepage() {
             <button onClick={scrollLeft3} className="arrow-button">
               ←
             </button>
-            <div class="white-box">
+            <div className="white-box">
               <div className="container-title">
                 <h2 className="container-title-title">Trang trí hồ cá</h2>
                 <a
@@ -444,7 +390,7 @@ export default function Homepage() {
       <FooterComponent />
       <Modal
         title={null}
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleCancel}
         footer={null}
       >

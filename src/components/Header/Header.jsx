@@ -168,17 +168,6 @@ const AppHeader = () => {
         >
           Kinh nghiệm hay
         </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            ml: 1,
-            mr: 7,
-            "&:hover": {
-              cursor: "pointer",
-              opacity: 0.8,
-            },
-          }}
-        ></Typography>
 
         <Box sx={{ flexGrow: 1 }} />
 
@@ -218,7 +207,7 @@ const AppHeader = () => {
               onClose={handleClose}
             >
               {isLoggedIn && userRole === 1 && (
-                <MenuItem onClick={() => navigate("/dashboard")}>
+                <MenuItem onClick={() => navigate("/Dashboard")}>
                   Dashboard
                 </MenuItem>
               )}

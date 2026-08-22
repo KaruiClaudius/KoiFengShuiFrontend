@@ -11,14 +11,11 @@ import {
   Col,
   message,
   Breadcrumb,
-  Card,
 } from "antd";
-import moment from "moment";
-import AppHeader from "../../components/Header/Header";
+import dayjs from "dayjs";import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import api from "../../config/axios";
 import "./UserProfile.css";
-import TopUpForm from "./TopUpForm"; // Make sure this path is correct
 
 const { Header, Content, Sider } = Layout;
 const { Option } = Select;
@@ -28,8 +25,6 @@ const UserProfile = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState("1");
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [isTopUpModalVisible, setIsTopUpModalVisible] = useState(false);
   const elementMapping = {
     1: "Mộc",
     2: "Hoả",
@@ -41,37 +36,19 @@ const UserProfile = () => {
     fetchUserData();
   }, []);
 
-  const showTopUpModal = () => {
-    setIsTopUpModalVisible(true);
-  };
-
-  const handleTopUpSuccess = (successMessage) => {
-    message.success(successMessage);
-    fetchUserData(); // Refresh user data to update wallet balance
-    setIsTopUpModalVisible(false);
-  };
-
-  const handleTopUpCancel = () => {
-    setIsTopUpModalVisible(false);
-  };
-
   const fetchUserData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const email = localStorage.getItem("email");
-      const response = await api.get(`api/Account/email/${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get(`api/Account/email/${email}`);
       const user = response.data;
       const elementName = user.elementId
         ? elementMapping[user.elementId]
         : "Không xác định";
       setUserData(user);
-      setWalletBalance(user.wallet || 0); // Set the wallet balance
       form.setFieldsValue({
         ...user,
-        dob: user.dob ? moment(user.dob) : null,
+        dob: user.dob ? dayjs(user.dob) : null,
         elementName: elementName,
       });
       setLoading(false);
@@ -87,7 +64,7 @@ const UserProfile = () => {
     if (e.key === "1" && userData) {
       form.setFieldsValue({
         ...userData,
-        dob: userData.dob ? moment(userData.dob) : null,
+        dob: userData.dob ? dayjs(userData.dob) : null,
       });
     } else if (e.key === "2") {
       form.resetFields(["currentPassword", "newPassword", "confirmPassword"]);
@@ -97,12 +74,9 @@ const UserProfile = () => {
   const onFinish = async (values) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
       const email = localStorage.getItem("email");
 
-      const userResponse = await api.get(`api/Account/email/${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const userResponse = await api.get(`api/Account/email/${email}`);
 
       const accountId = userResponse.data.accountId;
 
@@ -114,26 +88,19 @@ const UserProfile = () => {
         phone: values.phone,
       };
 
-      const response = await api.put(`api/Account/${accountId}`, dataToSend, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put(`api/Account/${accountId}`, dataToSend);
 
       // Fetch updated user data
       await fetchUserData();
 
       // Dispatch custom event with updated user data
-      const updatedUserData = await api.get(`api/Account/email/${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const updatedUserData = await api.get(`api/Account/email/${email}`);
       localStorage.setItem("user", JSON.stringify(updatedUserData.data));
       window.dispatchEvent(
         new CustomEvent("userProfileUpdated", { detail: updatedUserData.data })
       );
 
       message.success("Thông tin cá nhân đã được cập nhật thành công");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
     } catch (error) {
       console.error(
         "Error updating profile:",
@@ -151,27 +118,18 @@ const UserProfile = () => {
 
   const onPasswordChange = async (values) => {
     try {
-      const token = localStorage.getItem("token");
       const email = localStorage.getItem("email");
 
       // First, fetch the user data to get the accountId
-      const userResponse = await api.get(`api/Account/email/${email}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const userResponse = await api.get(`api/Account/email/${email}`);
 
       const accountId = userResponse.data.accountId;
 
       // Now use the accountId in the password change request
-      await api.put(
-        `api/Account/${accountId}/change-password`,
-        {
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.put(`api/Account/${accountId}/change-password`, {
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      });
 
       message.success("Password changed successfully");
       form.resetFields(["currentPassword", "newPassword", "confirmPassword"]);
@@ -197,18 +155,6 @@ const UserProfile = () => {
       case "1":
         return (
           <>
-            <Card className="wallet-card" style={{ marginBottom: 16 }}>
-              <Row justify="space-between" align="middle">
-                <Col>
-                  <h3>Số dư ví: {walletBalance.toLocaleString()} VND</h3>
-                </Col>
-                <Col>
-                  <Button type="primary" onClick={showTopUpModal}>
-                    Nạp tiền
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
             <Form
               form={form}
               layout="vertical"
@@ -217,7 +163,7 @@ const UserProfile = () => {
                 userData
                   ? {
                       ...userData,
-                      dob: userData.dob ? moment(userData.dob) : null,
+                      dob: userData.dob ? dayjs(userData.dob) : null,
                     }
                   : {}
               }
@@ -415,11 +361,6 @@ const UserProfile = () => {
           </Layout>
         </Col>
       </Row>
-      <TopUpForm
-        visible={isTopUpModalVisible}
-        onSuccess={handleTopUpSuccess}
-        onClose={handleTopUpCancel}
-      />
       <FooterComponent />
     </Layout>
   );

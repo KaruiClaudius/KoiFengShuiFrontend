@@ -1,27 +1,35 @@
 import axios from "axios";
-const baseUrl = "https://localhost:7285";
 
-const config = {
-  baseUrl: baseUrl,
-};
+const baseUrl = import.meta.env.VITE_API_URL || "https://localhost:7285";
 
-const api = axios.create(config);
+const api = axios.create({
+  baseURL: baseUrl,
+});
 
-api.defaults.baseURL = baseUrl;
-
-// handle before call api
+// Attach the auth token to every request
 const handleBefore = (config) => {
-  // Handle actions before the API call
-
-  // Retrieve the token and attach it to the request headers
-  const token = localStorage.getItem("token")?.replaceAll("", "");
+  const token = localStorage.getItem("token");
   if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`; // Use backticks for token interpolation
+    config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 };
 
 api.interceptors.request.use(handleBefore, null);
+
+// Clear the session when the API reports an expired/invalid token
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      if (window.location.pathname !== "/auth") {
+        window.location.href = "/auth";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Xuất các hàm API cần thiết
 export const assessCompatibility = (data) => {
@@ -54,15 +62,7 @@ export const getKoiElement = (elementId, page = 1, pageSize = 10) => {
 
 export const getFengShuiKoiDecorationPost = (page = 1, pageSize = 10) => {
   return api
-    .get(
-      `/api/MarketplaceListings/GetAllByCategoryType/2?page=${page}&pageSize=${pageSize}`
-    )
-    .then((response) => response.data);
-};
-
-export const getFengShuiKoiPost = (page = 1, pageSize = 5) => {
-  return api
-    .get(`/api/Post/GetAllByPostType/3?page=${page}&pageSize=${pageSize}`)
+    .get(`/api/MarketplaceListings/GetAllByCategoryType/2?page=${page}&pageSize=${pageSize}`)
     .then((response) => response.data);
 };
 
@@ -101,22 +101,6 @@ export const getNewMarketListingsCount = (days = 30) => {
 
 export const getNewMarketListingsByCategory = (days = 30) => {
   return api.get(`/api/dashboard/new-market-listings-by-category?days=${days}`);
-};
-
-export const getTransactionListing = ({
-  page = 1,
-  pageSize = 10,
-  startDate = null,
-  endDate = null,
-}) => {
-  const params = {
-    Page: page,
-    PageSize: pageSize,
-    ...(startDate && { StartDate: startDate }),
-    ...(endDate && { EndDate: endDate }),
-  };
-
-  return api.get("/api/Dashboard/transactions-listing", { params });
 };
 
 export const getTotalTransaction = () => {
@@ -160,10 +144,6 @@ export const updatePost = (postId, data) => {
 
 export const deletePost = (postId) => {
   return api.delete(`/api/AdminPost/DeletePostWithAllRelated/${postId}`);
-};
-
-export const getTotalTransactionCount = () => {
-  return api.get("/api/Dashboard/transactions/count");
 };
 
 export default api;

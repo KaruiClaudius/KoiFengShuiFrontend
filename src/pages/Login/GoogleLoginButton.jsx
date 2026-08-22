@@ -15,11 +15,9 @@ export default function GoogleLoginButton() {
     setLoadingGoogle(true);
     setError(null);
     try {
-      console.log("Google Access Token:", tokenResponse.access_token);
       const res = await api.post("/api/auth/google-login", {
         accessToken: tokenResponse.access_token,
       });
-      console.log("Login successful", res.data);
 
       // Store the token
       localStorage.setItem("token", res.data.token);
@@ -56,7 +54,7 @@ export default function GoogleLoginButton() {
   const login = useGoogleLogin({
     onSuccess: handleGoogleLoginSuccess,
     onError: (error) => {
-      console.error("Google login failed", error);
+      console.error("Google login failed:", error?.type || "unknown");
       setError("Google login failed. Please try again.");
     },
   });

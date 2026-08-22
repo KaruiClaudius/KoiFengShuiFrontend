@@ -3,6 +3,7 @@ import { Row, Col, Card, Typography, Image, Button, Descriptions } from "antd";
 import AppHeader from "../../components/Header/Header";
 import FooterComponent from "../../components/Footer/Footer";
 import usericon from "../../assets/icons/userIcon.png";
+import DOMPurify from "dompurify";
 const { Title, Text } = Typography;
 function formatCurrency(value) {
   // Ensure value is a number
@@ -142,7 +143,7 @@ const PropertyPreview = ({ propertyDetails, onBack }) => {
               <Text>
                 <div
                   dangerouslySetInnerHTML={{
-                    __html: propertyDetails.description,
+                    __html: DOMPurify.sanitize(propertyDetails.description || ""),
                   }}
                 ></div>
               </Text>
