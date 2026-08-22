@@ -1,0 +1,49 @@
+:root {
+  /* ---- Hóa Long palette ---- */
+  --color-paper: #f8f4ea;
+  --color-paper-2: #f1ead9;
+  --color-surface: #fffdf6;
+  --color-ink: #211b16;
+  --color-ink-soft: #4a4038;
+  --color-muted: #8a7f70;
+
+  --color-crimson: #a92c2c;
+  --color-crimson-deep: #7f1d1d;
+  --color-gold: #c9a227;
+  --color-gold-soft: #e6d9a8;
+  --color-jade: #2f6e5d;
+  --color-pond: #10233d;
+
+  /* ---- Ngũ hành functional ramp ---- */
+  --element-kim: #b8b08d;
+  --element-moc: #4e7c4a;
+  --element-thuy: #1f3a5f;
+  --element-hoa: #b23a2e;
+  --element-tho: #a98142;
+
+  /* ---- Typography ---- */
+  --font-display: "Playfair Display", "Noto Serif Display", Georgia, serif;
+  --font-body: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+
+  /* ---- Radii & shadows ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-plaque: 0 10px 30px -18px rgba(33, 27, 22, 0.35);
+  --shadow-lift: 0 18px 44px -22px rgba(33, 27, 22, 0.45);
+  --ring-gold: 0 0 0 3px rgba(201, 162, 39, 0.35);
+
+  /* ---- Motion ---- */
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+  --ease-water: cubic-bezier(0.32, 0.72, 0.35, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}

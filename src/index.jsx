@@ -1,77 +1,93 @@
-import * as React from "react";
+import React, { Suspense, lazy } from "react";
 import * as ReactDOM from "react-dom/client";
 import { StyledEngineProvider } from "@mui/joy/styles";
-
-// Import page here
-import AuthPage from "./pages/Login/AuthPage";
-import DashboardDefault from "./pages/Dashboard";
-import KoiCompatibilityForm from "./pages/KoiCompatible/KoiCompatibilityForm";
-import UserProfile from "./pages/UserProfile/UserProfile";
-import ProtectedRoute from "./config/ProtectedRoute";
-import AdminFAQ from "./pages/FAQ/FAQManager.jsx";
-import AdminPost from "./pages/AdminPost/AdminPost";
-import BlogPage from "./pages/AdminPost/BlogPage";
-import ErrorBoundary from "./components/ErrorBoundary";
-import NotFound from "./pages/NotFound/NotFound";
-import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-//import Homepage, Detail Page
-import HomePage from "./pages/Homepage/Homepage";
-import DetailPage from "./pages/DetailPage/DetailPage.jsx";
-import DecorationPage from "./pages/DecorationPage/DecorationPage";
-import PostListingPage from "./pages/PostListing/PostListingPage";
-import KoiListingsPage from "./pages/KoiListingPage/KoiListingPage";
+import ProtectedRoute from "./config/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { AuthProvider } from "./context/AuthContext";
+import { PATHS } from "./routes/paths";
+import { PageLoader, Toaster } from "./ui";
+import "./index.css";
+
+const AuthPage = lazy(() => import("./pages/Login/AuthPage"));
+const DashboardDefault = lazy(() => import("./pages/Dashboard"));
+const KoiCompatibilityForm = lazy(
+  () => import("./pages/KoiCompatible/KoiCompatibilityForm")
+);
+const UserProfile = lazy(() => import("./pages/UserProfile/UserProfile"));
+const AdminFAQ = lazy(() => import("./pages/FAQ/FAQManager.jsx"));
+const AdminPost = lazy(() => import("./pages/AdminPost/AdminPost"));
+const BlogPage = lazy(() => import("./pages/AdminPost/BlogPage"));
+const HomePage = lazy(() => import("./pages/Homepage/Homepage"));
+const DetailPage = lazy(() => import("./pages/DetailPage/DetailPage.jsx"));
+const DecorationPage = lazy(
+  () => import("./pages/DecorationPage/DecorationPage")
+);
+const PostListingPage = lazy(() => import("./pages/PostListing/PostListingPage"));
+const KoiListingsPage = lazy(
+  () => import("./pages/KoiListingPage/KoiListingPage")
+);
+const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
+
+const guarded = (node, role = null) =>
+  role === null ? (
+    <ProtectedRoute>{node}</ProtectedRoute>
+  ) : (
+    <ProtectedRoute requiredRole={role}>{node}</ProtectedRoute>
+  );
+
 const App = () => {
   return (
     <StyledEngineProvider injectFirst>
-      <Router>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            <Route
-              path="/Dashboard"
-              element={
-                <ProtectedRoute requiredRole={1}>
-                  <DashboardDefault />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/" element={<HomePage />} />
-            <Route path="/KoiCompatible" element={<KoiCompatibilityForm />} />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/Details/:id" element={<DetailPage />} />
-            <Route path="/Decoration/:id" element={<DecorationPage />} />
-            <Route path="/ListingPost" element={<PostListingPage />} />
-            <Route path="/KoiListings" element={<KoiListingsPage />} />
-            <Route
-              path="/FAQManager"
-              element={
-                <ProtectedRoute requiredRole={1}>
-                  <AdminFAQ />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/AdminPost"
-              element={
-                <ProtectedRoute requiredRole={1}>
-                  <AdminPost />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </ErrorBoundary>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path={PATHS.auth} element={<AuthPage />} />
+                <Route
+                  path={PATHS.dashboard}
+                  element={guarded(<DashboardDefault />, 1)}
+                />
+                <Route path={PATHS.home} element={<HomePage />} />
+                <Route
+                  path={PATHS.koiCompatible}
+                  element={<KoiCompatibilityForm />}
+                />
+                <Route path={PATHS.profile} element={guarded(<UserProfile />)} />
+                <Route
+                  path={PATHS.details()}
+                  element={<DetailPage />}
+                />
+                <Route
+                  path={PATHS.decoration()}
+                  element={<DecorationPage />}
+                />
+                <Route
+                  path={PATHS.listingPost}
+                  element={guarded(<PostListingPage />)}
+                />
+                <Route
+                  path={PATHS.koiListings}
+                  element={<KoiListingsPage />}
+                />
+                <Route
+                  path={PATHS.faqManager}
+                  element={guarded(<AdminFAQ />, 1)}
+                />
+                <Route
+                  path={PATHS.adminPost}
+                  element={guarded(<AdminPost />, 1)}
+                />
+                <Route path={PATHS.blog} element={<BlogPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </Router>
+        <Toaster />
+      </AuthProvider>
     </StyledEngineProvider>
   );
 };
