@@ -1,514 +1,429 @@
-import React, { useEffect, useRef, useState } from "react";
-import AppHeader from "../../components/Header/Header";
-import FooterComponent from "../../components/Footer/Footer";
-import usericon from "../../assets/icons/userIcon.png";
-import "./DetailPage.css";
-import TruncatedText from "../../utils/TruncatedText";
+import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { Link, useParams } from "react-router-dom";
 import DOMPurify from "dompurify";
-import {
-  Row,
-  Col,
-  Card,
-  Button,
-  Image,
-  Typography,
-  Avatar,
-  Descriptions,
-  Space,
-  message,
-} from "antd";
-import api, {
-  getFengShuiKoiDetail,
-} from "../../config/axios";
-import { PhoneOutlined } from "@ant-design/icons";
+import api, { getFengShuiKoiDetail } from "../../config/axios";
+import { Badge, Button, Card, EmptyState, notify, Skeleton } from "../../ui";
+import { useAuth } from "../../context/AuthContext";
+import ListingCard from "../../components/ListingCard";
+import { CloudDivider, KoiSilhouette } from "../../assets/motifs/Motifs";
+import usericon from "../../assets/icons/userIcon.png";
 
-const ImageGallery = ({ images }) => {
-  const [mainImage, setMainImage] = useState(images[0]?.image?.imageUrl || "");
+const ELEMENT_KEY_BY_NAME = {
+  Kim: "kim",
+  Mộc: "moc",
+  Thuỷ: "thuy",
+  Hoả: "hoa",
+  Thổ: "tho",
+};
+
+const dicebearAvatar = (accountName) =>
+  `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(accountName)}`;
+
+const PhoneIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="h-4 w-4 shrink-0"
+    aria-hidden="true"
+  >
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+);
+
+const ImageGallery = ({ images, title }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const safeImages = Array.isArray(images)
+    ? images.filter((image) => image?.image?.imageUrl)
+    : [];
+
+  if (safeImages.length === 0) {
+    return (
+      <div className="flex aspect-[4/3] w-full items-center justify-center rounded-lg border border-gold/40 bg-paper-2">
+        <KoiSilhouette size={96} className="text-gold" />
+      </div>
+    );
+  }
+
+  const index = Math.min(activeIndex, safeImages.length - 1);
+
   return (
-    <Row gutter={[16, 16]} style={{ height: "100%" }}>
-      {/* Left column for sub-images */}
-      <Col xs={24} sm={8} md={6} lg={5}>
-        <div
-          style={{
-            overflowY: "auto",
-            maxHeight: "80vh",
-          }}
-        >
-          {images.map((image, index) => (
-            <Col key={index} style={{ display: "inline-block" }}>
-              <Image
+    <div>
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-gold/40 bg-paper-2 shadow-plaque">
+        <img
+          src={safeImages[index].image.imageUrl}
+          alt={title}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </div>
+      {safeImages.length > 1 && (
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {safeImages.map((image, idx) => (
+            <button
+              key={idx}
+              type="button"
+              aria-label={`Xem hình ${idx + 1}`}
+              aria-pressed={idx === index}
+              onClick={() => setActiveIndex(idx)}
+              className={`relative aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-sm transition-all duration-fast ease-water ${
+                idx === index
+                  ? "ring-2 ring-gold ring-offset-2 ring-offset-paper"
+                  : "opacity-70 ring-1 ring-gold/30 hover:opacity-100 hover:ring-gold/60"
+              }`}
+            >
+              <img
                 src={image.image.imageUrl}
-                alt={`Property Image ${index + 1}`}
-                style={{
-                  height: "120px",
-                  objectFit: "cover",
-                  marginBottom: "8px",
-                  cursor: "pointer",
-                }}
-                onClick={() => setMainImage(image.image.imageUrl)}
-                preview={false}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
               />
-            </Col>
+            </button>
           ))}
         </div>
-      </Col>
-
-      {/* Right column for main image */}
-      <Col xs={24} sm={16} md={18} lg={19}>
-        <Image
-          src={mainImage}
-          alt="Main Property Image"
-          style={{
-            height: "68vh",
-            objectFit: "contain",
-            border: "4px solid black", // Add border here
-            borderRadius: "8px", // Optional: add border radius for rounded corners
-          }}
-        />
-      </Col>
-    </Row>
+      )}
+    </div>
   );
 };
+
+ImageGallery.propTypes = {
+  images: PropTypes.arrayOf(
+    PropTypes.shape({
+      image: PropTypes.shape({ imageUrl: PropTypes.string }),
+    })
+  ),
+  title: PropTypes.string,
+};
+
+const DetailSkeleton = () => (
+  <div role="status" aria-label="Đang tải" className="grid gap-8 lg:grid-cols-12">
+    <div className="lg:col-span-7">
+      <Skeleton className="aspect-[4/3] w-full" />
+      <div className="mt-3 flex gap-2">
+        {[0, 1, 2, 3].map((item) => (
+          <Skeleton key={item} className="aspect-[4/3] w-20" />
+        ))}
+      </div>
+    </div>
+    <div className="lg:col-span-5">
+      <Card className="p-6">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-16 w-16 overflow-hidden rounded-full">
+            <Skeleton className="h-full w-full" />
+          </div>
+          <Skeleton className="h-5 w-36" />
+        </div>
+        <div className="mt-8 space-y-5">
+          {[0, 1, 2].map((item) => (
+            <div key={item} className="flex items-center justify-between gap-4">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="mt-8 h-12 w-full" />
+      </Card>
+    </div>
+  </div>
+);
+
+const RelatedRail = ({ title, seeMoreTo, items, to }) => {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  return (
+    <section className="mt-12">
+      <div className="flex items-end justify-between gap-4">
+        <h2 className="font-display text-2xl text-ink md:text-[28px]">{title}</h2>
+        {seeMoreTo && (
+          <Link
+            to={seeMoreTo}
+            className="shrink-0 text-sm font-semibold text-crimson transition-colors duration-fast ease-water hover:text-crimson-deep"
+          >
+            Xem thêm
+          </Link>
+        )}
+      </div>
+      <div className="-mx-1 mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2">
+        {items.map((item) => (
+          <div key={item.listingId} className="w-64 shrink-0 snap-start sm:w-72">
+            <ListingCard item={item} to={to} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+RelatedRail.propTypes = {
+  title: PropTypes.string.isRequired,
+  seeMoreTo: PropTypes.string,
+  items: PropTypes.array,
+  to: PropTypes.string.isRequired,
+};
+
 const DetailPage = () => {
   const { id } = useParams();
-  const [loading, setLoading] = React.useState(true); // Handle loading state
-  const [koiDetails, setDataKoi] = React.useState(null);
-  const [error, setError] = React.useState(null); // Handle errors
-  const { Title, Text } = Typography;
-  const scrollContainerRef1 = useRef(null);
-  const scrollContainerRef2 = useRef(null);
-  const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
-  const [categoryData, setCategory] = useState([]);
-  const [cardDataKoiBaseOnAccount, setCardDataKoiBaseOnAccount] =
-    React.useState([]); // Store data
-  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn } = useAuth();
+  const [koiDetail, setKoiDetail] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [relatedByElement, setRelatedByElement] = useState([]);
+  const [relatedByAccount, setRelatedByAccount] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showPhone, setShowPhone] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        setShowPhone(false);
+        setKoiDetail(null);
+        setRelatedByElement([]);
+        setRelatedByAccount([]);
         const response = await getFengShuiKoiDetail(id);
         if (cancelled) return;
         const detail = response.data[0];
-        setDataKoi(detail);
-
-        const responseMarketCategory = await api
-          .get("/api/MarketCategory/GetAll")
-          .then((response) => response.data);
-        if (cancelled) return;
-        setCategory(responseMarketCategory.data);
+        setKoiDetail(detail);
 
         if (detail) {
-          const [responseKoi, responseKoiBaseOnAccount] = await Promise.all([
-            api
-              .get(
-                `/api/MarketplaceListings/GetAllByElementId/${detail.elementId}/Category/${detail.categoryId}?excludeListingId=${id}&page=1&pageSize=10`
-              )
-              .then((response) => response.data),
-            api
-              .get(
-                `/api/MarketplaceListings/GetAllByAccount/${detail.accountId}/Category/${detail.categoryId}?excludeListingId=${id}&page=1&pageSize=10`
-              )
-              .then((response) => response.data),
-          ]);
+          const [elementListings, accountListings, categoryList] =
+            await Promise.all([
+              api
+                .get(
+                  `/api/MarketplaceListings/GetAllByElementId/${detail.elementId}/Category/${detail.categoryId}?excludeListingId=${id}&page=1&pageSize=10`
+                )
+                .then((res) => res.data),
+              api
+                .get(
+                  `/api/MarketplaceListings/GetAllByAccount/${detail.accountId}/Category/${detail.categoryId}?excludeListingId=${id}&page=1&pageSize=10`
+                )
+                .then((res) => res.data),
+              api.get("/api/MarketCategory/GetAll").then((res) => res.data),
+            ]);
           if (cancelled) return;
-          setCardDataKoi(responseKoi.data);
-          setCardDataKoiBaseOnAccount(responseKoiBaseOnAccount.data);
+          setRelatedByElement(
+            Array.isArray(elementListings.data) ? elementListings.data : []
+          );
+          setRelatedByAccount(
+            Array.isArray(accountListings.data) ? accountListings.data : []
+          );
+          setCategories(
+            Array.isArray(categoryList.data) ? categoryList.data : []
+          );
         }
-      } catch (error) {
-        if (!cancelled) setError(error.message);
+      } catch (err) {
+        if (!cancelled) setError(err.message);
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
     load();
-    setIsLoggedIn(!!localStorage.getItem("token"));
     return () => {
       cancelled = true;
     };
-  }, [id]);
-  const renderKoi = (data) => {
-    return data.map((item) => (
-      <div className="card-container" key={item.listingId}>
-        <div className="property-card">
-          {item.tierName === "Tin Nổi Bật" && (
-            <div className="featured-badge">
-              <span>Nổi bật</span>
-            </div>
-          )}
-
-          <Link
-            to={`/Details/${item.listingId}`}
-            style={{ justifyContent: "center" }}
-          >
-            <img
-              src={item.listingImages?.[0]?.image?.imageUrl}
-              alt={item.title}
-              className="property-koi-image"
-              // onError={(e) => {
-              //   e.target.src = ;
-              // }}
-            />
-          </Link>
-
-          <div className="property-content">
-            <div className="property-title-wrapper">
-              <h1 className="property-title">
-                <a
-                  href={`/Details/${item.listingId}`}
-                  className="property-title-link"
-                >
-                  {item.elementName != "Non element" && `[${item.elementName}]`}{" "}
-                  <TruncatedText text={item.title} maxLength={10} />{" "}
-                </a>
-              </h1>
-            </div>
-
-            <div className="property-user-container">
-              <img
-                src={
-                  item.accountName
-                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                        item.accountName
-                      )}`
-                    : usericon
-                }
-                alt="User Icon"
-                className="property-user-icon"
-              />
-              <span className="property-user-text" style={{ margin: "auto 0" }}>
-                {item.accountName}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ));
-  };
+  }, [id, retryToken]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <main className="min-h-screen grain-bg bg-paper">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 md:py-14 lg:px-8">
+          <DetailSkeleton />
+        </div>
+      </main>
+    );
   }
 
-  if (error) return <div>Error: {error}</div>;
-  if (!koiDetails) return <div>No property details found</div>;
+  if (error) {
+    return (
+      <main className="min-h-screen grain-bg bg-paper">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <EmptyState
+            title="Đã xảy ra lỗi"
+            description="Không thể tải chi tiết tin đăng. Vui lòng thử lại."
+            action={
+              <Button
+                type="button"
+                onClick={() => setRetryToken((token) => token + 1)}
+              >
+                Thử lại
+              </Button>
+            }
+          />
+        </div>
+      </main>
+    );
+  }
 
-  // Function to scroll left by a specific amount
-  const scrollLeft = (containerRef) => {
-    if (containerRef.current) {
-      containerRef.current.scrollBy({
-        left: -300, // Adjust the scroll distance as needed
-        behavior: "smooth", // Smooth scroll
-      });
+  if (!koiDetail) {
+    return (
+      <main className="min-h-screen grain-bg bg-paper">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <EmptyState
+            title="Không tìm thấy tin đăng"
+            description="Tin đăng bạn cần không tồn tại hoặc đã được gỡ bỏ."
+            action={
+              <Button as={Link} to="/" variant="secondary">
+                Về trang chủ
+              </Button>
+            }
+          />
+        </div>
+      </main>
+    );
+  }
+
+  const hasElement = Boolean(
+    koiDetail.elementName && koiDetail.elementName !== "Non element"
+  );
+  const categoryName = categories.find(
+    (category) => category.categoryid === koiDetail.categoryId
+  )?.categoryName;
+  const ownerAvatar = koiDetail.accountName
+    ? dicebearAvatar(koiDetail.accountName)
+    : usericon;
+
+  const handlePhoneClick = () => {
+    if (!isLoggedIn) {
+      notify.error("Đăng nhập để xem số điện thoại");
+      return;
     }
+    setShowPhone((visible) => !visible);
   };
 
-  // Function to scroll right by a specific amount
-  const scrollRight = (containerRef) => {
-    if (containerRef.current) {
-      containerRef.current.scrollBy({
-        left: 300, // Adjust the scroll distance as needed
-        behavior: "smooth", // Smooth scroll
-      });
-    }
-  };
-  const scrollLeft1 = () => scrollLeft(scrollContainerRef1);
-  const scrollRight1 = () => scrollRight(scrollContainerRef1);
-  const scrollLeft2 = () => scrollLeft(scrollContainerRef2);
-  const scrollRight2 = () => scrollRight(scrollContainerRef2);
-  const handleButtonClick = () => {
-    if (isLoggedIn) {
-      setShowPhoneNumber(!showPhoneNumber);
-    } else {
-      message.error("Đăng nhập để thấy số điện thoại người đăng");
-    }
-  };
   return (
-    <div
-      style={{
-        minHeight: "150vh",
-        height: "100%",
-        background: "#f6f4f3",
-      }}
-      className="detail-page-container"
-    >
-      <AppHeader />
-      <div style={{ padding: "70px 100px 0 100px", overflow: "auto" }}>
-        {/* Breadcrumb */}
-        <Row>
-          <Col span={20}>
-            <Text style={{ display: "flex", marginTop: 10 }}>
+    <main className="min-h-screen grain-bg bg-paper pb-16">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted"
+        >
+          <Link
+            to="/"
+            className="transition-colors duration-fast ease-water hover:text-crimson"
+          >
+            Trang chủ
+          </Link>
+          {categoryName && (
+            <>
+              <span aria-hidden="true">›</span>
               <Link
-                underline="none"
-                to={`/`}
-                style={{
-                  textDecoration: "none",
-                  color: "black",
-                }}
-                onMouseEnter={(e) => (e.target.style.color = "#ff914d")}
-                onMouseLeave={(e) => (e.target.style.color = "black")}
+                to="/KoiListings"
+                className="transition-colors duration-fast ease-water hover:text-crimson"
               >
-                Trang chủ
+                {categoryName}
               </Link>
-              <div style={{ padding: "0 3px" }}>&gt;</div>
-              <Link
-                underline="none"
-                to={`/KoiListings`}
-                style={{
-                  textDecoration: "none",
-                  color: "black",
-                }}
-                onMouseEnter={(e) => (e.target.style.color = "#ff914d")}
-                onMouseLeave={(e) => (e.target.style.color = "black")}
-              >
-                {
-                  categoryData.find(
-                    (category) => category.categoryid === koiDetails.categoryId
-                  )?.categoryName
-                }
-              </Link>
-              <div style={{ padding: "0 3px" }}>&gt;</div>
-              <div style={{ color: "orange", fontWeight: "bold" }}>
-                {koiDetails.title}
-              </div>
-            </Text>
-          </Col>
-        </Row>
-        <div className="detail-page-detail">
-          {/* Main Property Section */}
-          <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
-            {/* Image Gallery */}
-            <Col xs={24} lg={14}>
-              <Typography
-                style={{
-                  fontWeight: "bold",
-                  fontSize: "30px",
-                  marginBottom: "20px",
-                }}
-              >
-                {koiDetails.elementName != "Non element" &&
-                  `[${koiDetails.elementName}]`}{" "}
-                {koiDetails.title}
-              </Typography>
-              <ImageGallery images={koiDetails.listingImages} />
-            </Col>
-            {/* Owner Information */}
-            <Col xs={24} lg={10}>
-              <Card
-                style={{
-                  top: 0,
-                  zIndex: 1,
-                  marginTop: 30,
-                  border: "2px solid",
-                  borderRadius: "8px",
-                }}
-              >
-                <Row gutter={[16, 16]}>
-                  {/* Owner Details */}
-                  <Col span={24}>
-                    <Space
-                      direction="vertical"
-                      align="center"
-                      style={{ width: "100%" }}
-                    >
-                      <Avatar
-                        size={64}
-                        src={`https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                          koiDetails.accountName
-                        )}`}
-                        alt={koiDetails.accountName}
-                      />
-                      <Title level={5}>{koiDetails.accountName}</Title>
-                    </Space>
-                  </Col>
+            </>
+          )}
+          <span aria-hidden="true">›</span>
+          <span
+            aria-current="page"
+            className="min-w-0 truncate font-medium text-ink-soft"
+          >
+            {koiDetail.title}
+          </span>
+        </nav>
 
-                  {/* Additional Information */}
-                  <Col span={24}>
-                    <Descriptions bordered column={1}>
-                      <Descriptions.Item label="Số lượng">
-                        {koiDetails.quantity}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Màu sắc">
-                        {koiDetails.color}
-                      </Descriptions.Item>
-                      <Descriptions.Item label="Bản mệnh">
-                        {koiDetails.elementName}
-                      </Descriptions.Item>
-                    </Descriptions>
-                  </Col>
+        <h1 className="mt-5 font-display text-3xl leading-tight text-ink md:text-4xl">
+          {hasElement ? `[${koiDetail.elementName}] ` : ""}
+          {koiDetail.title}
+        </h1>
 
-                  {/* Communication Options */}
-                  <Col span={24}>
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                      <Button
-                        icon={<PhoneOutlined />}
-                        size="large"
-                        style={{ width: "100%" }}
-                        onClick={handleButtonClick}
-                      >
-                        {showPhoneNumber && isLoggedIn
-                          ? koiDetails.accountPhoneNumber
-                          : "Gọi ngay"}
-                      </Button>
-                    </Space>
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          </Row>
-        </div>
-
-        {/* Property Details Section */}
-        <Row style={{ marginTop: 20, width: "100%" }}>
-          <Col xs={24} lg={24}>
-            <Card
-              style={{
-                height: "100%",
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography style={{ fontWeight: "bold", fontSize: "25px" }}>
-                Mô tả
-              </Typography>
-              <Text>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(koiDetails.description || ""),
-                  }}
-                ></div>
-              </Text>
-            </Card>
-          </Col>
-        </Row>
-        {cardDataKoi && cardDataKoi.length > 0 && (
-          <Row style={{ marginTop: 20, width: "100%" }}>
-            <Col xs={24} lg={24}>
-              <div
-                style={{ display: "flex", alignItems: "center", width: "100%" }}
-              >
-                <div
-                  className="render-koi-elemet"
-                  style={{ display: "flex", alignItems: "center" }}
-                >
-                  <button onClick={scrollLeft2} className="arrow-button">
-                    ←
-                  </button>
-                  {koiDetails.elementName != "Non element" &&
-                    koiDetails.elementName &&
-                    cardDataKoi && (
-                      <div className="white-box" style={{ width: "100%" }}>
-                        <div
-                          className="container-title"
-                          style={{
-                            justifyContent: "space-between",
-                            width: "100%",
-                          }}
-                        >
-                          {categoryData.find(
-                            (category) =>
-                              category.categoryid === koiDetails.categoryId
-                          )?.categoryName && (
-                            <h2>
-                              {
-                                categoryData.find(
-                                  (category) =>
-                                    category.categoryid ===
-                                    koiDetails.categoryId
-                                )?.categoryName
-                              }{" "}
-                              Cùng Bản Mệnh
-                            </h2>
-                          )}
-                          <a
-                            href={`/KoiListings?category=1&element=${koiDetails.elementId}`}
-                            style={{ textDecoration: "none", color: "black" }}
-                          >
-                            <h2>Xem thêm {">"}</h2>
-                          </a>
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            overflow: "hidden",
-                          }}
-                          ref={scrollContainerRef2}
-                          className="scroll-container"
-                        >
-                          {renderKoi(cardDataKoi)}
-                        </div>
-                      </div>
-                    )}
-                  <button onClick={scrollRight2} className="arrow-button">
-                    →
-                  </button>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        )}
-        <Row style={{ marginTop: 20, width: "100%", paddingBottom: 50 }}>
-          <Col xs={24} lg={24}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              {cardDataKoiBaseOnAccount &&
-                cardDataKoiBaseOnAccount.length > 0 && (
-                  <div
-                    className="render-koi-elemet"
-                    style={{ display: "flex", alignItems: "center" }}
-                  >
-                    <button onClick={scrollLeft1} className="arrow-button">
-                      ←
-                    </button>
-
-                    <div className="white-box" style={{ width: "100%" }}>
-                      <div
-                        className="container-title"
-                        style={{
-                          justifyContent: "space-between",
-                          width: "100%",
-                        }}
-                      >
-                        {categoryData.find(
-                          (category) =>
-                            category.categoryid === koiDetails.categoryId
-                        )?.categoryName && (
-                          <h2>
-                            {
-                              categoryData.find(
-                                (category) =>
-                                  category.categoryid === koiDetails.categoryId
-                              )?.categoryName
-                            }{" "}
-                            Liên Quan
-                          </h2>
-                        )}
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          overflow: "hidden",
-                        }}
-                        ref={scrollContainerRef1}
-                        className="scroll-container"
-                      >
-                        {renderKoi(cardDataKoiBaseOnAccount)}
-                      </div>
-                    </div>
-
-                      <button onClick={scrollRight1} className="arrow-button">
-                        →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </Col>
-            </Row>
+        <div className="mt-8 grid gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <ImageGallery
+              key={koiDetail.listingId ?? id}
+              images={koiDetail.listingImages}
+              title={koiDetail.title}
+            />
           </div>
-          <FooterComponent />
+
+          <Card className="h-fit p-6 lg:col-span-5">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <img
+                src={ownerAvatar}
+                alt={koiDetail.accountName || ""}
+                className="h-16 w-16 rounded-full border-2 border-gold/50 bg-paper-2 object-cover"
+              />
+              <h2 className="font-display text-xl text-ink">
+                {koiDetail.accountName}
+              </h2>
+            </div>
+
+            <dl className="mt-6 text-sm">
+              <div className="flex items-center justify-between gap-4 border-b border-gold/25 py-3">
+                <dt className="shrink-0 text-muted">Số lượng</dt>
+                <dd className="text-right font-medium text-ink">
+                  {koiDetail.quantity}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 border-b border-gold/25 py-3">
+                <dt className="shrink-0 text-muted">Màu sắc</dt>
+                <dd className="text-right font-medium text-ink">
+                  {koiDetail.color}
+                </dd>
+              </div>
+              {hasElement && (
+                <div className="flex items-center justify-between gap-4 border-b border-gold/25 py-3">
+                  <dt className="shrink-0 text-muted">Bản mệnh</dt>
+                  <dd className="text-right">
+                    <Badge element={ELEMENT_KEY_BY_NAME[koiDetail.elementName]}>
+                      {koiDetail.elementName}
+                    </Badge>
+                  </dd>
+                </div>
+              )}
+            </dl>
+
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              className="mt-6 w-full"
+              aria-label="Hiện số điện thoại"
+              onClick={handlePhoneClick}
+            >
+              <PhoneIcon />
+              <span className="truncate">
+                {showPhone ? koiDetail.accountPhoneNumber : "Hiện số điện thoại"}
+              </span>
+            </Button>
+          </Card>
         </div>
-      );
-    };
+
+        <CloudDivider className="mx-auto mt-12 max-w-xs text-gold" />
+
+        <Card className="mt-10 p-6">
+          <h2 className="font-display text-2xl text-ink">Mô tả</h2>
+          <div
+            className="mt-4 space-y-3 text-[15px] leading-relaxed text-ink-soft [&_a]:font-medium [&_a]:text-crimson [&_a]:underline [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-ink [&_img]:my-3 [&_img]:rounded-md [&_li]:ml-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-3 [&_strong]:font-semibold [&_strong]:text-ink [&_ul]:list-disc [&_ul]:pl-5 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(koiDetail.description || ""),
+            }}
+          />
+        </Card>
+
+        {hasElement && (
+          <RelatedRail
+            title={`${categoryName ? `${categoryName} ` : ""}Cùng bản mệnh`}
+            seeMoreTo={`/KoiListings?category=1&element=${koiDetail.elementId}`}
+            items={relatedByElement}
+            to="/Details"
+          />
+        )}
+
+        <RelatedRail
+          title={`${categoryName ? `${categoryName} ` : ""}Tin liên quan`}
+          items={relatedByAccount}
+          to="/Details"
+        />
+      </div>
+    </main>
+  );
+};
+
 export default DetailPage;

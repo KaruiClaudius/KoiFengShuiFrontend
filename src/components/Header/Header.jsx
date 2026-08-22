@@ -1,246 +1,232 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
   Button,
-  Avatar,
   Menu,
+  MenuTrigger,
+  MenuContent,
   MenuItem,
-  IconButton,
-  Box,
-} from "@mui/material";
-import {
-  CloudUpload as CloudUploadIcon,
-  Person as PersonIcon,
-} from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+  MenuSeparator,
+} from "../../ui";
+import { SealStamp } from "../../assets/motifs/Motifs.jsx";
+import { useAuth } from "../../context/AuthContext";
+import { PATHS } from "../../routes/paths";
 import Logo from "../../assets/Logo.png";
+
+const NAV_LINKS = [
+  { label: "Cá Koi", to: `${PATHS.koiListings}?category=1` },
+  { label: "Đồ trang trí", to: `${PATHS.koiListings}?category=2` },
+  { label: "Tư vấn bản mệnh", to: PATHS.koiCompatible },
+  { label: "Kinh nghiệm hay", to: PATHS.blog },
+];
+
+const ELEMENT_LABELS = {
+  1: "Mộc",
+  2: "Hoả",
+  3: "Thổ",
+  4: "Kim",
+  5: "Thuỷ",
+};
 
 const AppHeader = () => {
   const navigate = useNavigate();
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [fullName, setFullName] = useState("");
-  const [elementName, setElementName] = useState("");
-  const [userRole, setUserRole] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const { user, isLoggedIn, isAdmin, logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  const elementMapping = {
-    1: "Mộc",
-    2: "Hoả",
-    3: "Thổ",
-    4: "Kim",
-    5: "Thuỷ",
-  };
-
-  useEffect(() => {
-    const updateUserData = (event) => {
-      const updatedUser = event.detail;
-      setUserData(updatedUser);
-      setFullName(updatedUser.fullName);
-      setUserRole(updatedUser.roleId);
-      const elementName = updatedUser.elementId
-        ? elementMapping[updatedUser.elementId]
-        : "Unknown";
-      setElementName(elementName);
-      setAvatarUrl(
-        `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-          updatedUser.fullName
-        )}`
-      );
-    };
-
-    // Add event listener
-    window.addEventListener("userProfileUpdated", updateUserData);
-
-    // Initial data load
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (token && user) {
-      updateUserData({ detail: user });
-    }
-    setIsLoggedIn(!!token);
-
-    // Cleanup function to remove event listener
-    return () => {
-      window.removeEventListener("userProfileUpdated", updateUserData);
-    };
-  }, []);
+  const elementLabel = ELEMENT_LABELS[user?.elementId] ?? "Chưa xác định";
+  const avatarUrl = user?.fullName
+    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+        user.fullName
+      )}`
+    : "";
 
   const handleLogout = () => {
-    localStorage.clear();
-    setIsLoggedIn(false);
-    setFullName("");
-
-    navigate("/");
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-  };
-
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogoClick = () => {
+    logout();
     navigate("/");
   };
 
-  const sellingFishClick = () => {
-    navigate("/KoiListings?category=1");
-  };
-  const koiCompatible = () => {
-    navigate("/KoiCompatible");
-  };
-  const blogClick = () => {
-    navigate("/blog");
-  };
+  const closeMobileMenu = () => setMobileOpen(false);
 
   return (
-    <AppBar sx={{ backgroundColor: "#231815" }}>
-      <Toolbar>
-        <Box
-          component="img"
-          src={Logo}
-          alt="KoiFengShui"
-          sx={{
-            height: "64px",
-            mr: 4,
-            filter: "brightness(1.1) contrast(1.1)",
-            mixBlendMode: "screen",
-            backgroundColor: "transparent",
-            "&:hover": {
-              cursor: "pointer",
-              opacity: 0.8,
-            },
-          }}
-          onClick={handleLogoClick}
-        />
-
-        <Box sx={{ flexGrow: 1 }} />
-        <Typography
-          variant="h6"
-          sx={{
-            ml: 1,
-            mr: 7,
-            "&:hover": {
-              cursor: "pointer",
-              opacity: 0.8,
-            },
-          }}
-          onClick={sellingFishClick}
+    <header className="sticky top-0 z-50 bg-ink text-[#FDF6EC] shadow-plaque">
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          aria-label="Koi FengShui — Về trang chủ"
+          className="flex shrink-0 items-center gap-2.5"
         >
-          Mua bán cá Koi
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            ml: 1,
-            mr: 7,
-            "&:hover": {
-              cursor: "pointer",
-              opacity: 0.8,
-            },
-          }}
-          onClick={koiCompatible}
-        >
-          Tư vấn bản mệnh
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            ml: 1,
-            mr: 7,
-            "&:hover": {
-              cursor: "pointer",
-              opacity: 0.8,
-            },
-          }}
-          onClick={blogClick}
-        >
-          Kinh nghiệm hay
-        </Typography>
+          <img src={Logo} alt="" className="h-10 w-auto" />
+          <SealStamp char="鯉" size={34} rotate={-6} aria-hidden="true" />
+        </Link>
 
-        <Box sx={{ flexGrow: 1 }} />
-
-        {isLoggedIn ? (
-          <>
-            <Box display="flex" alignItems="center">
-              <IconButton
-                size="large"
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleMenu}
-                color="inherit"
-              >
-                <Avatar src={avatarUrl} alt={fullName} />
-              </IconButton>
-              <Box ml={1}>
-                <Typography variant="subtitle1">{user.fullName}</Typography>
-                <Typography variant="caption" color="inherit">
-                  Mệnh: {elementName || "No Element"}
-                </Typography>
-              </Box>
-            </Box>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
+        <nav
+          aria-label="Điều hướng chính"
+          className="hidden items-center gap-7 md:flex"
+        >
+          {NAV_LINKS.map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className="text-sm font-medium transition-colors duration-fast hover:text-gold-soft"
             >
-              {isLoggedIn && userRole === 1 && (
-                <MenuItem onClick={() => navigate("/Dashboard")}>
-                  Dashboard
-                </MenuItem>
-              )}
-              <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <Button
-            color="inherit"
-            startIcon={<PersonIcon />}
-            onClick={() => navigate("/auth")}
-          >
-            Đăng nhập / Đăng kí
-          </Button>
-        )}
+              {item.label}
+            </Link>
+          ))}
+        </nav>
 
-        {isLoggedIn && (
-          <Button
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-            sx={{
-              ml: 2,
-              backgroundColor: "#ff4d4f",
-              "&:hover": { backgroundColor: "#ff7875" },
-            }}
-            onClick={() => navigate("/ListingPost")}
+        <div className="hidden items-center gap-3 md:flex">
+          {isLoggedIn ? (
+            <>
+              <Button variant="primary" size="sm" as={Link} to={PATHS.listingPost}>
+                Đăng tin
+              </Button>
+              <Menu>
+                <MenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Tài khoản"
+                    className="rounded-full outline-none focus-visible:shadow-gold"
+                  >
+                    <img
+                      src={avatarUrl}
+                      alt=""
+                      loading="lazy"
+                      className="h-9 w-9 rounded-full border border-gold/50"
+                    />
+                  </button>
+                </MenuTrigger>
+                <MenuContent align="end">
+                  <div className="px-3 py-2">
+                    <p className="font-display text-sm font-semibold text-ink">
+                      {user?.fullName ?? ""}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      Mệnh: {elementLabel}
+                    </p>
+                  </div>
+                  <MenuSeparator />
+                  {isAdmin && (
+                    <MenuItem onSelect={() => navigate(PATHS.dashboard)}>
+                      Dashboard
+                    </MenuItem>
+                  )}
+                  <MenuItem onSelect={() => navigate(PATHS.profile)}>
+                    Hồ sơ
+                  </MenuItem>
+                  <MenuSeparator />
+                  <MenuItem onSelect={handleLogout}>Đăng xuất</MenuItem>
+                </MenuContent>
+              </Menu>
+            </>
+          ) : (
+            <Button variant="gold" size="sm" as={Link} to={PATHS.auth}>
+              Đăng nhập
+            </Button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          aria-label="Mở menu"
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((open) => !open)}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-sm text-[#FDF6EC] transition-colors duration-fast hover:bg-white/10 focus-visible:shadow-gold md:hidden"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            className="h-6 w-6"
+            aria-hidden="true"
           >
-            Đăng tin
-          </Button>
-        )}
-      </Toolbar>
-    </AppBar>
+            {mobileOpen ? (
+              <>
+                <path d="M6 6l12 12" />
+                <path d="M18 6L6 18" />
+              </>
+            ) : (
+              <>
+                <path d="M4 7h16" />
+                <path d="M4 12h16" />
+                <path d="M4 17h16" />
+              </>
+            )}
+          </svg>
+        </button>
+      </div>
+
+      {mobileOpen && (
+        <div className="border-t border-gold/20 bg-ink px-4 pb-5 pt-2 sm:px-6 md:hidden">
+          <nav aria-label="Điều hướng di động" className="flex flex-col">
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.label}
+                to={item.to}
+                onClick={closeMobileMenu}
+                className="py-2.5 text-[15px] font-medium transition-colors duration-fast hover:text-gold-soft"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-3 flex flex-col gap-2 border-t border-gold/20 pt-4">
+            {isLoggedIn ? (
+              <>
+                <Button
+                  variant="primary"
+                  size="md"
+                  as={Link}
+                  to={PATHS.listingPost}
+                  onClick={closeMobileMenu}
+                  className="w-full"
+                >
+                  Đăng tin
+                </Button>
+                <Link
+                  to={PATHS.profile}
+                  onClick={closeMobileMenu}
+                  className="py-2.5 text-[15px] font-medium transition-colors duration-fast hover:text-gold-soft"
+                >
+                  Hồ sơ
+                </Link>
+                {isAdmin && (
+                  <Link
+                    to={PATHS.dashboard}
+                    onClick={closeMobileMenu}
+                    className="py-2.5 text-[15px] font-medium transition-colors duration-fast hover:text-gold-soft"
+                  >
+                    Dashboard
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMobileMenu();
+                    handleLogout();
+                  }}
+                  className="w-full rounded-md border border-gold/50 px-5 py-2.5 text-[15px] font-semibold text-[#FDF6EC] transition-colors duration-fast hover:bg-white/10 focus-visible:shadow-gold"
+                >
+                  Đăng xuất
+                </button>
+              </>
+            ) : (
+              <Button
+                variant="gold"
+                size="md"
+                as={Link}
+                to={PATHS.auth}
+                onClick={closeMobileMenu}
+                className="w-full"
+              >
+                Đăng nhập
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

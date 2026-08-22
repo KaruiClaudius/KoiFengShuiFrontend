@@ -1,124 +1,17 @@
-.homepage-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 100vh;
-  margin-top: 40px;
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.image-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  position: relative;
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-.half-page-image {
-  width: 100%; /* Makes the image cover 50% of the viewport width */
-  height: 50vh;
-  object-fit: cover;
-}
-
-.centered-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.card-container {
+  flex-shrink: 0;
+  width: 260px;
+  margin: 5px;
   text-align: center;
-  color: white;
-  font-family: Arial, sans-serif;
-  font-size: 2em;
-}
-
-.centered-text h1 {
-  margin: 0;
-}
-
-.centered-text p {
-  margin-top: 10px;
-  font-size: 1.1em;
-}
-
-.title-banner {
-  justify-content: center;
-  display: flex;
-}
-
-.search-bar-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-}
-
-.search-bar-container input{
-  padding-left: 20px; 
-  outline: none;
-}
-
-.search-bar {
-  padding: 3px;
-  width: 100%;
-  border: 1px solid #623d0d; /* Adjust the color to fit your theme */
-  border-radius: 10px; /* For rounded edges */
-  font-size: 0.8em;
-  padding-right: 40px; /* Space for the icon */
-}
-
-.search-icon-button {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  width: 50px;
-}
-
-.search-icon {
-  width: 20px; /* Adjust icon size */
-  height: 20px;
-  margin-left: 20px;
-}
-
-.button-group {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px; /* Space between the buttons */
-  justify-content: center;
-}
-
-.custom-button {
-  padding: 10px 25px;
-  background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent background */
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Light border */
-  border-radius: 5px;
-  margin-top: auto;
-  font-size: 20px;
-  cursor: pointer;
-  position: relative;
-  z-index: 1; /* Ensures button text stays above background */
-  backdrop-filter: blur(10px); /* Blur effect */
-  -webkit-backdrop-filter: blur(10px); /* Safari support */
-  transition: background-color 0.3s ease;
-}
-
-.custom-button:hover {
-  background-color: rgba(255, 255, 255, 0.4); /* Darker background on hover */
-  backdrop-filter: blur(15px); /* More intense blur on hover */
-}
-
-/*Render Koi*/
-.card-container{
-  text-align: center;
-  width: 1%;
-  margin: 5px ;
-  min-width: 20%;
-  min-height: 20%;
-  max-height: 30%;
 }
 
 .property-card {
@@ -132,6 +25,7 @@
   width: 100%;
   height: fit-content;
   position: relative;
+  background-color: #ffffff;
 }
 
 .featured-badge {
@@ -147,14 +41,10 @@
   font-size: 12px;
 }
 
-.property-koi-image {
+.property-image {
   height: 200px;
-  object-fit: contain; /*To maintain image aspect ratio*/
+  object-fit: cover;
   width: 100%;
-  min-width: 5%;
-  min-height: 5%;
-  justify-content: center;
-  align-items: center;
 }
 
 .property-content {
@@ -162,69 +52,37 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 10px;
 }
 
 .property-title-wrapper {
-  height: 48px; /* Adjust this value based on your desired title height */
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-
 }
-
 
 .property-title-link {
   text-decoration: none;
   color: inherit;
-  width: 100%;
   text-align: center;
-  justify-items: center;
-  margin: auto;
 }
 
 .property-title {
   font-size: 15px;
   margin: 0;
-  width: 100%;
   text-align: center;
   display: block;
-  justify-content: center;
 }
 
 .property-title:hover {
- color: blue;
-
-}
-
-.property-price-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-
-.property-price-text {
-  color: #757575; /* 'text.secondary' equivalent */
-  font-size: 100%;
-  text-align: center;
-  width: fit-content;
-  font-weight: bold;
-}
-
-.property-price-price {
-  color: #757575; /* 'text.secondary' equivalent */
-  font-size: 100%;
-  text-align: center;
-  margin: auto;
-  margin-left: 0;
-  width: fit-content;
-  font-weight: bold;
+  color: blue;
 }
 
 .property-user-container {
   display: flex;
-  margin-top: 8px; /* Spacing similar to Material-UI's marginTop 1 */
+  margin-top: 8px;
   width: 100%;
   justify-content: space-between;
   font-weight: bold;
@@ -237,12 +95,12 @@
 
 .property-user-text {
   width: 100%;
-  color: #757575; /* 'text.secondary' equivalent */
+  color: #757575;
   font-size: 12px;
   text-align: center;
   margin: auto;
 }
-/*Render*/
+
 .white-box {
   background-color: #ffffff;
   padding: 15px;
@@ -260,134 +118,26 @@
   width: 100%;
 }
 
-.container-title-title {
-  width: 100%;
-  text-align: center;
-  margin-left: 140px;
-}
-
-.container-title-link {
-  text-decoration: none;
-  color: inherit;
-  width: 100%;
-  text-align: right;
-}
-
 .scroll-container {
   width: 100%;
   scroll-behavior: smooth;
   padding: 10px;
-  height: 100;
 }
 
 .arrow-button {
-
   height: fit-content;
-  background-color: transparent; /* Change to desired color */
-  color: transparent; /* Change to desired text color */
-  border: none; /* Remove border */
-  cursor: pointer; /* Change cursor on hover */
-  padding: 10px; /* Add some padding */
-  margin: auto 5px; /* Space between button and scroll area */
-  font-size: 24px; /* Adjust font size */
-  border-radius: 5px; /* Add rounded corners */
-  transition: background-color 0.3s; /* Smooth transition for hover */
- 
+  background-color: transparent;
+  color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  margin: auto 5px;
+  font-size: 24px;
+  border-radius: 5px;
+  transition: background-color 0.3s;
 }
 
 .arrow-button:hover {
   color: black;
   background-color: orange;
-}
-
-.carousel-wrapper {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.carousel-content {
-  display: flex;
-  overflow: hidden;
-  width: 100%;
-  transition: transform 0.5s ease;
-  justify-content: space-between; 
-}
-
-.carousel-button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: 2px solid #ccc; 
-  border-radius: 50%; 
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5em;
-  cursor: pointer;
-  z-index: 1;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.carousel-button:hover {
-  background-color: #f0f0f0;
-  border-color: #bbb; 
-}
-
-.carousel-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.carousel-button:first-of-type {
-  left: -55px; 
-}
-
-.carousel-button:last-of-type {
-  right: -55px; 
-}
-
-.property-price-text-red {
-  color: red;
-  font-size: 0.9em;
-  text-align: center;
-  font-weight: bold;
-}
-
-.render-koi-elemet{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.property-price-text-black {
-  color: black;
-  font-size: 0.5em;
-  text-align: center;
-}
-
-.card-container {
-  flex: 1;
-  margin: 5px;
-  max-width: 25%;
-  min-width: 200px;
-  text-align: center;
-}
-
-.property-image {
-  width: 100%;
-  height: 150px; 
-  object-fit: cover;
-}
-
-.property-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
 }

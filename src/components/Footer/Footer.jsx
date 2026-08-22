@@ -1,69 +1,67 @@
-import React from "react";
-import { Layout, Row, Col } from "antd";
+import { Link } from "react-router-dom";
+import { WaveBand, LotusMark } from "../../assets/motifs/Motifs.jsx";
+import { PATHS } from "../../routes/paths";
 import Logo from "../../assets/Logo.png";
-const { Footer } = Layout;
+
+const FOOTER_LINKS = [
+  { label: "Cá Koi", to: `${PATHS.koiListings}?category=1` },
+  { label: "Đồ trang trí", to: `${PATHS.koiListings}?category=2` },
+  { label: "Tư vấn bản mệnh", to: PATHS.koiCompatible },
+  { label: "Kinh nghiệm hay", to: PATHS.blog },
+];
 
 const FooterComponent = () => {
+  const year = new Date().getFullYear();
+
   return (
-    <Footer
-      className="ant-layout-footer"
-      style={{
-        backgroundColor: "#2c1b18",
-        color: "#d3b58d",
-        padding: "20px 50px",
-        textAlign: "left",
-        position: "relative",
-      }}
-    >
-      <Row justify="space-between" align="top">
-        <Col xs={24} md={4}>
-          <img
-            src={Logo}
-            alt="Logo"
-            style={{ width: "100px", marginBottom: "10px", height: 100 }}
-          />
-        </Col>
+    <footer className="bg-pond text-[#E6D9A8]">
+      <WaveBand height={36} opacity={0.3} className="block w-full" />
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
+        <div>
+          <Link to="/" aria-label="Koi FengShui — Về trang chủ" className="inline-flex items-center">
+            <img src={Logo} alt="" loading="lazy" className="h-12 w-auto" />
+          </Link>
+          <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#E6D9A8]/90">
+            Cân bằng phong thủy, Koi vượng tài lộc.
+          </p>
+          <LotusMark size={28} className="mt-4 text-gold" />
+        </div>
 
-        <Col xs={24} md={8}>
-          <h3 style={{ color: "#d3b58d" }}>Về chúng tôi</h3>
-          <p>
-            Koi Feng Shui - Cân Bằng Phong Thủy, Koi Vượng Tài Lộc!
-            <br />
-            Koi Feng Shui là điểm đến lý tưởng cho những người yêu thích cá Koi
-            và nghệ thuật tạo cảnh hồ cá. Chúng tôi tự hào cung cấp:
-            <ul>
-              <li>Cá Koi chất lượng cao từ các trại giống uy tín</li>
-              <li>Đa dạng sản phẩm trang trí và thiết bị cho hồ cá Koi</li>
-              <li>
-                Tư vấn chuyên sâu về cá Koi thông qua các bài blog chia sẻ kinh
-                nghiệm
+        <nav aria-label="Liên kết chân trang">
+          <h3 className="font-display text-base font-semibold text-[#FDF6EC]">
+            Khám phá
+          </h3>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            {FOOTER_LINKS.map((item) => (
+              <li key={item.label}>
+                <Link
+                  to={item.to}
+                  className="transition-colors duration-fast hover:text-gold-soft"
+                >
+                  {item.label}
+                </Link>
               </li>
-            </ul>
-          </p>
-        </Col>
+            ))}
+          </ul>
+        </nav>
 
-        <Col xs={24} md={8}>
-          <h3 style={{ color: "#d3b58d" }}>Thông tin liên hệ</h3>
-          <p>
-            + Hotline 24/7: xxxx.xxxx.xxxx
-            <br />+ Email: koifengshui@gmail.com
+        <div>
+          <h3 className="font-display text-base font-semibold text-[#FDF6EC]">
+            Liên hệ
+          </h3>
+          <p className="mt-4 text-sm leading-relaxed">
+            Hộp thư hỗ trợ:{" "}
+            <a
+              href="mailto:support@koifengshui.vn"
+              className="transition-colors duration-fast hover:text-gold-soft"
+            >
+              support@koifengshui.vn
+            </a>
           </p>
-          <p>Thiết kế & duy trì bởi Koi Feng Shui | koifengshui.com.vn</p>
-        </Col>
-      </Row>
-      <div
-        style={{
-          backgroundColor: "#e63946",
-          color: "#fff",
-          textAlign: "center",
-          padding: "5px 0",
-          marginTop: "20px",
-          width: "100%",
-        }}
-      >
-        @ Copy right 2024
+          <p className="mt-6 text-xs text-[#E6D9A8]/70">© {year} Koi FengShui</p>
+        </div>
       </div>
-    </Footer>
+    </footer>
   );
 };
 

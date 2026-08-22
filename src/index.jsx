@@ -7,6 +7,7 @@ import ProtectedRoute from "./config/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./context/AuthContext";
 import { PATHS } from "./routes/paths";
+import PublicShell from "./layout/PublicShell";
 import { PageLoader, Toaster } from "./ui";
 import "./index.css";
 
@@ -50,27 +51,11 @@ const App = () => {
                   path={PATHS.dashboard}
                   element={guarded(<DashboardDefault />, 1)}
                 />
-                <Route path={PATHS.home} element={<HomePage />} />
-                <Route
-                  path={PATHS.koiCompatible}
-                  element={<KoiCompatibilityForm />}
-                />
+                <Route path={PATHS.koiCompatible} element={<KoiCompatibilityForm />} />
                 <Route path={PATHS.profile} element={guarded(<UserProfile />)} />
-                <Route
-                  path={PATHS.details()}
-                  element={<DetailPage />}
-                />
-                <Route
-                  path={PATHS.decoration()}
-                  element={<DecorationPage />}
-                />
                 <Route
                   path={PATHS.listingPost}
                   element={guarded(<PostListingPage />)}
-                />
-                <Route
-                  path={PATHS.koiListings}
-                  element={<KoiListingsPage />}
                 />
                 <Route
                   path={PATHS.faqManager}
@@ -80,7 +65,19 @@ const App = () => {
                   path={PATHS.adminPost}
                   element={guarded(<AdminPost />, 1)}
                 />
-                <Route path={PATHS.blog} element={<BlogPage />} />
+                <Route element={<PublicShell />}>
+                  <Route path={PATHS.home} element={<HomePage />} />
+                  <Route
+                    path={PATHS.koiListings}
+                    element={<KoiListingsPage />}
+                  />
+                  <Route path={PATHS.details()} element={<DetailPage />} />
+                  <Route
+                    path={PATHS.decoration()}
+                    element={<DecorationPage />}
+                  />
+                  <Route path={PATHS.blog} element={<BlogPage />} />
+                </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

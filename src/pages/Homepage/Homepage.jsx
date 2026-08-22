@@ -1,409 +1,431 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Modal } from "antd";
-import AppHeader from "../../components/Header/Header";
-import FooterComponent from "../../components/Footer/Footer";
-import image from "../../assets/banner1.jpg";
-import usericon from "../../assets/icons/userIcon.png";
-import "./Homepage.css";
-import searchIcon from "../../assets/icons/searchIcon.svg";
-import { Link, useNavigate } from "react-router-dom";
-import { getAllPosts } from "../../config/axios";
-import TruncatedText from "../../utils/TruncatedText";
+import { Fragment, useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import {
-  getFengShuiKoiFishPost,
+  getAllPosts,
   getFengShuiKoiDecorationPost,
+  getFengShuiKoiFishPost,
   getKoiElement,
 } from "../../config/axios";
+import { useAuth } from "../../context/AuthContext";
+import {
+  Badge,
+  Button,
+  Card,
+  Dialog,
+  DialogContent,
+  EmptyState,
+  Skeleton,
+} from "../../ui";
+import { CloudDivider, KoiSilhouette, WaveBand } from "../../assets/motifs/Motifs";
 import FAQDisplay from "../FAQ/FAQDisplay";
+import "./Homepage.css";
+
+const ELEMENT_KEY_MAP = {
+  Kim: "kim",
+  Mộc: "moc",
+  Thủy: "thuy",
+  Hỏa: "hoa",
+  Thổ: "tho",
+};
+
+const stripHtml = (value) =>
+  String(value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const avatarUrl = (name) =>
+  name
+    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(name)}`
+    : null;
+
+function Rail({ title, moreTo, children }) {
+  const trackRef = useRef(null);
+  const scrollByAmount = (direction) =>
+    trackRef.current?.scrollBy({ left: direction * 320, behavior: "smooth" });
+
+  return (
+    <section aria-label={title}>
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <h2 className="font-display text-2xl font-semibold text-ink md:text-3xl">
+          {title}
+        </h2>
+        <Link
+          to={moreTo}
+          aria-label={`Xem thêm ${title}`}
+          className="shrink-0 text-sm font-semibold text-crimson transition-colors duration-fast hover:text-crimson-deep focus-visible:outline-none focus-visible:shadow-gold rounded-sm"
+        >
+          Xem thêm <span aria-hidden="true">›</span>
+        </Link>
+      </div>
+      <div className="relative">
+        <button
+          type="button"
+          aria-label="Trước"
+          onClick={() => scrollByAmount(-1)}
+          className="absolute -left-3 top-[34%] z-10 hidden h-10 w-10 place-items-center rounded-full border border-gold/40 bg-surface text-lg text-ink shadow-plaque transition-all duration-fast ease-water hover:bg-paper-2 active:scale-95 focus-visible:outline-none focus-visible:shadow-gold lg:grid"
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+        <div
+          ref={trackRef}
+          className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2"
+        >
+          {children}
+        </div>
+        <button
+          type="button"
+          aria-label="Sau"
+          onClick={() => scrollByAmount(1)}
+          className="absolute -right-3 top-[34%] z-10 hidden h-10 w-10 place-items-center rounded-full border border-gold/40 bg-surface text-lg text-ink shadow-plaque transition-all duration-fast ease-water hover:bg-paper-2 active:scale-95 focus-visible:outline-none focus-visible:shadow-gold lg:grid"
+        >
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+    </section>
+  );
+}
+
+Rail.propTypes = {
+  title: PropTypes.string.isRequired,
+  moreTo: PropTypes.string.isRequired,
+  children: PropTypes.node,
+};
+
+function KoiCard({ item }) {
+  const elementKey = ELEMENT_KEY_MAP[item.elementName];
+  const imageUrl = item.listingImages?.[0]?.image?.imageUrl;
+  const avatar = avatarUrl(item.accountName);
+
+  return (
+    <Card interactive className="w-[260px] shrink-0 snap-start overflow-hidden sm:w-[280px]">
+      <Link
+        to={`/Details/${item.listingId}`}
+        className="flex h-full flex-col rounded-lg outline-none focus-visible:shadow-gold"
+      >
+        <div className="relative aspect-[4/3] overflow-hidden bg-paper-2">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={item.title}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-slow ease-water hover:scale-105"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-gold/60">
+              <KoiSilhouette size={64} />
+            </div>
+          )}
+          {elementKey && (
+            <Badge element={elementKey} className="absolute left-3 top-3">
+              {item.elementName}
+            </Badge>
+          )}
+          {item.tierName === "Tin Nổi Bật" && (
+            <Badge className="absolute right-3 top-3">Nổi bật</Badge>
+          )}
+        </div>
+        <div className="flex flex-1 flex-col gap-3 p-4">
+          <h3 className="truncate font-display text-base font-semibold text-ink">
+            {item.title}
+          </h3>
+          <div className="mt-auto flex items-center gap-2">
+            {avatar ? (
+              <img
+                src={avatar}
+                alt=""
+                width={24}
+                height={24}
+                loading="lazy"
+                className="rounded-full border border-gold/40 bg-surface"
+              />
+            ) : (
+              <span className="grid h-6 w-6 place-items-center rounded-full border border-gold/40 bg-paper-2 text-xs text-muted" aria-hidden="true">
+                鯉
+              </span>
+            )}
+            <span className="truncate text-xs text-muted">{item.accountName}</span>
+          </div>
+        </div>
+      </Link>
+    </Card>
+  );
+}
+
+KoiCard.propTypes = {
+  item: PropTypes.shape({
+    listingId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    title: PropTypes.string,
+    elementName: PropTypes.string,
+    tierName: PropTypes.string,
+    accountName: PropTypes.string,
+    listingImages: PropTypes.arrayOf(
+      PropTypes.shape({
+        image: PropTypes.shape({ imageUrl: PropTypes.string }),
+      })
+    ),
+  }).isRequired,
+};
+
+function BlogCard({ post, onOpen }) {
+  const imageUrl = post.imageUrls?.[0];
+
+  return (
+    <Card interactive className="w-[280px] shrink-0 snap-start overflow-hidden sm:w-[320px]">
+      <button
+        type="button"
+        onClick={() => onOpen(post)}
+        className="block h-full w-full rounded-lg text-left outline-none focus-visible:shadow-gold"
+      >
+        <div className="aspect-video overflow-hidden bg-paper-2">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={post.name}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-slow ease-water hover:scale-105"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-gold/60">
+              <KoiSilhouette size={56} flip />
+            </div>
+          )}
+        </div>
+        <div className="space-y-2 p-4">
+          <h3 className="truncate font-display text-base font-semibold text-ink">
+            {post.name}
+          </h3>
+          <p className="line-clamp-2 text-sm leading-relaxed text-muted">
+            {stripHtml(post.description)}
+          </p>
+        </div>
+      </button>
+    </Card>
+  );
+}
+
+BlogCard.propTypes = {
+  post: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    name: PropTypes.string,
+    description: PropTypes.string,
+    imageUrls: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+  onOpen: PropTypes.func.isRequired,
+};
+
+function KoiSkeletonGrid() {
+  return (
+    <div
+      role="status"
+      aria-label="Đang tải"
+      className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    >
+      {Array.from({ length: 8 }).map((_, index) => (
+        <Card key={index} className="overflow-hidden">
+          <Skeleton className="aspect-[4/3] rounded-none" />
+          <div className="space-y-3 p-4">
+            <Skeleton className="h-4 w-3/4" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-6 w-6 rounded-full" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export default function Homepage() {
-  const navigate = useNavigate();
-  const [cardDataKoi, setCardDataKoi] = React.useState([]); // Store data
-  const [cardDataKoiElement, setCardDataKoiElement] = React.useState([]); // Store data
-  const [cardDataDecoration, setCardDataDecoration] = React.useState([]); // Store data
-  const [existElementData, setExistElementData] = React.useState([]); // Store data
-  const [cardDataPost, setCardDataPost] = React.useState([]); // Store data
-  const [loading, setLoading] = React.useState(true); // Handle loading state
-  const [error, setError] = React.useState(null); // Handle errors
-  const [currentIndex, setCurrentIndex] = useState(0); // Carousel index
-  const [isModalVisible, setIsModalVisible] = useState(false); // Manages the modal's visibility state; starts as false (hidden)
-  const [selectedPost, setSelectedPost] = useState(null); // Stores the currently selected post; initially set to null (no post selected)
+  const { user } = useAuth();
+  const currentUser = user ?? null;
 
-  const scrollContainerRef1 = useRef(null); // Reference to the scrollable container
-  const scrollContainerRef2 = useRef(null);
-  const scrollContainerRef3 = useRef(null);
-  const scrollContainerRef4 = useRef(null);
-  const [elementName, setElementName] = useState("");
-  const [elementId, setElementId] = useState("");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [cardDataKoiElement, setCardDataKoiElement] = useState([]);
+  const [cardDataKoi, setCardDataKoi] = useState([]);
+  const [cardDataDecoration, setCardDataDecoration] = useState([]);
+  const [cardDataPost, setCardDataPost] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const fetchDataRef = useRef(null);
 
-  const sellingFishClick = (categoryId) => {
-    // navigate("/KoiListings", {
-    //   state: { category: categoryId },
-    // });
-    navigate(`/KoiListings?category=${categoryId}`);
-  };
-  // const sellingFishClick = () => {
-  //   navigate("/KoiListings");
-  // };
+  useEffect(() => {
+    let cancelled = false;
 
-  const koiCompatible = () => {
-    navigate("/KoiCompatible");
-  };
-
-  const blogClick = () => {
-    navigate("/blog");
-  };
-
-  React.useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const responseKoi = await getFengShuiKoiFishPost(1); // Adjust endpoint
+        const responseKoi = await getFengShuiKoiFishPost(1);
         const responseDecoration = await getFengShuiKoiDecorationPost(2);
         const responsePost = await getAllPosts();
 
-        setCardDataKoi(responseKoi.data); // Store the data
+        if (cancelled) return;
+        setCardDataKoi(responseKoi.data);
         setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
-        if (user != null) {
-          if (user.elementId) {
-            const responseKoiElement = await getKoiElement(
-              user.elementId,
-              1,
-              10
-            ); // Store the data
-            setCardDataKoiElement(responseKoiElement.data);
-          }
+
+        if (currentUser?.elementId) {
+          const responseKoiElement = await getKoiElement(currentUser.elementId, 1, 10);
+          if (!cancelled) setCardDataKoiElement(responseKoiElement.data ?? []);
         } else {
-          setCardDataKoiElement(null);
+          if (!cancelled) setCardDataKoiElement([]);
         }
-      } catch (error) {
-        setError(error.message); // Handle error
+      } catch (err) {
+        if (!cancelled) setError(err.message);
       } finally {
-        setLoading(false); // Stop loading
+        if (!cancelled) setLoading(false);
       }
     };
 
-    // Fetch data from API when the component mounts
     fetchData();
-  }, []);
+    fetchDataRef.current = fetchData;
 
-  // Function to scroll left by a specific amount
-  const scrollLeft = (containerRef) => {
-    if (containerRef.current) {
-      containerRef.current.scrollBy({
-        left: -300, // Adjust the scroll distance as needed
-        behavior: "smooth", // Smooth scroll
-      });
-    }
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser?.elementId]);
 
-  // Function to scroll right by a specific amount
-  const scrollRight = (containerRef) => {
-    if (containerRef.current) {
-      containerRef.current.scrollBy({
-        left: 300, // Adjust the scroll distance as needed
-        behavior: "smooth", // Smooth scroll
-      });
-    }
-  };
+  const activePosts = cardDataPost.filter((post) => post.status === "active");
 
-  const scrollLeft1 = () => scrollLeft(scrollContainerRef1);
-  const scrollRight1 = () => scrollRight(scrollContainerRef1);
-  const scrollLeft2 = () => scrollLeft(scrollContainerRef2);
-  const scrollRight2 = () => scrollRight(scrollContainerRef2);
-  const scrollLeft3 = () => scrollLeft(scrollContainerRef3);
-  const scrollRight3 = () => scrollRight(scrollContainerRef3);
-  const scrollLeft4 = () => scrollLeft(scrollContainerRef4);
-  const scrollRight4 = () => scrollRight(scrollContainerRef4);
+  const hasElementKoi = cardDataKoiElement.length > 0;
+  const hasKoi = cardDataKoi.length > 0;
+  const hasDecoration = cardDataDecoration.length > 0;
+  const hasAnyKoi = hasElementKoi || hasKoi || hasDecoration;
 
-  const renderKoi = (data) => {
-    return data.map((item) => (
-      <div className="card-container" key={item.listingId}>
-        <div className="property-card">
-          {item.tierName === "Tin Nổi Bật" && (
-            <div className="featured-badge">
-              <span>Nổi bật</span>
-            </div>
-          )}
+  const rails = [
+    hasElementKoi && {
+      key: "element",
+      title: "Cá Koi Theo Bản Mệnh",
+      moreTo: `/KoiListings?category=1&element=${currentUser.elementId}`,
+      items: cardDataKoiElement,
+      kind: "koi",
+    },
+    hasKoi && {
+      key: "koi",
+      title: "Bán Cá Koi",
+      moreTo: "/KoiListings?category=1",
+      items: cardDataKoi,
+      kind: "koi",
+    },
+    hasDecoration && {
+      key: "decoration",
+      title: "Đồ Trang Trí Hồ Cá",
+      moreTo: "/KoiListings?category=2",
+      items: cardDataDecoration,
+      kind: "koi",
+    },
+    activePosts.length > 0 && {
+      key: "blog",
+      title: "Kinh Nghiệm Hay",
+      moreTo: "/blog",
+      items: activePosts,
+      kind: "blog",
+    },
+  ].filter(Boolean);
 
-          <Link
-            to={`/Details/${item.listingId}`}
-            style={{ justifyContent: "center" }}
-          >
-            <img
-              src={item.listingImages?.[0]?.image?.imageUrl}
-              alt={item.title}
-              className="property-koi-image"
-            />
-          </Link>
-
-          <div className="property-content">
-            <div className="property-title-wrapper">
-              <h1 className="property-title">
-                <a
-                  href={`/Details/${item.listingId}`}
-                  className="property-title-link"
-                >
-                  {item.elementName != "Non element" && `[${item.elementName}]`}{" "}
-                  <TruncatedText text={item.title} maxLength={10} />{" "}
-                </a>
-              </h1>
-            </div>
-
-            <div className="property-user-container">
-              <img
-                src={
-                  item.accountName
-                    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
-                        item.accountName
-                      )}`
-                    : usericon
-                }
-                alt="User Icon"
-                className="property-user-icon"
-              />
-              <span className="property-user-text">{item.accountName}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ));
-  };
-
-  // Function to render the posts
-  const renderCardsPost = (data) => {
-    const activePosts = data.filter((post) => post.status === "active");
-
-    return activePosts.map((item, index) => (
-      <div
-        className="card-container"
-        key={`${item.id}-${index}`}
-        onClick={() => showModal(item)}
-      >
-        <div className="property-card">
-          <img src={item.imageUrls[0]} alt="Card" className="property-image" />
-          <div className="property-content">
-            <h1 className="property-title">
-              <TruncatedText text={item.name} maxLength={20} />
-            </h1>
-            <span className="property-price-text-black">
-              {item.description}
-            </span>
-          </div>
-        </div>
-      </div>
-    ));
-  };
-
-  const showModal = (post) => {
-    setSelectedPost(post);
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  if (loading) return <p>Loading...</p>; // Display loading message
-  if (error) return <p>Error: {error}</p>;
   return (
-    <div
-      style={{
-        minHeight: "150vh",
-        background: "#f6f4f3",
-      }}
-      className="homepage-container"
-    >
-      <AppHeader />
-      <div className="image-container">
-        <img src={image} alt="Banner" className="half-page-image" />
-
-        <div className="centered-text">
-          <div className="title-banner">
-            <h1 style={{ color: "#e20a15" }}>Koi</h1>
-            <h1 style={{ color: "#ff914d" }}>FengShui</h1>
-          </div>
-          <p style={{ color: "white", fontWeight: "bold" }}>
-            Cân Bằng Phong Thủy, Koi Vượng Tài Lộc
+    <main className="grain-bg min-h-screen bg-paper text-ink">
+      <section className="relative overflow-hidden bg-pond text-[#FDF6EC]">
+        <div className="relative mx-auto max-w-7xl px-4 pb-24 pt-16 sm:px-6 md:pb-32 md:pt-24 lg:px-8 animate-fade-rise">
+          <h1 className="font-display text-3xl leading-[1.05] tracking-tight sm:text-4xl md:text-5xl">
+            <span className="block text-gold-soft pb-1">Koi</span>
+            <span className="block text-[#FDF6EC]">FengShui</span>
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-[#E6D9A8]/90 md:text-lg">
+            Cân Bằng Phong Thủy, Koi Vượng Tài Lộc.
           </p>
-          <div className="search-bar-container">
-            <button className="search-icon-button">
-              <img
-                src={searchIcon}
-                alt="Search"
-                className="search-icon"
-                style={{ width: "20px" }}
-              />
-            </button>
-          </div>
-          <div className="button-group">
-            <button
-              className="custom-button"
-              onClick={() => sellingFishClick(1)}
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Button as={Link} to="/KoiListings?category=1" size="lg">
+              Khám phá cá Koi
+            </Button>
+            <Link
+              to="/KoiCompatible"
+              className="inline-flex select-none items-center justify-center rounded-md border border-[#E6D9A8]/60 px-7 py-3.5 text-base font-semibold text-[#E6D9A8] transition-all duration-fast ease-water hover:bg-[#E6D9A8]/10 active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-gold"
             >
-              Bán Cá Koi
-            </button>
-            <button
-              className="custom-button"
-              onClick={() => sellingFishClick(2)}
-            >
-              Phụ Kiện Hồ Cá
-            </button>
-            <button className="custom-button" onClick={blogClick}>
-              Kinh Nghiệm Hay
-            </button>
-            <button className="custom-button" onClick={koiCompatible}>
-              Tư Vấn Bản Mệnh
-            </button>
+              Tư vấn bản mệnh
+            </Link>
           </div>
         </div>
+        <WaveBand
+          height={72}
+          color="#C9A227"
+          opacity={0.18}
+          className="pointer-events-none absolute inset-x-0 bottom-0"
+        />
+      </section>
+
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+        {loading ? (
+          <KoiSkeletonGrid />
+        ) : error ? (
+          <EmptyState
+            title="Đã xảy ra lỗi khi tải dữ liệu"
+            description="Vui lòng thử lại trong giây lát."
+            action={
+              <Button variant="primary" onClick={() => fetchDataRef.current?.()}>
+                Thử lại
+              </Button>
+            }
+          />
+        ) : !hasAnyKoi ? (
+          <EmptyState
+            title="Không tìm thấy kết quả phù hợp"
+            description="Hiện chưa có cá Koi hoặc đồ trang trí nào để hiển thị."
+          />
+        ) : (
+          <div className="space-y-14 md:space-y-20">
+            {rails.map((rail, index) => (
+              <Fragment key={rail.key}>
+                {index > 0 && (
+                  <CloudDivider className="mx-auto max-w-md text-gold/70" />
+                )}
+                <Rail title={rail.title} moreTo={rail.moreTo}>
+                  {rail.items.map((item) =>
+                    rail.kind === "koi" ? (
+                      <KoiCard key={item.listingId} item={item} />
+                    ) : (
+                      <BlogCard key={`${item.id}-${item.name}`} post={item} onOpen={setSelectedPost} />
+                    )
+                  )}
+                </Rail>
+              </Fragment>
+            ))}
+          </div>
+        )}
       </div>
-      <div className="main-container">
-        <div className="content-wrapper">
-          {cardDataKoiElement != null ? (
-            <div className="render-koi-elemet">
-              <button onClick={scrollLeft1} className="arrow-button">
-                ←
-              </button>
-              <div className="white-box">
-                <div className="container-title">
-                  <h2 className="container-title-title">
-                    Cá Koi Theo Bản Mệnh
-                  </h2>
-                  <a
-                    href={`/KoiListings?category=1&element=${user.elementId}`}
-                    className="container-title-link"
-                  >
-                    <h2>Xem thêm {">"}</h2>
-                  </a>
-                </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    overflowX: "hidden",
-                    width: "100%",
-                  }}
-                  ref={scrollContainerRef1}
-                  className="scroll-container"
-                >
-                  {/* Render Koi items here */}
-                  {renderKoi(cardDataKoiElement)}
-                </div>
-              </div>
-              <button onClick={scrollRight1} className="arrow-button">
-                →
-              </button>
-            </div>
-          ) : null}
-
-          <div
-            className="render-koi-elemet"
-            style={{ display: "flex", alignItems: "center" }}
-          >
-            <button onClick={scrollLeft2} className="arrow-button">
-              ←
-            </button>
-            <div className="white-box">
-              <div className="container-title">
-                <h2 className="container-title-title">Bán Cá Koi</h2>
-                <a
-                  href={`/KoiListings?category=1`}
-                  className="container-title-link"
-                >
-                  <h2>Xem thêm {">"}</h2>
-                </a>
-              </div>
-              <div
-                style={{ display: "flex", overflowX: "hidden" }}
-                ref={scrollContainerRef2}
-                className="scroll-container"
-              >
-                {renderKoi(cardDataKoi)}
-              </div>
-            </div>
-            <button onClick={scrollRight2} className="arrow-button">
-              →
-            </button>
-          </div>
-
-          <div
-            className="render-koi-elemet"
-            style={{ display: "flex", alignItems: "center" }}
-          >
-            <button onClick={scrollLeft3} className="arrow-button">
-              ←
-            </button>
-            <div className="white-box">
-              <div className="container-title">
-                <h2 className="container-title-title">Trang trí hồ cá</h2>
-                <a
-                  href={`/KoiListings?category=2`}
-                  className="container-title-link"
-                >
-                  <h2>Xem thêm {">"}</h2>
-                </a>
-              </div>
-              <div
-                style={{ display: "flex", overflowX: "hidden" }}
-                ref={scrollContainerRef3}
-                className="scroll-container"
-              >
-                {renderKoi(cardDataDecoration)}
-              </div>
-            </div>
-            <button onClick={scrollRight3} className="arrow-button">
-              →
-            </button>
-          </div>
-
-          <div
-            className="render-koi-elemet"
-            style={{ display: "flex", alignItems: "center" }}
-          >
-            <button onClick={scrollLeft4} className="arrow-button">
-              ←
-            </button>
-            <div className="white-box">
-              <div className="container-title">
-                <h2 className="container-title-title">Kinh Nghiệm Hay</h2>
-                <a href={`/blog`} className="container-title-link">
-                  <h2>Xem thêm {">"}</h2>
-                </a>
-              </div>
-              <div
-                style={{ display: "flex", overflowX: "hidden" }}
-                ref={scrollContainerRef4}
-                className="scroll-container"
-              >
-                {renderCardsPost(cardDataPost)}
-              </div>
-            </div>
-            <button onClick={scrollRight4} className="arrow-button">
-              →
-            </button>
-          </div>
-        </div>
-      </div>
+      <CloudDivider className="mx-auto max-w-md text-gold/70" />
 
       <FAQDisplay />
-      <FooterComponent />
-      <Modal
-        title={null}
-        open={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
+
+      <Dialog
+        open={Boolean(selectedPost)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedPost(null);
+        }}
       >
-        <img
-          src={selectedPost?.imageUrls[0]}
-          alt="Card"
-          style={{ width: "100%" }}
-        />
-        <h2 style={{ textAlign: "center", marginTop: "10px" }}>
-          {selectedPost?.name}
-        </h2>
-        <p>{selectedPost?.description}</p>
-      </Modal>
-    </div>
+        <DialogContent title={selectedPost?.name}>
+          {selectedPost && (
+            <div className="space-y-4">
+              {selectedPost.imageUrls?.map((url, index) => (
+                <img
+                  key={`${url}-${index}`}
+                  src={url}
+                  alt={`${selectedPost.name} — ảnh ${index + 1}`}
+                  loading="lazy"
+                  className="w-full rounded-md object-cover"
+                />
+              ))}
+              <p className="text-sm leading-relaxed text-ink-soft">
+                {stripHtml(selectedPost.description)}
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }
