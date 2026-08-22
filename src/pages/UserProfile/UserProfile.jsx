@@ -1,368 +1,467 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import {
-  Layout,
-  Menu,
-  Form,
-  Input,
+  Badge,
   Button,
-  Select,
-  DatePicker,
-  Row,
-  Col,
-  message,
-  Breadcrumb,
-} from "antd";
-import dayjs from "dayjs";import AppHeader from "../../components/Header/Header";
-import FooterComponent from "../../components/Footer/Footer";
+  Card,
+  EmptyState,
+  Input,
+  Skeleton,
+  notify,
+} from "../../ui";
+import { useAuth } from "../../context/AuthContext";
 import api from "../../config/axios";
-import "./UserProfile.css";
+import { PATHS } from "../../routes/paths";
 
-const { Header, Content, Sider } = Layout;
-const { Option } = Select;
+const ELEMENT_NAMES = { 1: "Mộc", 2: "Hoả", 3: "Thổ", 4: "Kim", 5: "Thuỷ" };
+const ELEMENT_BADGES = { 1: "moc", 2: "hoa", 3: "tho", 4: "kim", 5: "thuy" };
+const UNKNOWN_ELEMENT = "Không xác định";
+
+const NAV_ITEMS = [
+  { id: "profile", label: "Thông tin cá nhân" },
+  { id: "security", label: "Cài đặt tài khoản" },
+];
+
+const GENDER_OPTIONS = [
+  { value: "male", label: "Nam" },
+  { value: "female", label: "Nữ" },
+  { value: "other", label: "Khác" },
+];
+
+const EMPTY_PASSWORDS = {
+  currentPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+};
+
+const avatarUrl = (name) =>
+  `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(
+    name || "Koi"
+  )}`;
+
+const toFormState = (data) => ({
+  fullName: data?.fullName ?? "",
+  phone: data?.phone ?? "",
+  email: data?.email ?? "",
+  gender: data?.gender ?? "",
+  dob: data?.dob ? String(data.dob).slice(0, 10) : "",
+  elementName:
+    (data?.elementId && ELEMENT_NAMES[data.elementId]) || UNKNOWN_ELEMENT,
+});
+
+function NavRail({ activeTab, onSelect }) {
+  return (
+    <nav
+      aria-label="Mục tài khoản"
+      className="flex gap-2 overflow-x-auto pb-1 md:flex-col md:gap-1 md:overflow-visible md:pb-0"
+    >
+      {NAV_ITEMS.map((item) => {
+        const active = item.id === activeTab;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onSelect(item.id)}
+            aria-current={active ? "true" : undefined}
+            className={`shrink-0 rounded-md border-l-2 px-4 py-2.5 text-left text-sm font-semibold transition-colors duration-fast ease-water outline-none focus-visible:shadow-gold ${
+              active
+                ? "border-gold bg-paper-2/60 text-crimson"
+                : "border-transparent text-muted hover:bg-paper-2/40 hover:text-ink"
+            }`}
+          >
+            {item.label}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+NavRail.propTypes = {
+  activeTab: PropTypes.string.isRequired,
+  onSelect: PropTypes.func.isRequired,
+};
+
+function GenderSelect({ value, onChange, error }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor="gender" className="text-sm font-semibold text-ink">
+        Giới tính
+      </label>
+      <select
+        id="gender"
+        name="gender"
+        value={value}
+        onChange={onChange}
+        aria-invalid={!!error}
+        className={`rounded-md border bg-surface px-3.5 py-2.5 outline-none transition-shadow duration-fast focus:shadow-gold ${
+          error ? "border-crimson" : "border-gold/40 focus:border-gold"
+        }`}
+      >
+        <option value="">Chọn giới tính</option>
+        {GENDER_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {error && <p className="text-xs text-crimson">{error}</p>}
+    </div>
+  );
+}
+
+GenderSelect.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.string,
+};
+
+function ProfileSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Đang tải"
+      className="mt-8 grid grid-cols-1 items-start gap-6 md:grid-cols-[240px_1fr] md:gap-10"
+    >
+      <Skeleton className="h-24 md:h-28" />
+      <Card className="p-6 md:p-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-16 w-16 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-5 w-44" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        </div>
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[0, 1, 2, 3, 4, 5].map((index) => (
+            <Skeleton key={index} className="h-[70px]" />
+          ))}
+        </div>
+        <div className="mt-6 flex justify-end">
+          <Skeleton className="h-11 w-36" />
+        </div>
+      </Card>
+    </div>
+  );
+}
 
 const UserProfile = () => {
-  const [form] = Form.useForm();
-  const [selectedMenuItem, setSelectedMenuItem] = useState("1");
-  const [userData, setUserData] = useState(null);
+  const { updateUser } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const elementMapping = {
-    1: "Mộc",
-    2: "Hoả",
-    3: "Thổ",
-    4: "Kim",
-    5: "Thuỷ",
-  };
+  const [loadError, setLoadError] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
+  const [form, setForm] = useState(toFormState(null));
+  const [profileErrors, setProfileErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [passwords, setPasswords] = useState(EMPTY_PASSWORDS);
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [changingPassword, setChangingPassword] = useState(false);
+
   useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
-    setLoading(true);
-    try {
-      const email = localStorage.getItem("email");
-      const response = await api.get(`api/Account/email/${email}`);
-      const user = response.data;
-      const elementName = user.elementId
-        ? elementMapping[user.elementId]
-        : "Không xác định";
-      setUserData(user);
-      form.setFieldsValue({
-        ...user,
-        dob: user.dob ? dayjs(user.dob) : null,
-        elementName: elementName,
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      message.error("Error fetching user data");
-      setLoading(false);
-    }
-  };
-
-  const handleMenuClick = (e) => {
-    setSelectedMenuItem(e.key);
-    if (e.key === "1" && userData) {
-      form.setFieldsValue({
-        ...userData,
-        dob: userData.dob ? dayjs(userData.dob) : null,
-      });
-    } else if (e.key === "2") {
-      form.resetFields(["currentPassword", "newPassword", "confirmPassword"]);
-    }
-  };
-
-  const onFinish = async (values) => {
-    try {
+    let cancelled = false;
+    const fetchUser = async () => {
       setLoading(true);
-      const email = localStorage.getItem("email");
+      setLoadError(false);
+      try {
+        const email = localStorage.getItem("email");
+        const response = await api.get(`api/Account/email/${email}`);
+        if (!cancelled) {
+          setUser(response.data);
+          setForm(toFormState(response.data));
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        if (!cancelled) {
+          setLoadError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    fetchUser();
+    return () => {
+      cancelled = true;
+    };
+  }, [retryToken]);
 
-      const userResponse = await api.get(`api/Account/email/${email}`);
+  const updateField = (field) => (event) => {
+    const { value } = event.target;
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setProfileErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
 
-      const accountId = userResponse.data.accountId;
+  const updatePasswordField = (field) => (event) => {
+    const { value } = event.target;
+    setPasswords((prev) => ({ ...prev, [field]: value }));
+    setPasswordErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
 
-      const dataToSend = {
-        email: values.email,
-        fullName: values.fullName,
-        dob: values.dob.format("YYYY-MM-DD"),
-        gender: values.gender,
-        phone: values.phone,
-      };
-
-      await api.put(`api/Account/${accountId}`, dataToSend);
-
-      // Fetch updated user data
-      await fetchUserData();
-
-      // Dispatch custom event with updated user data
-      const updatedUserData = await api.get(`api/Account/email/${email}`);
-      localStorage.setItem("user", JSON.stringify(updatedUserData.data));
-      window.dispatchEvent(
-        new CustomEvent("userProfileUpdated", { detail: updatedUserData.data })
-      );
-
-      message.success("Thông tin cá nhân đã được cập nhật thành công");
+  const handleProfileSubmit = async (event) => {
+    event.preventDefault();
+    const errors = {};
+    if (!form.fullName.trim()) {
+      errors.fullName = "Vui lòng nhập họ và tên";
+    }
+    if (!form.phone.trim()) {
+      errors.phone = "Vui lòng nhập số điện thoại";
+    }
+    if (!form.gender) {
+      errors.gender = "Vui lòng chọn giới tính";
+    }
+    if (!form.dob) {
+      errors.dob = "Vui lòng chọn ngày sinh";
+    }
+    setProfileErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.put(`api/Account/${user.accountId}`, {
+        email: form.email,
+        fullName: form.fullName,
+        dob: form.dob,
+        gender: form.gender,
+        phone: form.phone,
+      });
+      const response = await api.get(`api/Account/email/${form.email}`);
+      setUser(response.data);
+      setForm(toFormState(response.data));
+      updateUser(response.data);
+      notify.success("Thông tin cá nhân đã được cập nhật thành công");
     } catch (error) {
       console.error(
         "Error updating profile:",
         error.response?.data || error.message
       );
-      message.error(
+      notify.error(
         `Lỗi cập nhật thông tin: ${
           error.response?.data?.message || error.message
         }`
       );
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const onPasswordChange = async (values) => {
+  const handlePasswordSubmit = async (event) => {
+    event.preventDefault();
+    const errors = {};
+    if (!passwords.currentPassword) {
+      errors.currentPassword = "Vui lòng nhập mật khẩu hiện tại";
+    }
+    if (!passwords.newPassword) {
+      errors.newPassword = "Vui lòng nhập mật khẩu mới";
+    } else if (passwords.newPassword.length < 6) {
+      errors.newPassword = "Mật khẩu phải có ít nhất 6 ký tự";
+    }
+    if (!passwords.confirmPassword) {
+      errors.confirmPassword = "Vui lòng xác nhận mật khẩu mới";
+    } else if (passwords.confirmPassword !== passwords.newPassword) {
+      errors.confirmPassword = "Mật khẩu xác nhận không khớp!";
+    }
+    setPasswordErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+    setChangingPassword(true);
     try {
-      const email = localStorage.getItem("email");
-
-      // First, fetch the user data to get the accountId
-      const userResponse = await api.get(`api/Account/email/${email}`);
-
-      const accountId = userResponse.data.accountId;
-
-      // Now use the accountId in the password change request
-      await api.put(`api/Account/${accountId}/change-password`, {
-        currentPassword: values.currentPassword,
-        newPassword: values.newPassword,
+      await api.put(`api/Account/${user.accountId}/change-password`, {
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword,
       });
-
-      message.success("Password changed successfully");
-      form.resetFields(["currentPassword", "newPassword", "confirmPassword"]);
+      notify.success("Đổi mật khẩu thành công");
+      setPasswords(EMPTY_PASSWORDS);
     } catch (error) {
       console.error(
         "Error changing password:",
         error.response?.data || error.message
       );
-      message.error(
-        `Error changing password: ${
-          error.response?.data?.message || error.message
-        }`
+      notify.error(
+        `Lỗi đổi mật khẩu: ${error.response?.data?.message || error.message}`
       );
+    } finally {
+      setChangingPassword(false);
     }
   };
 
-  // Function to render content based on selected menu item
-  const renderContent = () => {
-    if (loading) {
-      return <div>Loading...</div>;
-    }
-    switch (selectedMenuItem) {
-      case "1":
-        return (
-          <>
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={onFinish}
-              initialValues={
-                userData
-                  ? {
-                      ...userData,
-                      dob: userData.dob ? dayjs(userData.dob) : null,
-                    }
-                  : {}
-              }
-            >
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="fullName"
-                    label="Họ và tên"
-                    rules={[
-                      { required: true, message: "Vui lòng nhập họ và tên" },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="phone"
-                    label="Số điện thoại"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Vui lòng nhập số điện thoại",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  {
-                    required: true,
-                    type: "email",
-                    message: "Vui lòng nhập email hợp lệ",
-                  },
-                ]}
-              >
-                <Input
-                  disabled
-                  className="custom-disabled-input"
-                  style={{ color: "rgba(0, 0, 0, 0.85)" }}
-                />
-              </Form.Item>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item
-                    name="gender"
-                    label="Giới tính"
-                    rules={[
-                      { required: true, message: "Vui lòng chọn giới tính" },
-                    ]}
-                  >
-                    <Select>
-                      <Option value="male">Nam</Option>
-                      <Option value="female">Nữ</Option>
-                      <Option value="other">Khác</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    name="dob"
-                    label="Ngày, tháng, năm sinh"
-                    rules={[
-                      { required: true, message: "Vui lòng chọn ngày sinh" },
-                    ]}
-                  >
-                    <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="elementName" label="Mệnh">
-                    <Input disabled style={{ color: "rgba(0, 0, 0, 0.85)" }} />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className="user-profile-form-button"
-                >
-                  Lưu thay đổi
-                </Button>
-              </Form.Item>
-            </Form>
-          </>
-        );
-      case "2":
-        return (
-          <Form form={form} layout="vertical" onFinish={onPasswordChange}>
-            <Form.Item
-              name="currentPassword"
-              label="Mật khẩu hiện tại"
-              rules={[
-                { required: true, message: "Vui lòng nhập mật khẩu hiện tại" },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-            <Form.Item
-              name="newPassword"
-              label="Mật khẩu mới"
-              rules={[
-                { required: true, message: "Vui lòng nhập mật khẩu mới" },
-                { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-            <Form.Item
-              name="confirmPassword"
-              label="Xác nhận mật khẩu mới"
-              dependencies={["newPassword"]}
-              rules={[
-                { required: true, message: "Vui lòng xác nhận mật khẩu mới" },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("newPassword") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error("Mật khẩu xác nhận không khớp!")
-                    );
-                  },
-                }),
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                className="password-change-button"
-              >
-                Đổi mật khẩu
-              </Button>
-            </Form.Item>
-          </Form>
-        );
-      default:
-        return null;
-    }
-  };
+  const elementBadge = user?.elementId ? ELEMENT_BADGES[user.elementId] : null;
 
   return (
-    <Layout className="user-profile-layout">
-      <AppHeader />
+    <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+      <nav aria-label="Breadcrumb" className="text-sm text-muted">
+        <ol className="flex items-center gap-2">
+          <li>
+            <Link
+              to={PATHS.home}
+              className="transition-colors duration-fast hover:text-crimson"
+            >
+              Trang chủ
+            </Link>
+          </li>
+          <li aria-hidden="true">›</li>
+          <li aria-current="page" className="font-medium text-ink-soft">
+            Tài khoản
+          </li>
+        </ol>
+      </nav>
 
-      <Row justify="center" align="middle" className="user-profile-row">
-        <Col
-          xs={{ flex: "0 0 100%" }}
-          sm={{ flex: "0 0 90%" }}
-          md={{ flex: "0 0 80%" }}
-          lg={{ flex: "0 0 70%" }}
-          xl={{ flex: "0 0 60%" }}
-          xxl={{ flex: "0 0 50%" }}
-        >
-          <Breadcrumb className="user-profile-breadcrumb">
-            <Breadcrumb.Item>Trang chủ</Breadcrumb.Item>
-            <Breadcrumb.Item>Tài khoản</Breadcrumb.Item>
-            <Breadcrumb.Item>
-              {selectedMenuItem === "1"
-                ? "Thông tin cá nhân"
-                : "Cài đặt tài khoản"}
-            </Breadcrumb.Item>
-          </Breadcrumb>
-          <Header className="user-profile-header">
-            <h2>Thông tin cá nhân</h2>
-          </Header>
-          <Layout>
-            <Sider width={250} className="user-profile-sider">
-              <Menu
-                mode="inline"
-                defaultSelectedKeys={["1"]}
-                selectedKeys={[selectedMenuItem]}
-                onClick={handleMenuClick}
-                className="user-profile-menu"
+      <h1 className="mt-4 animate-fade-rise font-display text-3xl text-ink md:text-4xl lg:text-5xl">
+        Thông tin cá nhân
+      </h1>
+
+      {loading ? (
+        <ProfileSkeleton />
+      ) : loadError ? (
+        <EmptyState
+          title="Không thể tải thông tin"
+          description="Đã có lỗi xảy ra khi tải thông tin tài khoản. Vui lòng thử lại."
+          action={
+            <Button onClick={() => setRetryToken((token) => token + 1)}>
+              Thử lại
+            </Button>
+          }
+          className="mt-8"
+        />
+      ) : (
+        <div className="mt-8 grid grid-cols-1 items-start gap-6 md:grid-cols-[240px_1fr] md:gap-10">
+          <NavRail activeTab={activeTab} onSelect={setActiveTab} />
+
+          {activeTab === "profile" ? (
+            <Card className="p-6 md:p-8">
+              <div className="flex items-center gap-4">
+                <img
+                  src={avatarUrl(form.fullName)}
+                  alt={`Ảnh đại diện của ${form.fullName}`}
+                  loading="lazy"
+                  className="h-16 w-16 rounded-full border border-gold/50 bg-paper-2"
+                />
+                <div className="min-w-0">
+                  <h3 className="truncate font-display text-xl text-ink">
+                    {form.fullName || "Người dùng"}
+                  </h3>
+                  {elementBadge && (
+                    <Badge element={elementBadge} className="mt-1.5">
+                      Bản mệnh: {form.elementName}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              <form
+                onSubmit={handleProfileSubmit}
+                noValidate
+                className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2"
               >
-                <Menu.Item key="1">Thông tin cá nhân</Menu.Item>
-                <Menu.Item key="2">Cài đặt tài khoản</Menu.Item>
-              </Menu>
-            </Sider>
-            <Layout>
-              <Content className="user-profile-content">
-                {renderContent()}
-              </Content>
-            </Layout>
-          </Layout>
-        </Col>
-      </Row>
-      <FooterComponent />
-    </Layout>
+                <Input
+                  label="Họ và tên"
+                  name="fullName"
+                  value={form.fullName}
+                  onChange={updateField("fullName")}
+                  error={profileErrors.fullName}
+                />
+                <Input
+                  label="Số điện thoại"
+                  name="phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={updateField("phone")}
+                  error={profileErrors.phone}
+                />
+                <div className="sm:col-span-2">
+                  <Input
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    disabled
+                    className="cursor-not-allowed !bg-paper-2 text-muted"
+                  />
+                </div>
+                <GenderSelect
+                  value={form.gender}
+                  onChange={updateField("gender")}
+                  error={profileErrors.gender}
+                />
+                <Input
+                  label="Ngày sinh"
+                  name="dob"
+                  type="date"
+                  value={form.dob}
+                  onChange={updateField("dob")}
+                  error={profileErrors.dob}
+                />
+                <div className="sm:col-span-2">
+                  <Input
+                    label="Mệnh"
+                    name="elementName"
+                    value={form.elementName}
+                    disabled
+                    className="cursor-not-allowed !bg-paper-2 text-muted"
+                  />
+                </div>
+                <div className="flex justify-end pt-2 sm:col-span-2">
+                  <Button type="submit" disabled={saving}>
+                    {saving ? "Đang lưu…" : "Lưu thay đổi"}
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          ) : (
+            <Card className="p-6 md:p-8">
+              <h3 className="font-display text-xl text-ink">Đổi mật khẩu</h3>
+              <p className="mt-1 text-sm text-muted">
+                Duy trì mật khẩu mạnh để bảo vệ tài khoản của bạn.
+              </p>
+              <form
+                onSubmit={handlePasswordSubmit}
+                noValidate
+                className="mt-6 flex max-w-md flex-col gap-4"
+              >
+                <Input
+                  label="Mật khẩu hiện tại"
+                  name="currentPassword"
+                  type="password"
+                  autoComplete="current-password"
+                  value={passwords.currentPassword}
+                  onChange={updatePasswordField("currentPassword")}
+                  error={passwordErrors.currentPassword}
+                />
+                <Input
+                  label="Mật khẩu mới"
+                  name="newPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  hint="Ít nhất 6 ký tự"
+                  value={passwords.newPassword}
+                  onChange={updatePasswordField("newPassword")}
+                  error={passwordErrors.newPassword}
+                />
+                <Input
+                  label="Xác nhận mật khẩu mới"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  value={passwords.confirmPassword}
+                  onChange={updatePasswordField("confirmPassword")}
+                  error={passwordErrors.confirmPassword}
+                />
+                <div className="pt-2">
+                  <Button type="submit" disabled={changingPassword}>
+                    {changingPassword ? "Đang cập nhật…" : "Đổi mật khẩu"}
+                  </Button>
+                </div>
+              </form>
+            </Card>
+          )}
+        </div>
+      )}
+    </main>
   );
 };
 

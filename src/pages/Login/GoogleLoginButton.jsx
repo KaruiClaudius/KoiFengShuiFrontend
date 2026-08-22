@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
-import Button from "@mui/joy/Button";
 import GoogleIcon from "../../components/GoogleIcon";
 import api from "../../config/axios";
-import { Alert } from "@mui/joy";
+import { PATHS } from "../../routes/paths";
+import { useAuth } from "../../context/AuthContext";
+import { Button, notify } from "../../ui";
 
 export default function GoogleLoginButton() {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleGoogleLoginSuccess = async (tokenResponse) => {
     setLoadingGoogle(true);
@@ -19,63 +21,60 @@ export default function GoogleLoginButton() {
         accessToken: tokenResponse.access_token,
       });
 
-      // Store the token
-      localStorage.setItem("token", res.data.token);
-
-      // Fetch user details
       const userDetailsResponse = await api.get(
-        `api/Account/email/${res.data.email}`,
-        {
-          headers: { Authorization: `Bearer ${res.data.token}` },
-        }
+        `api/Account/email/${res.data.email}`
       );
       const userDetails = userDetailsResponse.data;
 
-      // Store user details in localStorage
-      localStorage.setItem("user", JSON.stringify(userDetails));
-      localStorage.setItem("email", res.data.email); // Store email separately for consistency
+      login({
+        newToken: res.data.token,
+        newUser: userDetails,
+        email: res.data.email,
+      });
 
-      // Set the token in the default Authorization header for future requests
-      api.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`;
-
-      // Redirect to the home page or dashboard
-      navigate("/");
-    } catch (error) {
-      console.error("Login failed", error);
-      console.error("Error response:", error.response);
-      setError(
-        error.response?.data?.message || "An error occurred during Google login"
-      );
+      navigate(PATHS.home);
+    } catch (err) {
+      console.error("Login failed", err);
+      console.error("Error response:", err.response);
+      const message =
+        err.response?.data?.message ||
+        "Đã xảy ra lỗi khi đăng nhập bằng Google. Vui lòng thử lại.";
+      setError(message);
+      notify.error(message);
     } finally {
       setLoadingGoogle(false);
     }
   };
 
-  const login = useGoogleLogin({
+  const googleLogin = useGoogleLogin({
     onSuccess: handleGoogleLoginSuccess,
-    onError: (error) => {
-      console.error("Google login failed:", error?.type || "unknown");
-      setError("Google login failed. Please try again.");
+    onError: (err) => {
+      console.error("Google login failed:", err?.type || "unknown");
+      const message = "Đăng nhập Google thất bại. Vui lòng thử lại.";
+      setError(message);
+      notify.error(message);
     },
   });
 
   return (
-    <>
+    <div>
       {error && (
-        <Alert color="danger" sx={{ mb: 2 }}>
+        <div
+          role="alert"
+          className="mb-2 rounded-md border-crimson bg-crimson/10 p-3 text-sm text-crimson"
+        >
           {error}
-        </Alert>
+        </div>
       )}
       <Button
-        variant="soft"
-        color="neutral"
-        fullWidth
-        startDecorator={<GoogleIcon />}
+        variant="secondary"
+        className="w-full"
         disabled={loadingGoogle}
-        onClick={() => login()}
+        onClick={() => googleLogin()}
       >
+        <GoogleIcon />
         {loadingGoogle ? "Đang chuyển hướng..." : "Đăng nhập với Google"}
       </Button>
-    </>
+    </div>
   );
 }

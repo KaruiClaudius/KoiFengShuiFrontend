@@ -51,12 +51,7 @@ const App = () => {
                   path={PATHS.dashboard}
                   element={guarded(<DashboardDefault />, 1)}
                 />
-                <Route path={PATHS.koiCompatible} element={<KoiCompatibilityForm />} />
                 <Route path={PATHS.profile} element={guarded(<UserProfile />)} />
-                <Route
-                  path={PATHS.listingPost}
-                  element={guarded(<PostListingPage />)}
-                />
                 <Route
                   path={PATHS.faqManager}
                   element={guarded(<AdminFAQ />, 1)}
@@ -67,6 +62,14 @@ const App = () => {
                 />
                 <Route element={<PublicShell />}>
                   <Route path={PATHS.home} element={<HomePage />} />
+                  <Route
+                    path={PATHS.koiCompatible}
+                    element={<KoiCompatibilityForm />}
+                  />
+                  <Route
+                    path={PATHS.listingPost}
+                    element={guarded(<PostListingPage />)}
+                  />
                   <Route
                     path={PATHS.koiListings}
                     element={<KoiListingsPage />}
