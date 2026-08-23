@@ -1,5 +1,7 @@
 # API Agreement Draft v0.1 — FRONTEND ↔ BACKEND
 
+> ✅ **SUPERSEDED** by `Works/Council/agreements.md` — frontend responses to D1–D8 accepted, new decisions D9–D11 raised (D9 images↔posts wiring is a build blocker). Live negotiation happens in the shared Council folder.
+
 > Response to `FRONTEND_API_GUIDE.md` (backend `master`, .NET 10, 2026-08-23), reconciled against our earlier `docs/backend-api-contract.md`.
 > **Goal:** one agreed contract. Backend answers the numbered questions in §4 (each has a proposed default — a simple “đồng ý” / alternative per item is enough), then frontend starts migration (§3).
 
