@@ -20,6 +20,7 @@ import {
   TabsList,
 } from "../../ui";
 import { CloudDivider, SealStamp, WaveBand } from "../../assets/motifs/Motifs";
+import { shareResultCard } from "../../utils/shareResult";
 
 const DIRECTIONS = [
   "Đông",
@@ -130,6 +131,22 @@ const CrossIcon = () => (
     aria-hidden="true"
   >
     <path d="M6 6l8 8M14 6l-8 8" />
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg
+    viewBox="0 0 20 20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="h-4 w-4 shrink-0"
+    aria-hidden="true"
+  >
+    <path d="M10 12.5V3M6.5 6L10 2.5L13.5 6" />
+    <path d="M4 10.5V16a1 1 0 001 1h10a1 1 0 001-1v-5.5" />
   </svg>
 );
 
@@ -610,6 +627,55 @@ const KoiCompatibilityForm = () => {
     }
   };
 
+  const buildSharePayload = () => {
+    if (!results) return null;
+    if (formType === "element") {
+      return {
+        title: "Kết quả tư vấn bản mệnh",
+        lines: [
+          results.element ? `Ngũ hành: ${results.element}` : null,
+          results.cung ? `Cung: ${results.cung}` : null,
+          (results.luckyNumbers || []).length > 0
+            ? `Con số may mắn: ${results.luckyNumbers.join(", ")}`
+            : null,
+          (results.fishBreeds || []).length > 0
+            ? `Giống cá phù hợp: ${results.fishBreeds.join(", ")}`
+            : null,
+          (results.fishColors || []).length > 0
+            ? `Màu cá phù hợp: ${results.fishColors.join(", ")}`
+            : null,
+        ].filter(Boolean),
+      };
+    }
+    const recommendation = (Array.isArray(results.recommendations)
+      ? results.recommendations
+      : []
+    ).find((item) => typeof item === "string" && item.trim());
+    return {
+      title: `Tổng điểm phù hợp: ${results.overallCompatibilityScore.toFixed(2)}%`,
+      lines: [
+        `Điểm hướng: ${results.directionScore.toFixed(2)}%`,
+        `Điểm hình dạng: ${results.shapeScore.toFixed(2)}%`,
+        `Điểm số lượng: ${results.quantityScore.toFixed(2)}%`,
+        `Điểm màu sắc tổng: ${(results.colorScores?.TotalScore ?? 0).toFixed(2)}%`,
+        ...(recommendation ? [recommendation] : []),
+      ],
+    };
+  };
+
+  const handleShareResult = async () => {
+    const payload = buildSharePayload();
+    if (!payload) return;
+    const outcome = await shareResultCard(payload);
+    if (outcome === "shared") {
+      notify.success("Đã chia sẻ ảnh kết quả");
+    } else if (outcome === "downloaded") {
+      notify.success("Đã lưu ảnh kết quả");
+    } else {
+      notify.error("Không thể tạo ảnh chia sẻ");
+    }
+  };
+
   const handleCompareSubmit = async (event) => {
     event.preventDefault();
     const errors = validateCompatibility(compareValues);
@@ -807,6 +873,16 @@ const KoiCompatibilityForm = () => {
                   </Dialog>
                 </>
               )}
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-6"
+                onClick={handleShareResult}
+                aria-label="Chia sẻ kết quả phong thủy"
+              >
+                <ShareIcon />
+                Chia sẻ kết quả
+              </Button>
             </div>
           )}
         </Card>

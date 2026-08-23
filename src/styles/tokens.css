@@ -38,6 +38,24 @@
   --dur-base: 240ms;
   --dur-slow: 380ms;
   --ease-water: cubic-bezier(0.32, 0.72, 0.35, 1);
+
+  /* ---- Rice-paper grain ---- */
+  --grain-dot: rgba(33, 27, 22, 0.045);
+}
+
+/* ---- Night Pond dark surfaces (brand hues unchanged) ---- */
+[data-theme="dark"] {
+  --color-paper: #0e1520;
+  --color-paper-2: #131c2b;
+  --color-surface: #16202f;
+  --color-ink: #e8ecf2;
+  --color-ink-soft: #aeb9c7;
+  --color-muted: #6d7d90;
+  --color-gold-soft: #9c8a4a;
+  --shadow-plaque: 0 10px 30px -18px rgba(0, 0, 0, 0.65);
+  --shadow-lift: 0 18px 44px -22px rgba(0, 0, 0, 0.75);
+  --ring-gold: 0 0 0 3px rgba(201, 162, 39, 0.22);
+  --grain-dot: rgba(255, 255, 255, 0.05);
 }
 
 @media (prefers-reduced-motion: reduce) {

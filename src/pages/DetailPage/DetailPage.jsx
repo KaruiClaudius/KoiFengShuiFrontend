@@ -191,6 +191,7 @@ const DetailPage = () => {
         setKoiDetail(detail);
 
         if (detail) {
+          document.title = `${detail.title} · Koi FengShui`;
           const [elementListings, accountListings, categoryList] =
             await Promise.all([
               api

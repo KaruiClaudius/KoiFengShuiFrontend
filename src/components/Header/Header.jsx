@@ -10,6 +10,7 @@ import {
 } from "../../ui";
 import { SealStamp } from "../../assets/motifs/Motifs.jsx";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { PATHS } from "../../routes/paths";
 import Logo from "../../assets/Logo.png";
 
@@ -26,6 +27,48 @@ const ELEMENT_LABELS = {
   3: "Thổ",
   4: "Kim",
   5: "Thuỷ",
+};
+
+const ThemeToggle = () => {
+  const { theme, toggle } = useTheme();
+  const isDark = theme === "dark";
+
+  return (
+    <button
+      type="button"
+      aria-label="Chuyển sáng/tối"
+      aria-pressed={isDark}
+      onClick={toggle}
+      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-sm text-[#FDF6EC] transition-colors duration-fast hover:text-gold-soft focus-visible:shadow-gold"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-6 w-6"
+        aria-hidden="true"
+      >
+        {isDark ? (
+          <>
+            <circle cx="12" cy="12" r="4.25" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+            <path d="M4.93 4.93l1.41 1.41" />
+            <path d="M17.66 17.66l1.41 1.41" />
+            <path d="M2 12h2" />
+            <path d="M20 12h2" />
+            <path d="M4.93 19.07l1.41-1.41" />
+            <path d="M17.66 6.34l1.41-1.41" />
+          </>
+        ) : (
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        )}
+      </svg>
+    </button>
+  );
 };
 
 const AppHeader = () => {
@@ -75,6 +118,7 @@ const AppHeader = () => {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           {isLoggedIn ? (
             <>
               <Button variant="primary" size="sm" as={Link} to={PATHS.listingPost}>
@@ -110,6 +154,9 @@ const AppHeader = () => {
                       Dashboard
                     </MenuItem>
                   )}
+                  <MenuItem onSelect={() => navigate("/favorites")}>
+                    Yêu thích
+                  </MenuItem>
                   <MenuItem onSelect={() => navigate(PATHS.profile)}>
                     Hồ sơ
                   </MenuItem>
@@ -159,6 +206,9 @@ const AppHeader = () => {
 
       {mobileOpen && (
         <div className="border-t border-gold/20 bg-ink px-4 pb-5 pt-2 sm:px-6 md:hidden">
+          <div className="flex justify-end">
+            <ThemeToggle />
+          </div>
           <nav aria-label="Điều hướng di động" className="flex flex-col">
             {NAV_LINKS.map((item) => (
               <Link
@@ -184,6 +234,13 @@ const AppHeader = () => {
                 >
                   Đăng tin
                 </Button>
+                <Link
+                  to="/favorites"
+                  onClick={closeMobileMenu}
+                  className="py-2.5 text-[15px] font-medium transition-colors duration-fast hover:text-gold-soft"
+                >
+                  Yêu thích
+                </Link>
                 <Link
                   to={PATHS.profile}
                   onClick={closeMobileMenu}

@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getAllPosts,
   getFengShuiKoiDecorationPost,
@@ -241,6 +241,9 @@ function KoiSkeletonGrid() {
 export default function Homepage() {
   const { user } = useAuth();
   const currentUser = user ?? null;
+  const navigate = useNavigate();
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [cardDataKoiElement, setCardDataKoiElement] = useState([]);
   const [cardDataKoi, setCardDataKoi] = useState([]);
@@ -250,6 +253,14 @@ export default function Homepage() {
   const [error, setError] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
   const fetchDataRef = useRef(null);
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const term = searchTerm.trim();
+    navigate(
+      term ? `/KoiListings?q=${encodeURIComponent(term)}` : "/KoiListings"
+    );
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -337,7 +348,41 @@ export default function Homepage() {
           <p className="mt-5 max-w-xl text-base leading-relaxed text-[#E6D9A8]/90 md:text-lg">
             Cân Bằng Phong Thủy, Koi Vượng Tài Lộc.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <form
+            role="search"
+            onSubmit={handleSearchSubmit}
+            className="mt-8 flex w-full max-w-md items-stretch gap-3"
+          >
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Tìm chú cá Koi của bạn…"
+              aria-label="Tìm chú cá Koi của bạn"
+              autoComplete="off"
+              className="w-full min-w-0 rounded-full border border-[#E6D9A8]/40 bg-white/10 px-5 py-3 text-[#FDF6EC] outline-none transition-shadow duration-fast ease-water placeholder:text-[#E6D9A8]/70 focus:shadow-gold"
+            />
+            <button
+              type="submit"
+              aria-label="Tìm kiếm"
+              className="inline-flex shrink-0 items-center justify-center rounded-full border border-[#E6D9A8]/60 px-4 text-[#E6D9A8] transition-all duration-fast ease-water hover:bg-[#E6D9A8]/10 active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-gold"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+            </button>
+          </form>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
             <Button as={Link} to="/KoiListings?category=1" size="lg">
               Khám phá cá Koi
             </Button>

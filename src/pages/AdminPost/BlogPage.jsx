@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import DOMPurify from "dompurify";
+import { Link } from "react-router-dom";
 import { getAllPosts } from "../../api/posts";
-import { Button, Card, Dialog, DialogContent, EmptyState, Skeleton } from "../../ui";
+import { Button, Card, EmptyState, Skeleton } from "../../ui";
 import { KoiSilhouette } from "../../assets/motifs/Motifs";
 
 const stripHtml = (value) =>
@@ -11,17 +11,13 @@ const stripHtml = (value) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const sanitizeHtml = (value) =>
-  DOMPurify.sanitize(String(value ?? ""), { USE_PROFILES: { html: true } });
-
-function PostCard({ post, onOpen }) {
+function PostCard({ post }) {
   const imageUrl = post.imageUrls?.[0];
 
   return (
     <Card interactive className="h-full overflow-hidden">
-      <button
-        type="button"
-        onClick={() => onOpen(post)}
+      <Link
+        to={`/blog/${post.postId ?? post.id}`}
         aria-label={`Đọc bài: ${post.name}`}
         className="group block h-full w-full rounded-lg text-left outline-none focus-visible:shadow-gold"
       >
@@ -51,7 +47,7 @@ function PostCard({ post, onOpen }) {
             Đọc thêm <span aria-hidden="true">→</span>
           </span>
         </div>
-      </button>
+      </Link>
     </Card>
   );
 }
@@ -64,7 +60,6 @@ PostCard.propTypes = {
     description: PropTypes.string,
     imageUrls: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
-  onOpen: PropTypes.func.isRequired,
 };
 
 function PostSkeletonGrid() {
@@ -93,7 +88,6 @@ export default function BlogPage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedPost, setSelectedPost] = useState(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
@@ -159,41 +153,11 @@ export default function BlogPage() {
               <PostCard
                 key={post.postId ?? `${post.id}-${post.name}`}
                 post={post}
-                onOpen={setSelectedPost}
               />
             ))}
           </div>
         )}
       </section>
-
-      <Dialog
-        open={Boolean(selectedPost)}
-        onOpenChange={(open) => {
-          if (!open) setSelectedPost(null);
-        }}
-      >
-        <DialogContent title={selectedPost?.name}>
-          {selectedPost && (
-            <div>
-              {selectedPost.imageUrls?.map((url, index) => (
-                <img
-                  key={`${url}-${index}`}
-                  src={url}
-                  alt={`${selectedPost.name} — ảnh ${index + 1}`}
-                  loading="lazy"
-                  className="mb-3 w-full rounded-md object-cover"
-                />
-              ))}
-              <div
-                className="text-sm leading-relaxed text-ink-soft [&_img]:rounded-md [&_p]:mb-3 last:[&_p]:mb-0 [&_strong]:text-ink"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(selectedPost.description),
-                }}
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }

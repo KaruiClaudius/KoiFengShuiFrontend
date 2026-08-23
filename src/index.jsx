@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import ProtectedRoute from "./config/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { FavoritesProvider } from "./context/FavoritesContext";
 import { PATHS } from "./routes/paths";
 import PublicShell from "./layout/PublicShell";
 import AdminShell from "./layout/AdminShell";
@@ -30,6 +32,8 @@ const KoiListingsPage = lazy(
   () => import("./pages/KoiListingPage/KoiListingPage")
 );
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
+const Favorites = lazy(() => import("./pages/Favorites/Favorites"));
+const BlogDetail = lazy(() => import("./pages/BlogDetail/BlogDetail"));
 
 const guarded = (node, role = null) =>
   role === null ? (
@@ -52,8 +56,12 @@ const titleFor = (pathname) => {
     [PATHS.dashboard]: "Dashboard",
     [PATHS.adminPost]: "Quản lý bài viết",
     [PATHS.faqManager]: "Quản lý FAQ",
+    "/favorites": "Yêu thích",
   };
   const page = map[pathname];
+  if (pathname.startsWith("/blog/") && !pathname.endsWith("/blog/")) {
+    return "Bài viết · Koi FengShui";
+  }
   return page ? `${page} · Koi FengShui` : "Koi FengShui — Cá Koi & Phong Thủy";
 };
 
@@ -67,56 +75,68 @@ const TitleManager = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <TitleManager />
-        <ErrorBoundary>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path={PATHS.auth} element={<AuthPage />} />
-              <Route element={<AdminShell />}>
-                <Route
-                  path={PATHS.dashboard}
-                  element={guarded(<DashboardDefault />, 1)}
-                />
-                <Route
-                  path={PATHS.faqManager}
-                  element={guarded(<AdminFAQ />, 1)}
-                />
-                <Route
-                  path={PATHS.adminPost}
-                  element={guarded(<AdminPost />, 1)}
-                />
-              </Route>
-              <Route path={PATHS.profile} element={guarded(<UserProfile />)} />
-              <Route element={<PublicShell />}>
-                <Route path={PATHS.home} element={<HomePage />} />
-                <Route
-                  path={PATHS.koiCompatible}
-                  element={<KoiCompatibilityForm />}
-                />
-                <Route
-                  path={PATHS.listingPost}
-                  element={guarded(<PostListingPage />)}
-                />
-                <Route
-                  path={PATHS.koiListings}
-                  element={<KoiListingsPage />}
-                />
-                <Route path={PATHS.details()} element={<DetailPage />} />
-                <Route
-                  path={PATHS.decoration()}
-                  element={<DecorationPage />}
-                />
-                <Route path={PATHS.blog} element={<BlogPage />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
-        <Toaster />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <FavoritesProvider>
+          <Router>
+            <TitleManager />
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path={PATHS.auth} element={<AuthPage />} />
+                  <Route element={<AdminShell />}>
+                    <Route
+                      path={PATHS.dashboard}
+                      element={guarded(<DashboardDefault />, 1)}
+                    />
+                    <Route
+                      path={PATHS.faqManager}
+                      element={guarded(<AdminFAQ />, 1)}
+                    />
+                    <Route
+                      path={PATHS.adminPost}
+                      element={guarded(<AdminPost />, 1)}
+                    />
+                  </Route>
+                  <Route
+                    path={PATHS.profile}
+                    element={guarded(<UserProfile />)}
+                  />
+                  <Route element={<PublicShell />}>
+                    <Route path={PATHS.home} element={<HomePage />} />
+                    <Route
+                      path="/favorites"
+                      element={<Favorites />}
+                    />
+                    <Route
+                      path={PATHS.koiCompatible}
+                      element={<KoiCompatibilityForm />}
+                    />
+                    <Route
+                      path={PATHS.listingPost}
+                      element={guarded(<PostListingPage />)}
+                    />
+                    <Route
+                      path={PATHS.koiListings}
+                      element={<KoiListingsPage />}
+                    />
+                    <Route path={PATHS.details()} element={<DetailPage />} />
+                    <Route
+                      path={PATHS.decoration()}
+                      element={<DecorationPage />}
+                    />
+                    <Route path={PATHS.blog} element={<BlogPage />} />
+                    <Route path="/blog/:id" element={<BlogDetail />} />
+                  </Route>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
+            <Toaster />
+          </Router>
+        </FavoritesProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

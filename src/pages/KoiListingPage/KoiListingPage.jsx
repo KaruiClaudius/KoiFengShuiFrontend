@@ -34,13 +34,14 @@ const KoiListingPage = () => {
 
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedElement, setSelectedElement] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(12);
   const [total, setTotal] = useState(0);
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     let cancelled = false;
@@ -68,8 +69,16 @@ const KoiListingPage = () => {
   useEffect(() => {
     const categoryFromUrl = searchParams.get("category");
     const elementFromUrl = searchParams.get("element");
-    if (!categoryFromUrl) return;
-    setSelectedCategory(Number(categoryFromUrl));
+    const qFromUrl = searchParams.get("q");
+    setSearchTerm(qFromUrl ?? "");
+    if (!categoryFromUrl && !elementFromUrl) {
+      if (qFromUrl) {
+        setSelectedCategory(1);
+        setCurrentPage(1);
+      }
+      return;
+    }
+    setSelectedCategory(Number(categoryFromUrl || 1));
     if (elementFromUrl) {
       setSelectedElement([Number(elementFromUrl)]);
     }
@@ -122,7 +131,21 @@ const KoiListingPage = () => {
     });
   };
 
-  const filteredKoi = filterKoiByElement(filterKoiByColor(cardDataKoi));
+  const filterKoiBySearch = (data) => {
+    const normalizedQuery = searchTerm.trim().toLowerCase();
+    if (!normalizedQuery) return data;
+    return data.filter((item) =>
+      String(item.title ?? "")
+        .toLowerCase()
+        .includes(normalizedQuery)
+    );
+  };
+
+  const filteredKoi = filterKoiByElement(
+    filterKoiByColor(filterKoiBySearch(cardDataKoi))
+  );
+
+  const hasActiveSearch = Boolean(searchTerm.trim());
 
   const toggleColor = (value) => {
     setSelectedColors((prev) =>
@@ -137,9 +160,26 @@ const KoiListingPage = () => {
     setSelectedElement(nextElements);
   };
 
+  const updateQueryParam = (value) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (value) {
+      nextParams.set("q", value);
+    } else {
+      nextParams.delete("q");
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    updateQueryParam(event.target.value);
+  };
+
   const clearFilters = () => {
     setSelectedColors([]);
     setSelectedElement([]);
+    setSearchTerm("");
+    updateQueryParam("");
     notify.success("Đã xóa tất cả bộ lọc");
   };
 
@@ -156,6 +196,24 @@ const KoiListingPage = () => {
 
   const filterPanel = (
     <div className="flex flex-col gap-6">
+      <form role="search" onSubmit={(event) => event.preventDefault()}>
+        <label
+          htmlFor="koi-search-input"
+          className="font-display text-base font-semibold text-ink"
+        >
+          Tìm kiếm
+        </label>
+        <input
+          id="koi-search-input"
+          type="search"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder="Tìm chú cá Koi của bạn…"
+          autoComplete="off"
+          className="mt-3 w-full rounded-full border border-gold/40 bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-shadow duration-fast ease-water placeholder:text-muted focus:shadow-gold"
+        />
+      </form>
+
       <fieldset className="m-0 border-0 p-0">
         <legend className="font-display text-base font-semibold text-ink">
           Bản mệnh
@@ -318,6 +376,14 @@ const KoiListingPage = () => {
               />
             ) : (
               <>
+                {hasActiveSearch && (
+                  <p
+                    role="status"
+                    className="mb-4 text-sm font-medium text-muted"
+                  >
+                    {filteredKoi.length} kết quả
+                  </p>
+                )}
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredKoi.map((item) => (
                     <ListingCard key={item.listingId} item={item} to="/Details" />

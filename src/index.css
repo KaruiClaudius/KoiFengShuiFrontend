@@ -77,10 +77,7 @@ h6 {
 /* ---- Hóa Long shared utilities ---- */
 
 .grain-bg {
-  background-image: radial-gradient(
-    rgba(33, 27, 22, 0.045) 1px,
-    transparent 1px
-  );
+  background-image: radial-gradient(var(--grain-dot) 1px, transparent 1px);
   background-size: 5px 5px;
 }
 
