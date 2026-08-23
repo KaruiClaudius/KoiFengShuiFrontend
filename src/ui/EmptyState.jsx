@@ -1,4 +1,4 @@
-import DragonGate from "../assets/motifs/Motifs";
+import { DragonGate } from "../assets/motifs/Motifs";
 
 const EmptyState = ({
   title = "Chưa có gì ở đây",
