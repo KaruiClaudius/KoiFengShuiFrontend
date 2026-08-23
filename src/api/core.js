@@ -37,8 +37,10 @@ api.interceptors.response.use(
   (r) => r,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original?._retry && getRefreshToken()) {
+    if (!original) return Promise.reject(error);
+    if (error.response?.status === 401 && !original._retry && getRefreshToken()) {
       original._retry = true;
+      original.headers ??= {};
       try {
         if (!getRefreshPromise()) {
           const p = (async () => {
