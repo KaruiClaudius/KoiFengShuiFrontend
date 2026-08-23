@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import api, { postMarketplaceListings } from "../../config/axios";
 import { PATHS } from "../../routes/paths";
 import { Button, Card, EmptyState, Input, notify, Skeleton } from "../../ui";

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import { createPost, deletePost, getAllPosts, updatePost } from "../../api/posts";
 import { useAuth } from "../../context/AuthContext";
 import { KoiSilhouette } from "../../assets/motifs/Motifs";
