@@ -25,13 +25,3 @@ export const updatePost = (postId, data) => {
 export const deletePost = (postId) => {
   return api.delete(`/api/AdminPost/DeletePostWithAllRelated/${postId}`);
 };
-
-export const getActivePostById = async (id) => {
-  const res = await getAllPosts();
-  return (
-    (res.data || []).find(
-      (p) =>
-        String(p.postId ?? p.id) === String(id) && p.status === "active"
-    ) || null
-  );
-};
