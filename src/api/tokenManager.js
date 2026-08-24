@@ -97,6 +97,10 @@ export function clearAuth() {
   }
   refreshPromise = null;
 }
+export function setUser(user) {
+  if (user == null) return;
+  localStorage.setItem(K.user, JSON.stringify(user));
+}
 export function setRefreshPromise(p) {
   refreshPromise = p;
 }

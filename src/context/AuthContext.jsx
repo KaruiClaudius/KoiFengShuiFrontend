@@ -1,58 +1,48 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import PropTypes from "prop-types";
+import { getUser, setTokens, setUser as persistUser, clearAuth } from "../api/tokenManager.js";
+import { logout as apiLogout } from "../api/auth.js";
 
 const AuthContext = createContext(null);
 
-const readUser = () => {
-  try {
-    return JSON.parse(localStorage.getItem("user")) || null;
-  } catch {
-    return null;
-  }
-};
-
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
-  const [user, setUser] = useState(readUser);
+  const [user, setUser] = useState(getUser);
 
-  const login = useCallback(({ newToken, newUser, email }) => {
-    if (newToken) {
-      localStorage.setItem("token", newToken);
-      setToken(newToken);
-    }
-    if (newUser) {
-      localStorage.setItem("user", JSON.stringify(newUser));
-      setUser(newUser);
-    }
-    if (email) {
-      localStorage.setItem("email", email);
-    }
+  const login = useCallback(({ newToken, newUser, email, token, refreshToken, expiresInMinutes, id, fullName, roleId }) => {
+    setTokens({
+      token: newToken ?? token,
+      refreshToken,
+      expiresInMinutes,
+      id: newUser?.accountId ?? newUser?.id ?? id,
+      fullName: newUser?.fullName ?? fullName,
+      email: newUser?.email ?? email,
+      roleId: newUser?.roleId ?? roleId,
+    });
+    if (newUser) persistUser(newUser);
+    setUser(getUser());
   }, []);
 
   const updateUser = useCallback((nextUser) => {
-    localStorage.setItem("user", JSON.stringify(nextUser));
+    persistUser(nextUser);
     setUser(nextUser);
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("email");
-    setToken(null);
+    apiLogout().catch(() => {});
+    clearAuth();
     setUser(null);
   }, []);
 
   const value = useMemo(
     () => ({
-      token,
       user,
-      isLoggedIn: !!token,
+      isLoggedIn: !!user,
       isAdmin: user?.roleId === 1,
       login,
       logout,
       updateUser,
     }),
-    [token, user, login, logout, updateUser]
+    [user, login, logout, updateUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
