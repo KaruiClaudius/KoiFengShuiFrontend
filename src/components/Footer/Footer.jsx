@@ -4,6 +4,7 @@ import { PATHS } from "../../routes/paths";
 import Logo from "../../assets/Logo.png";
 
 const FOOTER_LINKS = [
+  { label: "Cộng đồng", to: PATHS.community },
   { label: "Tư vấn bản mệnh", to: PATHS.koiCompatible },
   { label: "Kinh nghiệm hay", to: PATHS.blog },
 ];

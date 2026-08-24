@@ -25,6 +25,16 @@ const BlogPage = lazy(() => import("./pages/AdminPost/BlogPage"));
 const HomePage = lazy(() => import("./pages/Homepage/Homepage"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 const BlogDetail = lazy(() => import("./pages/BlogDetail/BlogDetail"));
+const CommunityPage = lazy(() => import("./pages/Community/CommunityPage"));
+const CommunitySubmitPage = lazy(
+  () => import("./pages/Community/CommunitySubmitPage")
+);
+const CommunityMyPostsPage = lazy(
+  () => import("./pages/Community/CommunityMyPostsPage")
+);
+const CommunityDetailPage = lazy(
+  () => import("./pages/Community/CommunityDetailPage")
+);
 
 const guarded = (node, role = null) =>
   role === null ? (
@@ -38,6 +48,9 @@ const titleFor = (pathname) => {
     [PATHS.home]: "Trang chủ",
     [PATHS.koiCompatible]: "Tư vấn bản mệnh",
     [PATHS.profile]: "Tài khoản",
+    [PATHS.community]: "Cộng đồng",
+    [PATHS.communitySubmit]: "Chia sẻ bài viết",
+    [PATHS.communityMyPosts]: "Bài của tôi",
     [PATHS.blog]: "Kinh nghiệm hay",
     [PATHS.auth]: "Đăng nhập",
     [PATHS.resetPassword]: "Đặt lại mật khẩu",
@@ -97,6 +110,19 @@ const App = () => {
                     />
                     <Route path={PATHS.blog} element={<BlogPage />} />
                     <Route path="/blog/:id" element={<BlogDetail />} />
+                    <Route path={PATHS.community} element={<CommunityPage />} />
+                    <Route
+                      path={PATHS.communitySubmit}
+                      element={guarded(<CommunitySubmitPage />)}
+                    />
+                    <Route
+                      path={PATHS.communityMyPosts}
+                      element={guarded(<CommunityMyPostsPage />)}
+                    />
+                    <Route
+                      path="/community/:id"
+                      element={<CommunityDetailPage />}
+                    />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>
