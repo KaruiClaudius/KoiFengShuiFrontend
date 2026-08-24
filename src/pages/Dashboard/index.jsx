@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Button, Card, EmptyState } from "../../ui";
 import { LotusMark } from "../../assets/motifs/Motifs";
-import { getNewUsersCount, getNewUsersList } from "../../api/dashboard";
+import { getNewUsersCount, getNewUsersList, getContentSummary } from "../../api/dashboard";
+import { PATHS } from "../../routes/paths";
 import MonthlyBarChart from "./MonthlyBarChart";
 
 const ITEMS_PER_PAGE = 3;
@@ -18,6 +20,7 @@ const formatDate = (value) =>
 export default function DashboardDefault() {
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newUsersList, setNewUsersList] = useState([]);
+  const [contentSummary, setContentSummary] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.max(
@@ -36,6 +39,10 @@ export default function DashboardDefault() {
         const usersResponse = await getNewUsersList();
         if (cancelled) return;
         setNewUsersList(usersResponse.data);
+
+        const summaryResponse = await getContentSummary();
+        if (cancelled) return;
+        setContentSummary(summaryResponse.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
@@ -59,7 +66,7 @@ export default function DashboardDefault() {
         <p className="mt-1 text-muted">Tổng quan hoạt động của hệ thống</p>
       </header>
 
-      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
         <Card className="p-5">
           <p className="text-sm font-semibold uppercase tracking-wide text-muted">
             Người dùng mới
@@ -68,7 +75,33 @@ export default function DashboardDefault() {
             {newUsersCount.toLocaleString("vi-VN")}
           </p>
         </Card>
-        <Card className="flex items-center gap-4 p-5">
+        <Card className="p-5">
+          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+            Tổng bài viết
+          </p>
+          <p className="mt-2 font-display text-4xl font-bold text-ink">
+            {(contentSummary?.totalPosts ?? 0).toLocaleString("vi-VN")}
+          </p>
+        </Card>
+        <Link
+          to={PATHS.adminPost}
+          className="block rounded-lg outline-none focus-visible:shadow-gold"
+          aria-label="Xem hàng chờ duyệt"
+        >
+          <Card interactive className="p-5">
+            <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Chờ duyệt
+            </p>
+            <p className="mt-2 font-display text-4xl font-bold text-crimson">
+              {(contentSummary?.pendingCount ?? 0).toLocaleString("vi-VN")}
+            </p>
+            <p className="mt-1 text-xs text-muted">Mở hàng chờ →</p>
+          </Card>
+        </Link>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <Card className="flex items-center gap-4 p-5 sm:col-span-2">
           <LotusMark size={36} className="shrink-0 text-jade" />
           <div>
             <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
@@ -82,6 +115,22 @@ export default function DashboardDefault() {
               Hoạt động bình thường
             </p>
           </div>
+        </Card>
+        <Card className="p-5">
+          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+            Danh mục
+          </p>
+          <ul className="mt-2 space-y-1.5">
+            {(contentSummary?.byCategory ?? []).slice(0, 3).map((category) => (
+              <li key={category.categoryId} className="flex items-center justify-between text-sm">
+                <span className="truncate text-ink-soft">{category.categoryName}</span>
+                <span className="font-semibold text-ink">{category.count}</span>
+              </li>
+            ))}
+            {(contentSummary?.byCategory ?? []).length === 0 && (
+              <li className="text-sm text-muted">—</li>
+            )}
+          </ul>
         </Card>
       </div>
 

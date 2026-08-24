@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllPosts } from "../../config/axios";
+import { getFeed } from "../../api/community";
 import {
   Button,
   Card,
@@ -12,6 +12,7 @@ import {
 } from "../../ui";
 import { CloudDivider, KoiSilhouette, WaveBand } from "../../assets/motifs/Motifs";
 import FAQDisplay from "../FAQ/FAQDisplay";
+import { PATHS } from "../../routes/paths";
 import "./Homepage.css";
 
 const stripHtml = (value) =>
@@ -147,7 +148,8 @@ export default function Homepage() {
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [cardDataPost, setCardDataPost] = useState([]);
+  const [communityPosts, setCommunityPosts] = useState([]);
+  const [blogPosts, setBlogPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
@@ -156,7 +158,7 @@ export default function Homepage() {
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     const term = searchTerm.trim();
-    navigate(term ? `/blog?q=${encodeURIComponent(term)}` : "/blog");
+    navigate(term ? `${PATHS.community}?q=${encodeURIComponent(term)}` : PATHS.community);
   };
 
   useEffect(() => {
@@ -166,10 +168,14 @@ export default function Homepage() {
       setLoading(true);
       setError(null);
       try {
-        const responsePost = await getAllPosts();
+        const [communityResponse, blogResponse] = await Promise.all([
+          getFeed({ postTypeId: 1, page: 1, pageSize: 6 }),
+          getFeed({ postTypeId: 3, page: 1, pageSize: 6 }),
+        ]);
 
         if (cancelled) return;
-        setCardDataPost(responsePost.data);
+        setCommunityPosts(communityResponse.data?.data ?? communityResponse.data ?? []);
+        setBlogPosts(blogResponse.data?.data ?? blogResponse.data ?? []);
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -185,8 +191,7 @@ export default function Homepage() {
     };
   }, []);
 
-  const activePosts = cardDataPost.filter((post) => post.status === "active");
-  const hasPosts = activePosts.length > 0;
+  const hasPosts = communityPosts.length > 0 || blogPosts.length > 0;
 
   return (
     <main className="grain-bg min-h-screen bg-paper text-ink">
@@ -268,20 +273,55 @@ export default function Homepage() {
           />
         ) : !hasPosts ? (
           <EmptyState
-            title="Chưa có bài viết nào"
-            description="Các bài viết kinh nghiệm hay sẽ xuất hiện tại đây."
+            title="Chưa có nội dung nào"
+            description="Bài viết cộng đồng và kinh nghiệm hay sẽ xuất hiện tại đây."
           />
         ) : (
           <div className="space-y-14 md:space-y-20">
-            <Rail title="Kinh Nghiệm Hay" moreTo="/blog">
-              {activePosts.map((item) => (
-                <BlogCard
-                  key={`${item.id}-${item.name}`}
-                  post={item}
-                  onOpen={setSelectedPost}
-                />
-              ))}
-            </Rail>
+            {communityPosts.length > 0 && (
+              <Rail title="Cộng đồng" moreTo={PATHS.community}>
+                {communityPosts.map((item) => (
+                  <BlogCard
+                    key={`community-${item.postId}`}
+                    post={item}
+                    onOpen={setSelectedPost}
+                  />
+                ))}
+              </Rail>
+            )}
+            {blogPosts.length > 0 && (
+              <Rail title="Kinh Nghiệm Hay" moreTo={PATHS.blog}>
+                {blogPosts.map((item) => (
+                  <BlogCard
+                    key={`blog-${item.postId}`}
+                    post={item}
+                    onOpen={setSelectedPost}
+                  />
+                ))}
+              </Rail>
+            )}
+            <section aria-label="Đối tác">
+              <div className="mb-6 flex items-end justify-between gap-4">
+                <h2 className="font-display text-2xl font-semibold text-ink md:text-3xl">
+                  Đối tác uy tín
+                </h2>
+                <Link
+                  to={PATHS.partners}
+                  className="shrink-0 text-sm font-semibold text-crimson transition-colors duration-fast hover:text-crimson-deep focus-visible:outline-none focus-visible:shadow-gold rounded-sm"
+                >
+                  Xem tất cả <span aria-hidden="true">›</span>
+                </Link>
+              </div>
+              <Card className="flex flex-wrap items-center justify-between gap-4 p-6">
+                <p className="max-w-xl text-sm leading-relaxed text-muted">
+                  Cửa hàng cá Koi & vật tư hồ thủy sinh được hệ thống tin cậy.
+                  Bạn mua sắm — chúng tôi định hướng.
+                </p>
+                <Button as={Link} to={PATHS.partners} variant="secondary">
+                  Khám phá đối tác
+                </Button>
+              </Card>
+            </section>
           </div>
         )}
       </div>
