@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
 import { Link, useParams } from "react-router-dom";
-import { getActivePostById, getAllPosts } from "../../api/posts";
+import { getFeed, getPostById } from "../../api/community";
+import { extractApiError } from "../../api/core";
+import { POST_TYPES } from "../../constants/postTypes";
 import { Button, Card, EmptyState, Skeleton } from "../../ui";
 import { CloudDivider, KoiSilhouette } from "../../assets/motifs/Motifs";
 
@@ -122,23 +124,19 @@ export default function BlogDetail() {
       setPost(null);
       setRelatedPosts([]);
       try {
-        const [found, allResponse] = await Promise.all([
-          getActivePostById(id),
-          getAllPosts(),
+        const [found, feedResponse] = await Promise.all([
+          getPostById(id),
+          getFeed({ postTypeId: POST_TYPES.BLOG, page: 1, pageSize: 4 }),
         ]);
         if (cancelled) return;
         setPost(found);
         setRelatedPosts(
-          (allResponse.data ?? [])
-            .filter(
-              (candidate) =>
-                candidate.status === "active" &&
-                postKeyOf(candidate) !== String(id)
-            )
+          (feedResponse.data?.data ?? feedResponse.data ?? [])
+            .filter((candidate) => postKeyOf(candidate) !== String(id))
             .slice(0, 3)
         );
       } catch (err) {
-        if (!cancelled) setError(err);
+        if (!cancelled) setError(extractApiError(err).message);
       } finally {
         if (!cancelled) setLoading(false);
       }

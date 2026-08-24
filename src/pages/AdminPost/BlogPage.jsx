@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
-import { getAllPosts } from "../../api/posts";
+import { Link, useSearchParams } from "react-router-dom";
+import { getFeed } from "../../api/community";
+import { extractApiError } from "../../api/core";
+import { POST_TYPES } from "../../constants/postTypes";
 import { Button, Card, EmptyState, Skeleton } from "../../ui";
 import { KoiSilhouette } from "../../assets/motifs/Motifs";
 
@@ -85,6 +87,8 @@ function PostSkeletonGrid() {
 }
 
 export default function BlogPage() {
+  const [searchParams] = useSearchParams();
+  const q = searchParams.get("q") ?? "";
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -97,13 +101,16 @@ export default function BlogPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await getAllPosts();
+        const response = await getFeed({
+          postTypeId: POST_TYPES.BLOG,
+          page: 1,
+          pageSize: 50,
+          q: q || undefined,
+        });
         if (cancelled) return;
-        setPosts(
-          (response.data ?? []).filter((post) => post.status === "active")
-        );
+        setPosts(response.data?.data ?? response.data ?? []);
       } catch (err) {
-        if (!cancelled) setError(err);
+        if (!cancelled) setError(extractApiError(err).message);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -114,7 +121,7 @@ export default function BlogPage() {
     return () => {
       cancelled = true;
     };
-  }, [reloadToken]);
+  }, [reloadToken, q]);
 
   const handleRetry = () => setReloadToken((token) => token + 1);
 
