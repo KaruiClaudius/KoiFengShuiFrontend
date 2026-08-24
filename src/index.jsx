@@ -14,6 +14,7 @@ import { PageLoader, Toaster } from "./ui";
 import "./index.css";
 
 const AuthPage = lazy(() => import("./pages/Login/AuthPage"));
+const ResetPasswordPage = lazy(() => import("./pages/Auth/ResetPasswordPage"));
 const DashboardDefault = lazy(() => import("./pages/Dashboard"));
 const KoiCompatibilityForm = lazy(
   () => import("./pages/KoiCompatible/KoiCompatibilityForm")
@@ -53,6 +54,7 @@ const titleFor = (pathname) => {
     [PATHS.profile]: "Tài khoản",
     [PATHS.blog]: "Kinh nghiệm hay",
     [PATHS.auth]: "Đăng nhập",
+    [PATHS.resetPassword]: "Đặt lại mật khẩu",
     [PATHS.dashboard]: "Dashboard",
     [PATHS.adminPost]: "Quản lý bài viết",
     [PATHS.faqManager]: "Quản lý FAQ",
@@ -84,6 +86,7 @@ const App = () => {
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   <Route path={PATHS.auth} element={<AuthPage />} />
+                  <Route path={PATHS.resetPassword} element={<ResetPasswordPage />} />
                   <Route element={<AdminShell />}>
                     <Route
                       path={PATHS.dashboard}

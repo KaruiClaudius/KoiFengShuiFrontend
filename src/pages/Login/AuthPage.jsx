@@ -1,12 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import api from "../../config/axios";
+import { extractApiError } from "../../api/core";
+import { signIn, signUp, forgotPassword } from "../../api/auth";
 import { PATHS } from "../../routes/paths";
 import { useAuth } from "../../context/AuthContext";
 import { Button, Card, Input, notify } from "../../ui";
 import { LotusMark, SealStamp, WaveBand } from "../../assets/motifs/Motifs";
 import GoogleLoginButton from "./GoogleLoginButton";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+const ERROR_MESSAGES = {
+  ACCOUNT_NOT_FOUND: "Email không tồn tại.",
+  INVALID_PASSWORD: "Mật khẩu không đúng.",
+  EMAIL_TAKEN: "Email đã được sử dụng.",
+  RATE_LIMITED: "Thao tác quá nhanh, vui lòng thử lại sau.",
+};
 
 const MODE_TITLE = {
   signin: "Đăng nhập",
@@ -66,8 +76,8 @@ export default function AuthPage() {
 
     if (!formData.get("password")) {
       errors.password = "Mật khẩu không được để trống";
-    } else if (formData.get("password").length < 6) {
-      errors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+    } else if (formData.get("password").length < 8) {
+      errors.password = "Mật khẩu phải có ít nhất 8 ký tự";
     }
 
     const dob = new Date(formData.get("doB"));
@@ -108,58 +118,53 @@ export default function AuthPage() {
     try {
       switch (authMode) {
         case "signin": {
-          const response = await api.post("api/Auth/SignIn", {
+          const response = await signIn({
             email: formData.get("email"),
             password: formData.get("password"),
           });
-          const { token, email } = response.data;
+          const { id, fullName, email, token, refreshToken, expiresInMinutes } =
+            response.data;
 
-          const userDetailsResponse = await api.get(`api/Account/email/${email}`);
-          const userDetails = userDetailsResponse.data;
-
-          login({ newToken: token, newUser: userDetails, email });
+          login({ token, refreshToken, expiresInMinutes, id, fullName, email });
           navigate(PATHS.home);
           break;
         }
         case "signup": {
           try {
-            await api.post("api/Auth/SignUp", {
+            await signUp({
               fullName: formData.get("fullName"),
               email: formData.get("email"),
               password: formData.get("password"),
-              doB: formData.get("doB"),
+              dob: formData.get("doB"),
               phone: formData.get("phone"),
               gender: formData.get("gender"),
             });
             notify.success("Đăng ký thành công. Vui lòng đăng nhập.");
             toggleAuthMode("signin");
           } catch (err) {
-            console.error("Sign up failed:", err.response?.status || err.message);
+            const apiError = extractApiError(err);
+            console.error("Sign up failed:", apiError.code, apiError.status);
             setError(
-              typeof err.response?.data === "string" && err.response.data
-                ? err.response.data
-                : "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại."
+              ERROR_MESSAGES[apiError.code] ||
+                apiError.message ||
+                "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại."
             );
           }
           break;
         }
         case "forgotpassword": {
           try {
-            await api.post("api/Auth/ForgotPassword", {
-              email: formData.get("email"),
-            });
+            await forgotPassword(formData.get("email"));
             setForgotSent(
               "Nếu email tồn tại trong hệ thống, chúng tôi đã gửi mật khẩu mới cho bạn."
             );
           } catch (err) {
-            console.error(
-              "Forgot password failed:",
-              err.response?.status || err.message
-            );
+            const apiError = extractApiError(err);
+            console.error("Forgot password failed:", apiError.code, apiError.status);
             setError(
-              typeof err.response?.data === "string" && err.response.data
-                ? err.response.data
-                : "Đã xảy ra lỗi trong quá trình khôi phục mật khẩu. Vui lòng thử lại."
+              ERROR_MESSAGES[apiError.code] ||
+                apiError.message ||
+                "Đã xảy ra lỗi trong quá trình khôi phục mật khẩu. Vui lòng thử lại."
             );
           }
           break;
@@ -168,28 +173,19 @@ export default function AuthPage() {
           break;
       }
     } catch (err) {
-      if (err.response && err.response.status === 400) {
-        if (err.response.data.message === "Email not found.") {
-          setError("Email không tồn tại.");
-        } else if (err.response.data.message === "Incorrect password.") {
-          setError("Mật khẩu không đúng.");
-        } else {
-          setError(
-            err.response.data.message || "Đăng nhập thất bại. Vui lòng thử lại."
-          );
-        }
-      } else {
-        setError(
-          "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại sau."
-        );
-      }
+      const apiError = extractApiError(err);
+      setError(
+        ERROR_MESSAGES[apiError.code] ||
+          apiError.message ||
+          "Đăng nhập thất bại. Vui lòng thử lại."
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <GoogleOAuthProvider clientId="910517568057-gbk894g908blesmb6v6oa64ida68co4b.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="grid min-h-dvh bg-paper lg:grid-cols-2">
         <aside className="relative hidden overflow-hidden bg-pond p-10 text-[#FDF6EC] lg:flex lg:flex-col lg:justify-between xl:p-14">
           <WaveBand

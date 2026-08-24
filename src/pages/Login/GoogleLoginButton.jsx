@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import GoogleIcon from "../../components/GoogleIcon";
-import api from "../../config/axios";
 import { PATHS } from "../../routes/paths";
 import { useAuth } from "../../context/AuthContext";
+import { googleLogin, getProfileStatus } from "../../api/auth";
+import { extractApiError } from "../../api/core";
 import { Button, notify } from "../../ui";
 
 export default function GoogleLoginButton() {
@@ -17,27 +18,25 @@ export default function GoogleLoginButton() {
     setLoadingGoogle(true);
     setError(null);
     try {
-      const res = await api.post("/api/auth/google-login", {
-        accessToken: tokenResponse.access_token,
-      });
+      const res = await googleLogin(tokenResponse.access_token);
+      const { id, fullName, email, token, refreshToken, expiresInMinutes } =
+        res.data;
 
-      const userDetailsResponse = await api.get(
-        `api/Account/email/${res.data.email}`
-      );
-      const userDetails = userDetailsResponse.data;
+      login({ token, refreshToken, expiresInMinutes, id, fullName, email });
 
-      login({
-        newToken: res.data.token,
-        newUser: userDetails,
-        email: res.data.email,
-      });
+      const status = await getProfileStatus();
+      if (status.data?.requiresProfileCompletion) {
+        notify.info("Vui lòng hoàn thiện hồ sơ để tiếp tục.");
+        navigate(`${PATHS.profile}?onboarding=1`);
+        return;
+      }
 
       navigate(PATHS.home);
     } catch (err) {
-      console.error("Login failed", err);
-      console.error("Error response:", err.response);
+      const apiError = extractApiError(err);
+      console.error("Google login failed:", apiError.code, apiError.status);
       const message =
-        err.response?.data?.message ||
+        apiError.message ||
         "Đã xảy ra lỗi khi đăng nhập bằng Google. Vui lòng thử lại.";
       setError(message);
       notify.error(message);
@@ -46,7 +45,7 @@ export default function GoogleLoginButton() {
     }
   };
 
-  const googleLogin = useGoogleLogin({
+  const googleLoginFlow = useGoogleLogin({
     onSuccess: handleGoogleLoginSuccess,
     onError: (err) => {
       console.error("Google login failed:", err?.type || "unknown");
@@ -70,7 +69,7 @@ export default function GoogleLoginButton() {
         variant="secondary"
         className="w-full"
         disabled={loadingGoogle}
-        onClick={() => googleLogin()}
+        onClick={() => googleLoginFlow()}
       >
         <GoogleIcon />
         {loadingGoogle ? "Đang chuyển hướng..." : "Đăng nhập với Google"}

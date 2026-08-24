@@ -45,7 +45,7 @@ api.interceptors.response.use(
         if (!getRefreshPromise()) {
           const p = (async () => {
             const { data } = await axios.post(`${baseUrl}/api/Auth/refresh`, { refreshToken: getRefreshToken() });
-            setTokens({ token: data.token, refreshToken: data.refreshToken, expiresInMinutes: data.expiresInMinutes, id: data.id, fullName: data.fullName, email: data.email });
+            setTokens({ token: data.token, refreshToken: data.refreshToken, expiresInMinutes: data.expiresInMinutes ?? data.expiresIn, id: data.id, fullName: data.fullName, email: data.email });
             return data.token;
           })();
           setRefreshPromise(p);

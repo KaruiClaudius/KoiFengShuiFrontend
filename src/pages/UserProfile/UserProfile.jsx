@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Badge,
   Button,
@@ -11,10 +11,14 @@ import {
   notify,
 } from "../../ui";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../config/axios";
+import { getAccountById, updateAccount, changePassword } from "../../api/auth";
+import { extractApiError } from "../../api/core";
 import { PATHS } from "../../routes/paths";
 
 const ELEMENT_NAMES = { 1: "Mộc", 2: "Hoả", 3: "Thổ", 4: "Kim", 5: "Thuỷ" };
+const ELEMENT_IDS_BY_NAME = Object.fromEntries(
+  Object.entries(ELEMENT_NAMES).map(([id, name]) => [name, Number(id)])
+);
 const ELEMENT_BADGES = { 1: "moc", 2: "hoa", 3: "tho", 4: "kim", 5: "thuy" };
 const UNKNOWN_ELEMENT = "Không xác định";
 
@@ -40,15 +44,19 @@ const avatarUrl = (name) =>
     name || "Koi"
   )}`;
 
-const toFormState = (data) => ({
-  fullName: data?.fullName ?? "",
-  phone: data?.phone ?? "",
-  email: data?.email ?? "",
-  gender: data?.gender ?? "",
-  dob: data?.dob ? String(data.dob).slice(0, 10) : "",
-  elementName:
-    (data?.elementId && ELEMENT_NAMES[data.elementId]) || UNKNOWN_ELEMENT,
-});
+const toFormState = (data) => {
+  const elementId = data?.elementId ?? ELEMENT_IDS_BY_NAME[data?.elementName] ?? null;
+  return {
+    fullName: data?.fullName ?? "",
+    phone: data?.phone ?? "",
+    email: data?.email ?? "",
+    gender: data?.gender ?? "",
+    dob: data?.dob ? String(data.dob).slice(0, 10) : "",
+    elementName:
+      (elementId && ELEMENT_NAMES[elementId]) || data?.elementName || UNKNOWN_ELEMENT,
+    elementId,
+  };
+};
 
 function NavRail({ activeTab, onSelect }) {
   return (
@@ -147,7 +155,9 @@ function ProfileSkeleton() {
 }
 
 const UserProfile = () => {
-  const { updateUser } = useAuth();
+  const { updateUser, user: authUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isOnboarding = searchParams.get("onboarding") === "1";
   const [activeTab, setActiveTab] = useState("profile");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -163,17 +173,24 @@ const UserProfile = () => {
   useEffect(() => {
     let cancelled = false;
     const fetchUser = async () => {
+      if (!authUser?.accountId) {
+        if (!cancelled) {
+          setLoadError(true);
+          setLoading(false);
+        }
+        return;
+      }
       setLoading(true);
       setLoadError(false);
       try {
-        const email = localStorage.getItem("email");
-        const response = await api.get(`api/Account/email/${email}`);
+        const response = await getAccountById(authUser.accountId);
         if (!cancelled) {
           setUser(response.data);
           setForm(toFormState(response.data));
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        const apiError = extractApiError(error);
+        console.error("Error fetching user data:", apiError.code, apiError.status);
         if (!cancelled) {
           setLoadError(true);
         }
@@ -187,7 +204,7 @@ const UserProfile = () => {
     return () => {
       cancelled = true;
     };
-  }, [retryToken]);
+  }, [retryToken, authUser?.accountId]);
 
   const updateField = (field) => (event) => {
     const { value } = event.target;
@@ -222,27 +239,23 @@ const UserProfile = () => {
     }
     setSaving(true);
     try {
-      await api.put(`api/Account/${user.accountId}`, {
+      await updateAccount(user.accountId, {
         email: form.email,
         fullName: form.fullName,
         dob: form.dob,
         gender: form.gender,
         phone: form.phone,
       });
-      const response = await api.get(`api/Account/email/${form.email}`);
+      const response = await getAccountById(user.accountId);
       setUser(response.data);
       setForm(toFormState(response.data));
       updateUser(response.data);
       notify.success("Thông tin cá nhân đã được cập nhật thành công");
     } catch (error) {
-      console.error(
-        "Error updating profile:",
-        error.response?.data || error.message
-      );
+      const apiError = extractApiError(error);
+      console.error("Error updating profile:", apiError.code, apiError.status);
       notify.error(
-        `Lỗi cập nhật thông tin: ${
-          error.response?.data?.message || error.message
-        }`
+        `Lỗi cập nhật thông tin: ${apiError.message || "Vui lòng thử lại."}`
       );
     } finally {
       setSaving(false);
@@ -257,8 +270,8 @@ const UserProfile = () => {
     }
     if (!passwords.newPassword) {
       errors.newPassword = "Vui lòng nhập mật khẩu mới";
-    } else if (passwords.newPassword.length < 6) {
-      errors.newPassword = "Mật khẩu phải có ít nhất 6 ký tự";
+    } else if (passwords.newPassword.length < 8) {
+      errors.newPassword = "Mật khẩu phải có ít nhất 8 ký tự";
     }
     if (!passwords.confirmPassword) {
       errors.confirmPassword = "Vui lòng xác nhận mật khẩu mới";
@@ -271,26 +284,24 @@ const UserProfile = () => {
     }
     setChangingPassword(true);
     try {
-      await api.put(`api/Account/${user.accountId}/change-password`, {
+      await changePassword(user.accountId, {
         currentPassword: passwords.currentPassword,
         newPassword: passwords.newPassword,
       });
       notify.success("Đổi mật khẩu thành công");
       setPasswords(EMPTY_PASSWORDS);
     } catch (error) {
-      console.error(
-        "Error changing password:",
-        error.response?.data || error.message
-      );
+      const apiError = extractApiError(error);
+      console.error("Error changing password:", apiError.code, apiError.status);
       notify.error(
-        `Lỗi đổi mật khẩu: ${error.response?.data?.message || error.message}`
+        `Lỗi đổi mật khẩu: ${apiError.message || "Vui lòng thử lại."}`
       );
     } finally {
       setChangingPassword(false);
     }
   };
 
-  const elementBadge = user?.elementId ? ELEMENT_BADGES[user.elementId] : null;
+  const elementBadge = form.elementId ? ELEMENT_BADGES[form.elementId] : null;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
@@ -314,6 +325,16 @@ const UserProfile = () => {
       <h1 className="mt-4 animate-fade-rise font-display text-3xl text-ink md:text-4xl lg:text-5xl">
         Thông tin cá nhân
       </h1>
+
+      {isOnboarding && (
+        <div
+          role="status"
+          className="mt-4 rounded-md border-gold/50 bg-gold/10 p-4 text-sm text-ink-soft"
+        >
+          Chào mừng bạn! Vui lòng hoàn thiện ngày sinh và giới tính để chúng tôi
+          tư vấn bản mệnh chính xác nhất.
+        </div>
+      )}
 
       {loading ? (
         <ProfileSkeleton />
