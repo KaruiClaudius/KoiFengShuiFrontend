@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import { getFeed } from "../../api/community";
+import { extractApiError } from "../../api/core";
 import {
   Button,
   Card,
@@ -177,7 +178,7 @@ export default function Homepage() {
         setCommunityPosts(communityResponse.data?.data ?? communityResponse.data ?? []);
         setBlogPosts(blogResponse.data?.data ?? blogResponse.data ?? []);
       } catch (err) {
-        if (!cancelled) setError(err.message);
+        if (!cancelled) setError(extractApiError(err).message);
       } finally {
         if (!cancelled) setLoading(false);
       }
