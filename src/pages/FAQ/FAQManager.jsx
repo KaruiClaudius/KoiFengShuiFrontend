@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { createFAQ, deleteFAQ, getAllFAQs, updateFAQ } from "../../api/faqs";
-import { useAuth } from "../../context/AuthContext";
 import {
   Button,
   Card,
@@ -101,9 +100,6 @@ function FaqSkeletonRows() {
 const EMPTY_DRAFT = { question: "", answer: "" };
 
 export default function FAQManager() {
-  const { user } = useAuth();
-  const accountId = user?.accountId;
-
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -178,10 +174,7 @@ export default function FAQManager() {
         );
         notify.success("Đã cập nhật câu hỏi");
       } else {
-        if (!accountId) {
-          throw new Error("User not logged in or account ID not available");
-        }
-        const response = await createFAQ({ ...draft, accountId });
+        const response = await createFAQ({ ...draft });
         setFaqs((prev) => [...prev, response.data]);
         notify.success("Đã thêm câu hỏi");
       }

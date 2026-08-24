@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { createPost, deletePost, getAllPosts, updatePost } from "../../api/posts";
-import { useAuth } from "../../context/AuthContext";
 import { KoiSilhouette } from "../../assets/motifs/Motifs";
 import {
   Button,
@@ -19,7 +18,7 @@ import {
 const POST_CATEGORY_ID = 3;
 const POST_ELEMENT_ID = 6;
 
-const EMPTY_DRAFT = { name: "", description: "", status: "active" };
+const EMPTY_DRAFT = { name: "", description: "", status: "Approved" };
 
 const quillModules = {
   toolbar: [
@@ -56,7 +55,7 @@ const StatusChip = ({ active }) => (
       aria-hidden="true"
       className={`h-1.5 w-1.5 rounded-full ${active ? "bg-moc" : "bg-muted"}`}
     />
-    {active ? "Hiển thị" : "Ẩn"}
+    {active ? "Đã duyệt" : "Chờ duyệt"}
   </span>
 );
 
@@ -119,7 +118,7 @@ const PostRow = ({ post, onEdit, onDelete }) => (
           {post.name || "Bài viết chưa có tiêu đề"}
         </h3>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <StatusChip active={post.status === "active"} />
+          <StatusChip active={post.status === "Approved"} />
           <span className="text-xs text-muted">
             {formatCreatedAt(post.createdAt)}
           </span>
@@ -177,9 +176,6 @@ const PostSkeletonRows = () => (
 );
 
 export default function AdminPost() {
-  const { user } = useAuth();
-  const accountId = user?.accountId;
-
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -247,7 +243,7 @@ export default function AdminPost() {
     setDraft({
       name: post.name || "",
       description: post.description || "",
-      status: post.status === "inactive" ? "inactive" : "active",
+      status: post.status === "Pending" ? "Pending" : "Approved",
     });
     setNewFiles([]);
     setFormOpen(true);
@@ -288,7 +284,7 @@ export default function AdminPost() {
   const handleStatusToggle = (event) => {
     setDraft((prev) => ({
       ...prev,
-      status: event.target.checked ? "active" : "inactive",
+      status: event.target.checked ? "Approved" : "Pending",
     }));
   };
 
@@ -305,18 +301,13 @@ export default function AdminPost() {
       notify.error("Hãy nhập mô tả bài viết");
       return;
     }
-    if (!accountId) {
-      notify.error("Không tìm thấy tài khoản. Vui lòng đăng nhập.");
-      return;
-    }
 
     setSaving(true);
     try {
       const formData = new FormData();
       formData.append("name", draft.name);
       formData.append("description", draft.description);
-      formData.append("status", draft.status || "active");
-      formData.append("accountId", accountId);
+      formData.append("status", draft.status || "Approved");
       formData.append("id", POST_CATEGORY_ID);
       formData.append("elementId", POST_ELEMENT_ID);
 
@@ -510,7 +501,7 @@ export default function AdminPost() {
             <label className="inline-flex cursor-pointer select-none items-center gap-3">
               <input
                 type="checkbox"
-                checked={draft.status === "active"}
+                checked={draft.status === "Approved"}
                 onChange={handleStatusToggle}
                 disabled={saving}
                 className="h-4 w-4 accent-[#A92C2C]"
