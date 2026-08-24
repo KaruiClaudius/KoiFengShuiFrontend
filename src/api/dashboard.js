@@ -11,3 +11,7 @@ export const getNewUsersList = (days = 30) => {
 export const getTrafficDistribution = () => {
   return api.get("/api/Dashboard/traffic-distribution");
 };
+
+export const getContentSummary = () => {
+  return api.get("/api/Dashboard/content-summary");
+};
