@@ -35,6 +35,10 @@ const CommunityMyPostsPage = lazy(
 const CommunityDetailPage = lazy(
   () => import("./pages/Community/CommunityDetailPage")
 );
+const PartnersPage = lazy(() => import("./pages/Partners/PartnersPage"));
+const AdminPartnersPage = lazy(
+  () => import("./pages/Partners/AdminPartnersPage")
+);
 
 const guarded = (node, role = null) =>
   role === null ? (
@@ -49,6 +53,7 @@ const titleFor = (pathname) => {
     [PATHS.koiCompatible]: "Tư vấn bản mệnh",
     [PATHS.profile]: "Tài khoản",
     [PATHS.community]: "Cộng đồng",
+    [PATHS.partners]: "Đối tác",
     [PATHS.communitySubmit]: "Chia sẻ bài viết",
     [PATHS.communityMyPosts]: "Bài của tôi",
     [PATHS.blog]: "Kinh nghiệm hay",
@@ -97,6 +102,10 @@ const App = () => {
                       path={PATHS.adminPost}
                       element={guarded(<AdminPost />, 1)}
                     />
+                    <Route
+                      path={PATHS.adminPartners}
+                      element={guarded(<AdminPartnersPage />, 1)}
+                    />
                   </Route>
                   <Route
                     path={PATHS.profile}
@@ -123,6 +132,7 @@ const App = () => {
                       path="/community/:id"
                       element={<CommunityDetailPage />}
                     />
+                    <Route path={PATHS.partners} element={<PartnersPage />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
                 </Routes>

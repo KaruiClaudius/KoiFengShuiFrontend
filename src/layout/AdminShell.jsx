@@ -5,6 +5,7 @@ import { PATHS } from "../routes/paths";
 const adminLinks = [
   { to: PATHS.dashboard, label: "Dashboard" },
   { to: PATHS.adminPost, label: "Quản lý bài viết" },
+  { to: PATHS.adminPartners, label: "Quản lý đối tác" },
   { to: PATHS.faqManager, label: "Quản lý FAQ" },
 ];
 
