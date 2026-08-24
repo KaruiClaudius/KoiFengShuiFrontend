@@ -1,8 +1,9 @@
 # Koi FengShui — Backend API Contract & Feature Requests
 
-> ⚠️ **SUPERSEDED** by `docs/api-agreement-draft.md` after the backend delivered `FRONTEND_API_GUIDE.md` (.NET 10 rebuild): marketplace removed, refresh-token auth added. This file remains as the historical frontend-side request list; the agreement draft is the living negotiation doc.
-
-> **Audience:** backend team (rebuild in progress).
+> ⚠️ **SUPERSEDED** — migration executed 2026-08-23 per `docs/agreements-final.md`
+> (Council hash `98e32473f06b`). Frontend now runs entirely on the rebuilt backend:
+> refresh-token auth, community feed (`/community`), partner shops (`/partners`),
+> public Approved-only post surfaces. This file remains as the historical request list.
 > **Source of truth:** what the frontend actually calls today (`KoiFengShuiFrontend/src/api/*.js`), plus new features shipped in the redesign and contracts we need enforced.
 > Dev proxy: `/api` → `https://localhost:7285` (see `vite.config.js`). Auth: `Authorization: Bearer <JWT>` on every request; frontend clears session and redirects to `/auth` on any `401`.
 
