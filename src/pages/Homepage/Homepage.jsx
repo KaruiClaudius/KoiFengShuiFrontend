@@ -1,15 +1,8 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
+import { getAllPosts } from "../../config/axios";
 import {
-  getAllPosts,
-  getFengShuiKoiDecorationPost,
-  getFengShuiKoiFishPost,
-  getKoiElement,
-} from "../../config/axios";
-import { useAuth } from "../../context/AuthContext";
-import {
-  Badge,
   Button,
   Card,
   Dialog,
@@ -21,24 +14,11 @@ import { CloudDivider, KoiSilhouette, WaveBand } from "../../assets/motifs/Motif
 import FAQDisplay from "../FAQ/FAQDisplay";
 import "./Homepage.css";
 
-const ELEMENT_KEY_MAP = {
-  Kim: "kim",
-  Mộc: "moc",
-  Thủy: "thuy",
-  Hỏa: "hoa",
-  Thổ: "tho",
-};
-
 const stripHtml = (value) =>
   String(value ?? "")
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-
-const avatarUrl = (name) =>
-  name
-    ? `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(name)}`
-    : null;
 
 function Rail({ title, moreTo, children }) {
   const trackRef = useRef(null);
@@ -91,81 +71,6 @@ Rail.propTypes = {
   title: PropTypes.string.isRequired,
   moreTo: PropTypes.string.isRequired,
   children: PropTypes.node,
-};
-
-function KoiCard({ item }) {
-  const elementKey = ELEMENT_KEY_MAP[item.elementName];
-  const imageUrl = item.listingImages?.[0]?.image?.imageUrl;
-  const avatar = avatarUrl(item.accountName);
-
-  return (
-    <Card interactive className="w-[260px] shrink-0 snap-start overflow-hidden sm:w-[280px]">
-      <Link
-        to={`/Details/${item.listingId}`}
-        className="flex h-full flex-col rounded-lg outline-none focus-visible:shadow-gold"
-      >
-        <div className="relative aspect-[4/3] overflow-hidden bg-paper-2">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={item.title}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-slow ease-water hover:scale-105"
-            />
-          ) : (
-            <div className="grid h-full place-items-center text-gold/60">
-              <KoiSilhouette size={64} />
-            </div>
-          )}
-          {elementKey && (
-            <Badge element={elementKey} className="absolute left-3 top-3">
-              {item.elementName}
-            </Badge>
-          )}
-          {item.tierName === "Tin Nổi Bật" && (
-            <Badge className="absolute right-3 top-3">Nổi bật</Badge>
-          )}
-        </div>
-        <div className="flex flex-1 flex-col gap-3 p-4">
-          <h3 className="truncate font-display text-base font-semibold text-ink">
-            {item.title}
-          </h3>
-          <div className="mt-auto flex items-center gap-2">
-            {avatar ? (
-              <img
-                src={avatar}
-                alt=""
-                width={24}
-                height={24}
-                loading="lazy"
-                className="rounded-full border border-gold/40 bg-surface"
-              />
-            ) : (
-              <span className="grid h-6 w-6 place-items-center rounded-full border border-gold/40 bg-paper-2 text-xs text-muted" aria-hidden="true">
-                鯉
-              </span>
-            )}
-            <span className="truncate text-xs text-muted">{item.accountName}</span>
-          </div>
-        </div>
-      </Link>
-    </Card>
-  );
-}
-
-KoiCard.propTypes = {
-  item: PropTypes.shape({
-    listingId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    title: PropTypes.string,
-    elementName: PropTypes.string,
-    tierName: PropTypes.string,
-    accountName: PropTypes.string,
-    listingImages: PropTypes.arrayOf(
-      PropTypes.shape({
-        image: PropTypes.shape({ imageUrl: PropTypes.string }),
-      })
-    ),
-  }).isRequired,
 };
 
 function BlogCard({ post, onOpen }) {
@@ -239,15 +144,9 @@ function KoiSkeletonGrid() {
 }
 
 export default function Homepage() {
-  const { user } = useAuth();
-  const currentUser = user ?? null;
   const navigate = useNavigate();
 
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [cardDataKoiElement, setCardDataKoiElement] = useState([]);
-  const [cardDataKoi, setCardDataKoi] = useState([]);
-  const [cardDataDecoration, setCardDataDecoration] = useState([]);
   const [cardDataPost, setCardDataPost] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -257,9 +156,7 @@ export default function Homepage() {
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     const term = searchTerm.trim();
-    navigate(
-      term ? `/KoiListings?q=${encodeURIComponent(term)}` : "/KoiListings"
-    );
+    navigate(term ? `/blog?q=${encodeURIComponent(term)}` : "/blog");
   };
 
   useEffect(() => {
@@ -269,21 +166,10 @@ export default function Homepage() {
       setLoading(true);
       setError(null);
       try {
-        const responseKoi = await getFengShuiKoiFishPost(1);
-        const responseDecoration = await getFengShuiKoiDecorationPost(2);
         const responsePost = await getAllPosts();
 
         if (cancelled) return;
-        setCardDataKoi(responseKoi.data);
-        setCardDataDecoration(responseDecoration.data);
         setCardDataPost(responsePost.data);
-
-        if (currentUser?.elementId) {
-          const responseKoiElement = await getKoiElement(currentUser.elementId, 1, 10);
-          if (!cancelled) setCardDataKoiElement(responseKoiElement.data ?? []);
-        } else {
-          if (!cancelled) setCardDataKoiElement([]);
-        }
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
@@ -297,45 +183,10 @@ export default function Homepage() {
     return () => {
       cancelled = true;
     };
-  }, [currentUser?.elementId]);
+  }, []);
 
   const activePosts = cardDataPost.filter((post) => post.status === "active");
-
-  const hasElementKoi = cardDataKoiElement.length > 0;
-  const hasKoi = cardDataKoi.length > 0;
-  const hasDecoration = cardDataDecoration.length > 0;
-  const hasAnyKoi = hasElementKoi || hasKoi || hasDecoration;
-
-  const rails = [
-    hasElementKoi && {
-      key: "element",
-      title: "Cá Koi Theo Bản Mệnh",
-      moreTo: `/KoiListings?category=1&element=${currentUser.elementId}`,
-      items: cardDataKoiElement,
-      kind: "koi",
-    },
-    hasKoi && {
-      key: "koi",
-      title: "Bán Cá Koi",
-      moreTo: "/KoiListings?category=1",
-      items: cardDataKoi,
-      kind: "koi",
-    },
-    hasDecoration && {
-      key: "decoration",
-      title: "Đồ Trang Trí Hồ Cá",
-      moreTo: "/KoiListings?category=2",
-      items: cardDataDecoration,
-      kind: "koi",
-    },
-    activePosts.length > 0 && {
-      key: "blog",
-      title: "Kinh Nghiệm Hay",
-      moreTo: "/blog",
-      items: activePosts,
-      kind: "blog",
-    },
-  ].filter(Boolean);
+  const hasPosts = activePosts.length > 0;
 
   return (
     <main className="grain-bg min-h-screen bg-paper text-ink">
@@ -357,8 +208,8 @@ export default function Homepage() {
               type="search"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Tìm chú cá Koi của bạn…"
-              aria-label="Tìm chú cá Koi của bạn"
+              placeholder="Tìm bài viết kinh nghiệm hay…"
+              aria-label="Tìm bài viết kinh nghiệm hay"
               autoComplete="off"
               className="w-full min-w-0 rounded-full border border-[#E6D9A8]/40 bg-white/10 px-5 py-3 text-[#FDF6EC] outline-none transition-shadow duration-fast ease-water placeholder:text-[#E6D9A8]/70 focus:shadow-gold"
             />
@@ -383,8 +234,8 @@ export default function Homepage() {
             </button>
           </form>
           <div className="mt-6 flex flex-wrap items-center gap-4">
-            <Button as={Link} to="/KoiListings?category=1" size="lg">
-              Khám phá cá Koi
+            <Button as={Link} to="/blog" size="lg">
+              Đọc kinh nghiệm hay
             </Button>
             <Link
               to="/KoiCompatible"
@@ -415,29 +266,22 @@ export default function Homepage() {
               </Button>
             }
           />
-        ) : !hasAnyKoi ? (
+        ) : !hasPosts ? (
           <EmptyState
-            title="Không tìm thấy kết quả phù hợp"
-            description="Hiện chưa có cá Koi hoặc đồ trang trí nào để hiển thị."
+            title="Chưa có bài viết nào"
+            description="Các bài viết kinh nghiệm hay sẽ xuất hiện tại đây."
           />
         ) : (
           <div className="space-y-14 md:space-y-20">
-            {rails.map((rail, index) => (
-              <Fragment key={rail.key}>
-                {index > 0 && (
-                  <CloudDivider className="mx-auto max-w-md text-gold/70" />
-                )}
-                <Rail title={rail.title} moreTo={rail.moreTo}>
-                  {rail.items.map((item) =>
-                    rail.kind === "koi" ? (
-                      <KoiCard key={item.listingId} item={item} />
-                    ) : (
-                      <BlogCard key={`${item.id}-${item.name}`} post={item} onOpen={setSelectedPost} />
-                    )
-                  )}
-                </Rail>
-              </Fragment>
-            ))}
+            <Rail title="Kinh Nghiệm Hay" moreTo="/blog">
+              {activePosts.map((item) => (
+                <BlogCard
+                  key={`${item.id}-${item.name}`}
+                  post={item}
+                  onOpen={setSelectedPost}
+                />
+              ))}
+            </Rail>
           </div>
         )}
       </div>

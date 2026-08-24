@@ -1,13 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Card, EmptyState } from "../../ui";
 import { LotusMark } from "../../assets/motifs/Motifs";
-import {
-  getNewMarketListingsCount,
-  getNewUsersCount,
-  getNewUsersList,
-} from "../../api/dashboard";
+import { getNewUsersCount, getNewUsersList } from "../../api/dashboard";
 import MonthlyBarChart from "./MonthlyBarChart";
-import UniqueVisitorCard from "./UniqueVisitorCard";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -23,7 +18,6 @@ const formatDate = (value) =>
 export default function DashboardDefault() {
   const [newUsersCount, setNewUsersCount] = useState(0);
   const [newUsersList, setNewUsersList] = useState([]);
-  const [newMarketListingsCount, setNewMarketListingsCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.max(
@@ -42,10 +36,6 @@ export default function DashboardDefault() {
         const usersResponse = await getNewUsersList();
         if (cancelled) return;
         setNewUsersList(usersResponse.data);
-
-        const marketListingsCountResponse = await getNewMarketListingsCount();
-        if (cancelled) return;
-        setNewMarketListingsCount(marketListingsCountResponse.data.count);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
@@ -69,21 +59,13 @@ export default function DashboardDefault() {
         <p className="mt-1 text-muted">Tổng quan hoạt động của hệ thống</p>
       </header>
 
-      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Card className="p-5">
           <p className="text-sm font-semibold uppercase tracking-wide text-muted">
             Người dùng mới
           </p>
           <p className="mt-2 font-display text-4xl font-bold text-ink">
             {newUsersCount.toLocaleString("vi-VN")}
-          </p>
-        </Card>
-        <Card className="p-5">
-          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
-            Bài đăng mới
-          </p>
-          <p className="mt-2 font-display text-4xl font-bold text-ink">
-            {newMarketListingsCount.toLocaleString("vi-VN")}
           </p>
         </Card>
         <Card className="flex items-center gap-4 p-5">
@@ -103,7 +85,7 @@ export default function DashboardDefault() {
         </Card>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="mt-8">
         <Card className="p-5">
           <h2 className="font-display text-xl font-bold text-ink">
             Lượng truy cập
@@ -113,7 +95,6 @@ export default function DashboardDefault() {
             <MonthlyBarChart />
           </div>
         </Card>
-        <UniqueVisitorCard />
       </div>
 
       <Card className="mt-8 p-5">

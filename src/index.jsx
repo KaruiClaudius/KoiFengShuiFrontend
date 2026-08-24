@@ -6,7 +6,6 @@ import ProtectedRoute from "./config/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { FavoritesProvider } from "./context/FavoritesContext";
 import { PATHS } from "./routes/paths";
 import PublicShell from "./layout/PublicShell";
 import AdminShell from "./layout/AdminShell";
@@ -24,16 +23,7 @@ const AdminFAQ = lazy(() => import("./pages/FAQ/FAQManager.jsx"));
 const AdminPost = lazy(() => import("./pages/AdminPost/AdminPost"));
 const BlogPage = lazy(() => import("./pages/AdminPost/BlogPage"));
 const HomePage = lazy(() => import("./pages/Homepage/Homepage"));
-const DetailPage = lazy(() => import("./pages/DetailPage/DetailPage.jsx"));
-const DecorationPage = lazy(
-  () => import("./pages/DecorationPage/DecorationPage")
-);
-const PostListingPage = lazy(() => import("./pages/PostListing/PostListingPage"));
-const KoiListingsPage = lazy(
-  () => import("./pages/KoiListingPage/KoiListingPage")
-);
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
-const Favorites = lazy(() => import("./pages/Favorites/Favorites"));
 const BlogDetail = lazy(() => import("./pages/BlogDetail/BlogDetail"));
 
 const guarded = (node, role = null) =>
@@ -44,13 +34,9 @@ const guarded = (node, role = null) =>
   );
 
 const titleFor = (pathname) => {
-  if (pathname.startsWith("/Details/")) return "Chi tiết cá Koi";
-  if (pathname.startsWith("/Decoration/")) return "Đồ trang trí hồ cá";
   const map = {
     [PATHS.home]: "Trang chủ",
-    [PATHS.koiListings]: "Cá Koi",
     [PATHS.koiCompatible]: "Tư vấn bản mệnh",
-    [PATHS.listingPost]: "Đăng tin",
     [PATHS.profile]: "Tài khoản",
     [PATHS.blog]: "Kinh nghiệm hay",
     [PATHS.auth]: "Đăng nhập",
@@ -58,7 +44,6 @@ const titleFor = (pathname) => {
     [PATHS.dashboard]: "Dashboard",
     [PATHS.adminPost]: "Quản lý bài viết",
     [PATHS.faqManager]: "Quản lý FAQ",
-    "/favorites": "Yêu thích",
   };
   const page = map[pathname];
   if (pathname.startsWith("/blog/") && !pathname.endsWith("/blog/")) {
@@ -79,8 +64,7 @@ const App = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <FavoritesProvider>
-          <Router>
+        <Router>
             <TitleManager />
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
@@ -108,25 +92,8 @@ const App = () => {
                   <Route element={<PublicShell />}>
                     <Route path={PATHS.home} element={<HomePage />} />
                     <Route
-                      path="/favorites"
-                      element={<Favorites />}
-                    />
-                    <Route
                       path={PATHS.koiCompatible}
                       element={<KoiCompatibilityForm />}
-                    />
-                    <Route
-                      path={PATHS.listingPost}
-                      element={guarded(<PostListingPage />)}
-                    />
-                    <Route
-                      path={PATHS.koiListings}
-                      element={<KoiListingsPage />}
-                    />
-                    <Route path={PATHS.details()} element={<DetailPage />} />
-                    <Route
-                      path={PATHS.decoration()}
-                      element={<DecorationPage />}
                     />
                     <Route path={PATHS.blog} element={<BlogPage />} />
                     <Route path="/blog/:id" element={<BlogDetail />} />
@@ -137,12 +104,10 @@ const App = () => {
             </ErrorBoundary>
             <Toaster />
           </Router>
-        </FavoritesProvider>
-      </AuthProvider>
-    </ThemeProvider>
+        </AuthProvider>
+      </ThemeProvider>
   );
 };
-
 ReactDOM.createRoot(document.querySelector("#root")).render(
   <React.StrictMode>
     <App />

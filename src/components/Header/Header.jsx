@@ -15,8 +15,6 @@ import { PATHS } from "../../routes/paths";
 import Logo from "../../assets/Logo.png";
 
 const NAV_LINKS = [
-  { label: "Cá Koi", to: `${PATHS.koiListings}?category=1` },
-  { label: "Đồ trang trí", to: `${PATHS.koiListings}?category=2` },
   { label: "Tư vấn bản mệnh", to: PATHS.koiCompatible },
   { label: "Kinh nghiệm hay", to: PATHS.blog },
 ];
@@ -121,9 +119,6 @@ const AppHeader = () => {
           <ThemeToggle />
           {isLoggedIn ? (
             <>
-              <Button variant="primary" size="sm" as={Link} to={PATHS.listingPost}>
-                Đăng tin
-              </Button>
               <Menu>
                 <MenuTrigger asChild>
                   <button
@@ -154,9 +149,6 @@ const AppHeader = () => {
                       Dashboard
                     </MenuItem>
                   )}
-                  <MenuItem onSelect={() => navigate("/favorites")}>
-                    Yêu thích
-                  </MenuItem>
                   <MenuItem onSelect={() => navigate(PATHS.profile)}>
                     Hồ sơ
                   </MenuItem>
@@ -224,23 +216,6 @@ const AppHeader = () => {
           <div className="mt-3 flex flex-col gap-2 border-t border-gold/20 pt-4">
             {isLoggedIn ? (
               <>
-                <Button
-                  variant="primary"
-                  size="md"
-                  as={Link}
-                  to={PATHS.listingPost}
-                  onClick={closeMobileMenu}
-                  className="w-full"
-                >
-                  Đăng tin
-                </Button>
-                <Link
-                  to="/favorites"
-                  onClick={closeMobileMenu}
-                  className="py-2.5 text-[15px] font-medium transition-colors duration-fast hover:text-gold-soft"
-                >
-                  Yêu thích
-                </Link>
                 <Link
                   to={PATHS.profile}
                   onClick={closeMobileMenu}
